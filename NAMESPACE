@@ -2,8 +2,10 @@
 
 S3method(makeContent,arrowheadtree)
 export("%>%")
+export(StatMiropeats)
 export(add.control.points)
 export(geom_arrowhead)
+export(geom_miropeats)
 export(paf2coords)
 export(q2t)
 importFrom(dplyr,group_by)

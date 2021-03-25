@@ -5,7 +5,6 @@
 #' @return A \code{vector} of rescaled coordinate values.
 #' @author David Porubsky
 #' @export
-#' 
 add.control.points <- function(data=NULL, strength=0.5) {
   start <- data[c(TRUE, FALSE), ]
   end <- data[c(FALSE, TRUE), ]
@@ -28,7 +27,6 @@ add.control.points <- function(data=NULL, strength=0.5) {
 #' @return A \code{vector} of rescaled coordinate values.
 #' @author David Porubsky
 #' @export
-#' 
 q2t <- function(x, q.range, t.range) {
   if (is.numeric(x) && is.numeric(q.range) && is.numeric(t.range)) {
     coord.factor <- (t.range[2] - t.range[1]) / (q.range[2] - q.range[1])

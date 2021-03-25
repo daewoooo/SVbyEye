@@ -1,3 +1,4 @@
+## Load required libraries
 library(SVbyEye)
 library(ggplot2)
 library(scales)
@@ -15,7 +16,7 @@ q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
 t.range <- range(coords$seq.pos[coords$seq.id == 'target'])
 q.labels <- pretty(q.range)
 t.labels <- pretty(t.range)
-q.breaks <- q2t(x = q.labels, q.range = q.range, t.range = t.range)
+q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
 t.breaks <- t.labels
 
 ## Get x-axis labels
@@ -71,6 +72,31 @@ plt + new_scale_fill() + new_scale_color() +
   geom_arrowhead(data=plt.df, aes(xmin=start, xmax=end, y=2.05, color=fracMatch, fill=fracMatch))
   #geom_polygon(data=plt.df, aes(x=x, y=3, group=group, color=fracMatch, fill=fracMatch))
 
+
+
+library(SVbyEye)
+library(ggplot2)
+paf.file <- '/home/porubsky/SVbyEye_devel/chr12_17521907_18108016_misorient.paf'
+
+coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.n = 1, min.align.len = 10000)
+
+## Get y-axis labels
+q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
+t.range <- range(coords$seq.pos[coords$seq.id == 'target'])
+q.labels <- pretty(q.range)
+t.labels <- pretty(t.range)
+q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
+t.breaks <- t.labels
+
+## Get x-axis labels
+seq.labels <- c(unique(coords$seq.name[coords$seq.id == 'query']), 
+                unique(coords$seq.name[coords$seq.id == 'target']))
+
+ggplot2::ggplot(coords) +
+  geom_miropeats(aes(x, y, group = group), fill='gray', alpha=0.5, color='black') +
+  scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
+  scale_x_continuous(breaks = q.breaks, labels = comma(q.labels),
+                     sec.axis = sec_axis(trans = y ~ ., breaks = t.breaks, labels = comma(t.labels)))
 
 
 ########################################################################################################

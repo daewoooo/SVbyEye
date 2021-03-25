@@ -1,8 +1,9 @@
 #' Read and filter PAF input file
 #' 
-#' This function takes PAF output file from minimap2 alignemts, loads the file and 
+#' This function takes PAF output file from minimap2 alignemts, loads the file and
 #' perform user defined filtering of input alignements based on mapping quality and
 #' alignment length.
+#'
 #'
 #' @param paf.file A \code{data.frame} containing x and y coordinates.
 #' @param min.mapq Minimum mapping quality to retain for PAF alignment file.
@@ -14,7 +15,6 @@
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-#' 
 paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=10, seqname.grep=NULL) {
   paf <- utils::read.table(paf.file, stringsAsFactors = FALSE)
   ## Keep only first 12 columns
