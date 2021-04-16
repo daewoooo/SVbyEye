@@ -35,7 +35,7 @@ plotVariantDensity(
 
 \item{blacklist}{A \code{\link{GRanges-class}} object of regions to be removed.}
 
-\item{bsgenome}{A \code{BSgenome} object to provide chromosome lengths for plotting.}
+\item{bsgenome}{A \code{\link{BSgenome-class}} object to provide chromosome lengths for plotting.}
 
 \item{ref.fasta}{A user defined reference FASTA file from which chromosome lengths will be extracted.}
 

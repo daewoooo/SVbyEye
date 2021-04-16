@@ -5,7 +5,7 @@
 #' @param reverse.x Set to \code{TRUE} if x-axis should be horizontally reversed.
 #' @param title A character string to be used as plot title.
 #' @param blacklist A \code{\link{GRanges-class}} object of regions to be removed.
-#' @param bsgenome A \code{BSgenome} object to provide chromosome lengths for plotting.
+#' @param bsgenome A \code{\link{BSgenome-class}} object to provide chromosome lengths for plotting.
 #' @param ref.fasta A user defined reference FASTA file from which chromosome lengths will be extracted.
 #' @param gap.cent.bed A set of ranges in BED format to be highlighted as centromeres and/or gaps as white rectangles.
 #' @inheritParams makeBins
