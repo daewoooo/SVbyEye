@@ -89,8 +89,10 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
   ## Load BSgenome
   if (class(bsgenome) != 'BSgenome') {
     if (is.character(bsgenome)) {
-      suppressPackageStartupMessages(library(bsgenome, character.only=TRUE))
-      bsgenome <- eval(parse(text=bsgenome)) # replacing string by object
+      bsgenome <- tryCatch({
+        suppressPackageStartupMessages(library(bsgenome, character.only=TRUE))
+        bsgenome <- eval(parse(text=bsgenome)) ## replacing string by object
+      }, error = function(e) {return(NULL)})
     } else {
       bsgenome <- NULL
     }
