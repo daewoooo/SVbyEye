@@ -8,7 +8,7 @@ library(gggenes)
 paf.file <- '/home/porubsky/SVbyEye_devel/CHM13_putativeNovelINV_5MbExtraFlanks.paf'
 
 #coords.old <- paf2coords(paf.file = paf.file, chromosome = 'chr7')
-coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.len = 10000)
+coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.len = 1000, min.align.n = 1)
 coords <- coords[coords$align.id == 'chr1:137260403-147334366__chr1',]
 
 ## Get y-axis labels
@@ -76,9 +76,17 @@ plt + new_scale_fill() + new_scale_color() +
 
 library(SVbyEye)
 library(ggplot2)
-paf.file <- '/home/porubsky/SVbyEye_devel/chr12_17521907_18108016_misorient.paf'
 
-coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.n = 1, min.align.len = 10000)
+#paf.file <- '/home/porubsky/SVbyEye_devel/chr12_17521907_18108016_misorient.paf'
+#paf.file <- '/media/porubsky/DavStore/HGSVC/INVcompanion/Visualize_CHM13rois/chr7_complex/chr7_complex_GRCh38.paf'
+paf.file <- '/media/porubsky/DavStore/HGSVC/INVcompanion/Visualize_CHM13rois/chr7_complex/chr7_complex_CHM13.paf'
+
+#coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.n = 1, min.align.len = 10000)
+coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.len = 1000, min.align.n = 1)
+
+#coords <- coords[coords$align.id == 'chr7:57512711-61778829__chr7',]
+coords <- coords[coords$align.id == 'chr7:57756897-60222354__chr7',]
+
 
 ## Get y-axis labels
 q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
@@ -92,12 +100,42 @@ t.breaks <- t.labels
 seq.labels <- c(unique(coords$seq.name[coords$seq.id == 'query']), 
                 unique(coords$seq.name[coords$seq.id == 'target']))
 
-ggplot2::ggplot(coords) +
+plt <- ggplot2::ggplot(coords) +
   geom_miropeats(aes(x, y, group = group), fill='gray', alpha=0.5, color='black') +
   scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
   scale_x_continuous(breaks = q.breaks, labels = comma(q.labels),
                      sec.axis = sec_axis(trans = y ~ ., breaks = t.breaks, labels = comma(t.labels)))
 
+## Add arrows
+start <- coords$x[c(T, T, F, F)]
+end <- coords$x[c(F, F, T, T)]
+y <- coords$y[c(T, T, F, F)]
+#direction <- coords$direction[c(T, T, F, F)]
+group <- coords$group[c(T, T, F, F)]
+plt.df <- data.frame(start=start, end=end, y=y, group=group)
+plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
+
+plt <- plt + geom_gene_arrow(data=plt.df, aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = unit(3, 'mm')) +
+  theme_bw()
+
+## Add SD arrowheads
+SDs.df <- read.table("/media/porubsky/DavStore/HGSVC/GRCh38_annot/segDup_GRCh38.gz")
+SDs.df <- SDs.df[,c(2,3,4,27)]
+colnames(SDs.df) <- c('seqnames', 'start', 'end', 'fracMatch')
+SDs.gr <- makeGRangesFromDataFrame(SDs.df, keep.extra.columns = TRUE)
+## Keep only SDs >=98% identical
+#SDs.gr <- SDs.gr[SDs.gr$fracMatch >= 0.98]
+
+## Convert genomic ranges to polygon coords
+#sub.gr <- GRanges(seqnames='chr7', ranges=IRanges(start=53256586, end=62876688))
+
+SDs.gr <- SDs.gr[start(SDs.gr) > min(plt.df$start) & end(SDs.gr) < max(plt.df$end) & seqnames(SDs.gr) == 'chr7']
+strand(SDs.gr) <- sample(c('+', '-'), length(SDs.gr), 1)
+plt.df <- as.data.frame(SDs.gr)
+
+library(ggnewscale)
+plt + new_scale_fill() + new_scale_color() +
+  geom_arrowhead(data=plt.df, aes(xmin=start, xmax=end, y=2.05, color=fracMatch, fill=fracMatch))
 
 ########################################################################################################
 # n <- 100

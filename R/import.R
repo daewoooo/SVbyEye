@@ -15,7 +15,7 @@
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=10, seqname.grep=NULL) {
+paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, seqname.grep=NULL) {
   paf <- utils::read.table(paf.file, stringsAsFactors = FALSE)
   ## Keep only first 12 columns
   paf <- paf[,c(1:12)]
@@ -70,6 +70,9 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=10
   seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
   seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
   seq.id <- c(rbind('query', 'target', 'query', 'target'))
+  n.match <- rep(paf$n.match, each=4)
+  aln.len <- rep(paf$aln.len, each=4)
+  mapq <- rep(paf$mapq, each=4)
   align.id <- rep(paf$seq.pair, each=4)
   #direction <- rep(paf$strand, each=4)
   
@@ -80,6 +83,9 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=10
                        #direction=direction,
                        seq.name=seq.name, 
                        seq.id=seq.id,
+                       n.match=n.match,
+                       aln.len=aln.len,
+                       mapq=mapq,
                        align.id=align.id,
                        stringsAsFactors = FALSE)
   return(coords)

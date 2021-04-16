@@ -8,7 +8,7 @@ paf2coords(
   paf.file,
   min.mapq = 10,
   min.align.len = 1000,
-  min.align.n = 10,
+  min.align.n = 1,
   seqname.grep = NULL
 )
 }
