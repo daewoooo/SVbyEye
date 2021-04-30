@@ -1,117 +1,120 @@
-#' Load an de novo assembly aligned to the reference in BED file into a \code{\link{GRanges-class}} object.
-#' 
-#' This function will take a BED file of contig alignments to a reference genome and converts them 
-#' into a \code{\link{GRanges-class}} object. This function also aims to collapse single unique contigs
-#' that are aligned in multiple pieces after the alignment to the reference.
-#'
-#' @param bedfile A BED file of contig alignments to a reference genome.
-#' @param index A unique identifier to be added as an 'ID' field. 
-#' @param min.mapq A minimum mapping quality of alignments reported in submitted BED file.
-#' @param min.align A minimum length of an aligned sequence to a reference genome.
-#' @param min.ctg.size A minimum length a final contig after gaps are collapsed.
-#' @param max.gap A maximum length of a gap within a single contig alignments to be collapsed.
-#' @param report.ctg.ends Set to \code{TRUE} if alignment ends of each contig to the reference should reported as well.
-#' @return A \code{\link{GRanges-class}} object.
-#' @author David Porubsky
-#' 
-bed2ranges <- function(bedfile=NULL, index=NULL, min.mapq=10, min.align=10000, min.ctg.size=500000, max.gap=100000, report.ctg.ends=FALSE) {
-  if (file.exists(bedfile)) {
-    message("Loading BED file: ", bedfile)
-    bed.df <- utils::read.table(file = bedfile, header = FALSE, stringsAsFactors = FALSE)
-    ## Add column names
-    colnames(bed.df) <- c('seqnames','start','end','ctg','mapq','strand')[1:ncol(bed.df)]
-  } else {
-    stop(paste0("BED file ", bedfile, " doesn't exists !!!"))
-  }  
-  ## Add index if defined
-  if (!is.null(index) & is.character(index)) {
-    bed.df$ID <- index
-  }
-  ## Filter by mapping quality
-  if (min.mapq > 0) {
-    bed.df <- bed.df[bed.df$mapq >= min.mapq,]
-  }
-  if (nrow(bed.df) == 0) {
-    stop("None of the BED alignments reach user defined mapping quality (min.mapq) !!!")
-  }
-  ## Convert data.frame to GRanges object
-  bed.gr <- GenomicRanges::makeGRangesFromDataFrame(bed.df, keep.extra.columns = TRUE)
-  ## Ignore strand
-  GenomicRanges::strand(bed.gr) <- '*'
-  ## Filter out small alignments
-  if (min.align > 0) {
-    bed.gr <- bed.gr[width(bed.gr) >= min.align]
-  }
-  ## Split ranges per contig
-  bed.grl <- GenomicRanges::split(bed.gr, bed.gr$ctg)
-  ## Make sure data frame is sorted
-  #bed.gr <- GenomicRanges::sort(bed.gr, ignore.strand=TRUE)
-  ## Collapse merge splitted continuous alignments of the same contig
-  #bed.gr <- primatR::collapseBins(bed.gr, id.field = 1)
-  #bed.grl <- endoapply(bed.grl, function(gr) primatR::collapseBins(gr, id.field = 1))
-  if (max.gap > 0) {
-    message("Filling gaps of max size: ", max.gap, 'bp')
-    bed.grl <- suppressWarnings( S4Vectors::endoapply(bed.grl, function(gr) fillGaps(gr=gr, max.gap=max.gap)) )
-    bed.gr <- unlist(bed.grl, use.names = FALSE)
-  }  
-  ## Filter out small contigs after contig concatenation
-  if (min.ctg.size > 0) {
-    message("Keeping collapsed alignments of min size: ", min.ctg.size, 'bp')
-    bed.gr <- bed.gr[width(bed.gr) >= min.ctg.size]
-  }
-  ## Report end positions of each contig
-  if (report.ctg.ends == TRUE) {
-    message("Reporting alignment ends for each contig")
-    bed.grl <- GenomicRanges::split(bed.gr, bed.gr$ctg)
-    ctg.ends.grl <- S4Vectors::endoapply(bed.grl, range)
-    ctg.ends <- sapply(ctg.ends.grl, function(x) paste(x, collapse = '; '))
-    bed.gr$ctg.ends <- rep(ctg.ends, lengths(bed.grl))
-  }
-  return(bed.gr)
-}
-
-
-#' This function will takes in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
+#' This function will take in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
 #' and collapses gaps in alignment based user specified maximum allowed gap.
 #'
-#' @param gr A \code{\link{GRanges-class}} object of regions of a single contigs aligned to a reference.
+#' @param ranges A \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of regions of a single or multiple contigs aligned to a reference.
 #' @param max.gap A maximum length of a gap within a single contig alignments to be collapsed.
 #' @return A \code{\link{GRanges-class}} object.
 #' @author David Porubsky
+#' @export
 #' 
-fillGaps <- function(gr, max.gap=100000) {
-  gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
-  gr <- GenomicRanges::sort(gr)
-  gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
-  gap.gr <- gap.gr[width(gap.gr) <= max.gap]
-  if (length(gap.gr) > 0) {
-    red.gr <- GenomicRanges::reduce(c(gr[,0], gap.gr))
-    mcols(red.gr) <- mcols(gr)[length(gr),]
+collapseGaps <- function(ranges, max.gap=100000) {
+  ## Helper function definition
+  fillGaps <- function(gr, max.gap=100000) {
+    gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
+    gr <- GenomicRanges::sort(gr)
+    gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
+    gap.gr <- gap.gr[width(gap.gr) <= max.gap]
+    if (length(gap.gr) > 0) {
+      red.gr <- GenomicRanges::reduce(c(gr[,0], gap.gr))
+      mcols(red.gr) <- mcols(gr)[length(gr),]
+    } else {
+      red.gr <- GenomicRanges::reduce(gr)
+      mcols(red.gr) <- mcols(gr)[length(gr),]
+    }
+    return(red.gr)
+  }
+  
+  if (class(ranges) == "CompressedGRangesList") {
+    ## Process only contigs with split alignments
+    to.fill <- which(lengths(ranges) > 1)
+    red.ranges <-  suppressWarnings( S4Vectors::endoapply(ranges[to.fill], function(gr) fillGaps(gr=gr, max.gap=max.gap)) )
+    red.ranges <- unlist(red.ranges, use.names = FALSE)
+    ## Add ranges with no split alignment
+    red.ranges <- c(unlist(ranges[-to.fill], use.names = FALSE), red.ranges)
+  } else if (class(ranges) == "GRanges") {
+    red.ranges <- fillGaps(gr=ranges, max.gap = max.gap)
   } else {
-    red.gr <- GenomicRanges::reduce(gr)
-    mcols(red.gr) <- mcols(gr)[length(gr),]
-  }  
-  return(red.gr)
+    stop("Only objescts of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
+  }
+  return(red.ranges)
 }
 
-#' This function will takes in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
+#' This function will take in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
 #' and reports all alignment gaps.
 #'
-#' @param gr A \code{\link{GRanges-class}} object of regions of a single contigs aligned to a reference.
 #' @param id.col A column number from the original \code{\link{GRanges-class}} object to be reported as na unique ID.
+#' @inheritParams collapseGaps
 #' @return A \code{\link{GRanges-class}} object.
 #' @author David Porubsky
+#' @export
 #' 
-reportGaps <- function(gr, id.col=1) {
-  gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
-  gr <- GenomicRanges::sort(gr)
-  gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
-  gap.gr <- gap.gr[strand(gap.gr) == '*']
+reportGaps <- function(ranges, id.col=NULL) {
+  ## Helper function definition
+  getGaps <- function(gr, id.col=1) {
+    gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
+    gr <- GenomicRanges::sort(gr)
+    gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
+    gap.gr <- gap.gr[strand(gap.gr) == '*']
+    
+    if (!is.null(id.col)) {
+      if (id.col > 0 & ncol(mcols(gr)) >= id.col) {
+        mcols(gap.gr) <- rep(unique(mcols(gr)[id.col]), length(gap.gr))
+      } else {
+        warning("User defined 'id.col' number is larger the then total number of columns in input 'gr', skipping adding id column ...")
+      }
+    }  
+    return(gap.gr)
+  }  
   
-  if (id.col > 0 & ncol(mcols(gr)) >= id.col) {
-    mcols(gap.gr) <- rep(unique(mcols(gr)[id.col]), length(gap.gr))
+  if (class(ranges) == "CompressedGRangesList") {
+    ## Keep only contigs with split alignments
+    ranges <- ranges[lengths(ranges) > 1]
+    gaps <-  suppressWarnings( S4Vectors::endoapply(ranges, function(gr) getGaps(gr=gr, id.col=id.col)) )
+    gaps <- unlist(gaps, use.names = FALSE)
+  } else if (class(ranges) == "GRanges") {
+    gaps <- getGaps(gr=ranges, id.col=id.col)
   } else {
-    warning("User defined 'id.col' number is larger the then total number of columns in input 'gr', skipping adding id column ...")
+    stop("Only objescts of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
   }
-  return(gap.gr)
+  return(gaps)
 }
+
+
+#' This function will take in a \code{\link{GRanges-class}} object of genomic ranges and enumerate the number of overlapping bases
+#' with other set of user defined 'query' genomic ranges.
+#'
+#' @param ranges A \code{\link{GRanges-class}} object of genomic regions to get the number of overlapping bases with 'query.ranges'.
+#' @param query.ranges A \code{\link{GRanges-class}} object of genomic regions for which one want to report overlaps. 
+#' @param index A user defined name of a column where the number of overlapping bases between 'ranges' and 'query.ranges' will be reported.
+#' @return A \code{\link{GRanges-class}} object.
+#' @author David Porubsky
+#' @export
+#'
+reportOverlapBases <- function(ranges=NULL, query.ranges=NULL, index=NULL) {
+  if (!is.null(query.ranges) & !is.null(ranges)) {
+    if (class(ranges) == "GRanges" & class(query.ranges) == "GRanges") {
+      ## Get disjoint ranges between query and user.defined set of ranges
+      disj.gr <- suppressWarnings( GenomicRanges::disjoin(c(ranges[,0], query.ranges[,0])) )
+      ## Get disjoint ranges that are overlapping with query.ranges
+      disj.query.gr <- IRanges::subsetByOverlaps(disj.gr, query.ranges)
+      ## Get disjoint ranges overlapping with ranges of interest
+      disj.query.roi.gr <- IRanges::subsetByOverlaps(disj.query.gr, ranges)
+      ## Split by regions of interest
+      hits <- IRanges::findOverlaps(ranges, disj.query.roi.gr)
+      disj.query.roi.grl <- split(disj.query.roi.gr[S4Vectors::subjectHits(hits)], S4Vectors::queryHits(hits))
+      query.bases <- sapply(disj.query.roi.grl, function(gr) sum(width(reduce(gr))))
+      ## Add overlapping bases counts
+      if (!is.null(index) & nchar(index) > 0) {
+        new.col.idx <- ncol(GenomicRanges::mcols(ranges)) + 1
+        GenomicRanges::mcols(ranges)[new.col.idx] <- 0
+        colnames(GenomicRanges::mcols(ranges))[new.col.idx] <- index
+        GenomicRanges::mcols(ranges)[new.col.idx][unique(S4Vectors::queryHits(hits)),] <- query.bases
+      } else {
+        ranges$query.bases <- 0
+        ranges$query.bases[unique(S4Vectors::queryHits(hits))] <- query.bases
+      } 
+    }
+  }
+  return(ranges)
+}  
+      
