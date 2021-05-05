@@ -110,6 +110,8 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
 #' @param max.gap A maximum length of a gap within a single contig alignments to be collapsed.
 #' @param report.mapped.ends Set to \code{TRUE} if alignment ends of each contig to the reference should reported as well.
 #' @return A \code{\link{GRanges-class}} object.
+#' @import GenomicRanges
+#' @import GenomeInfoDb
 #' @author David Porubsky
 #' @export
 #' 
@@ -136,7 +138,7 @@ bed2ranges <- function(bed.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   ## Convert data.frame to GRanges object
   bed.gr <- GenomicRanges::makeGRangesFromDataFrame(bed.df, keep.extra.columns = TRUE)
   ## Ignore strand
-  GenomicRanges::strand(bed.gr) <- '*'
+  #GenomicRanges::strand(bed.gr) <- '*'
   ## Filter out small alignments
   if (min.aln.width > 0) {
     message("Keeping alignments of min width: ", min.aln.width, 'bp')
@@ -162,15 +164,16 @@ bed2ranges <- function(bed.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   }
   
   ## Report end positions of each contig
-  if (report.mapped.ends == TRUE) {
+  if (report.mapped.ends) {
     message("Reporting mapped range for each contig")
     bed.grl <- GenomicRanges::split(bed.gr, bed.gr$ctg)
     
     to.collapse <- which(lengths(bed.grl) > 1)
     ctg.ends.grl <- S4Vectors::endoapply(bed.grl[to.collapse], range)
     
-    simple.ends <- as.character(unlist(bed.grl[-to.collapse]))
-    names(simple.ends) <- names(bed.grl[-to.collapse])
+    simple.ends.gr <- unlist(bed.grl[-to.collapse], use.names = FALSE)
+    simple.ends <- as.character(simple.ends.gr)
+    names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr)))
     
     split.ends <- as.character(unlist(ctg.ends.grl))
     split.ends.l <- split(split.ends, names(split.ends))
@@ -193,6 +196,8 @@ bed2ranges <- function(bed.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
 #' @param min.ctg.size A minimum length a final contig after gaps are collapsed.
 #' @param report.ctg.ends Set to \code{TRUE} if aligned position of each contig ends should be reported
 #' @return A \code{\link{GRanges-class}} object.
+#' @import GenomicRanges
+#' @import GenomeInfoDb
 #' @author David Porubsky
 #' @export
 #' 
@@ -248,12 +253,13 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   
   if (report.ctg.ends == TRUE) {
     message("Reporting end positions for each contig")
-    paf.grl <- split(paf.gr, seqnames(paf.gr))
+    paf.grl <- split(paf.gr, GenomeInfoDb::seqnames(paf.gr))
     to.collapse <- which(lengths(paf.grl) > 1)
     ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(sort(x, ignore.strand=TRUE)$target.gr) )
     
-    simple.ends <- as.character(unlist(paf.grl[-to.collapse])$target.gr)
-    names(simple.ends) <- names(paf.grl[-to.collapse])
+    simple.ends.gr <- unlist(paf.grl[-to.collapse], use.names = FALSE)
+    simple.ends <- as.character(simple.ends.gr$target.gr)
+    names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr)))
     
     split.ends <- as.character(unlist(ctg.ends.grl))
     split.ends.l <- split(split.ends, names(split.ends))

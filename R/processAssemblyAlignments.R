@@ -52,6 +52,7 @@ reportGaps <- function(ranges, id.col=NULL) {
   ## Helper function definition
   getGaps <- function(gr, id.col=1) {
     gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
+    strand(gr) <- '*'
     gr <- GenomicRanges::sort(gr)
     gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
     gap.gr <- gap.gr[strand(gap.gr) == '*']
