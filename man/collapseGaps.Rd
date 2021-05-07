@@ -2,8 +2,8 @@
 % Please edit documentation in R/processAssemblyAlignments.R
 \name{collapseGaps}
 \alias{collapseGaps}
-\title{This function will take in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
-and collapses gaps in alignment based user specified maximum allowed gap.}
+\title{This function will take in a \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of alignments of a
+single contig to a reference and collapses alignment gaps based user specified maximum allowed gap.}
 \usage{
 collapseGaps(ranges, max.gap = 1e+05)
 }
@@ -16,8 +16,8 @@ collapseGaps(ranges, max.gap = 1e+05)
 A \code{\link{GRanges-class}} object.
 }
 \description{
-This function will take in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
-and collapses gaps in alignment based user specified maximum allowed gap.
+This function will take in a \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of alignments of a
+single contig to a reference and collapses alignment gaps based user specified maximum allowed gap.
 }
 \author{
 David Porubsky
