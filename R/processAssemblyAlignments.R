@@ -1,5 +1,5 @@
-#' This function will take in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
-#' and collapses gaps in alignment based user specified maximum allowed gap.
+#' This function will take in a \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of alignments of a 
+#' single contig to a reference and collapses alignment gaps based user specified maximum allowed gap.
 #'
 #' @param ranges A \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of regions of a single or multiple contigs aligned to a reference.
 #' @param max.gap A maximum length of a gap within a single contig alignments to be collapsed.
@@ -16,10 +16,10 @@ collapseGaps <- function(ranges, max.gap=100000) {
     gap.gr <- gap.gr[width(gap.gr) <= max.gap]
     if (length(gap.gr) > 0) {
       red.gr <- GenomicRanges::reduce(c(gr[,0], gap.gr))
-      mcols(red.gr) <- mcols(gr)[length(gr),]
+      GenomicRanges::mcols(red.gr) <- GenomicRanges::mcols(gr)[length(gr),]
     } else {
       red.gr <- GenomicRanges::reduce(gr)
-      mcols(red.gr) <- mcols(gr)[length(gr),]
+      GenomicRanges::mcols(red.gr) <- GenomicRanges::mcols(gr)[length(gr),]
     }
     return(red.gr)
   }
@@ -34,55 +34,96 @@ collapseGaps <- function(ranges, max.gap=100000) {
   } else if (class(ranges) == "GRanges") {
     red.ranges <- fillGaps(gr=ranges, max.gap = max.gap)
   } else {
-    stop("Only objescts of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
+    stop("Only objects of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
   }
   return(red.ranges)
 }
 
-#' This function will take in a \code{\link{GRanges-class}} object of alignments of a single contig to a reference
-#' and reports all alignment gaps.
+#' This function will take in a \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of genomic ranges of a 
+#' single a contig aligned to a reference and reports all alignment gaps.
 #'
-#' @param id.col A column number from the original \code{\link{GRanges-class}} object to be reported as na unique ID.
+#' @param id.col A column number from the original \code{\link{GRanges-class}} object to be reported as an unique ID.
 #' @inheritParams collapseGaps
 #' @return A \code{\link{GRanges-class}} object.
 #' @author David Porubsky
 #' @export
 #' 
 reportGaps <- function(ranges, id.col=NULL) {
-  ## Helper function definition
-  getGaps <- function(gr, id.col=1) {
+  ## Helper function definitions
+  getGaps <- function(gr=NULL) {
+    gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
+    gap.gr <- gap.gr[GenomicRanges::strand(gap.gr) == '*']
+  }  
+  
+  processGaps <- function(gr, id.col=NULL) {
+    ## Make sure only seqlevels present in the submitted ranges are kept
     gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
-    strand(gr) <- '*'
+    ## Sort ranges by position
+    GenomicRanges::strand(gr) <- '*'
     gr <- GenomicRanges::sort(gr)
     ## Make sure rows are not named
     names(gr) <- NULL
     ## Keep only ranges with the same seqnames
-    #max.seqname <- seqlevels(gr)[which.max(runLength(seqnames(gr)))]
-    #gr <- gr[seqnames(gr) == max.seqname]
+    if (length(GenomeInfoDb::seqlevels(gr)) > 1) {
+      max.seqname <- GenomeInfoDb::seqlevels(gr)[which.max(S4Vectors::runLength(GenomeInfoDb::seqnames(gr)))]
+      gr <- gr[GenomeInfoDb::seqnames(gr) == max.seqname]
+      warning("Multiple 'seqlevels' present in submitted ranges, keeping only ranges for: ", max.seqname)
+    }
     ## TODO for alignment landing on different chromosomes report gap == 0 and both alignments
     if (length(gr) > 1) {
       ## Calculate gaps
-      gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
-      gap.gr <- gap.gr[strand(gap.gr) == '*']
+      #gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
+      #gap.gr <- gap.gr[strand(gap.gr) == '*']
+      gap.gr <- getGaps(gr)
+      
       ## Add ID column from the original gr object if defined
       if (!is.null(id.col)) {
-        if (id.col > 0 & ncol(mcols(gr)) >= id.col) {
-          mcols(gap.gr) <- rep(unique(mcols(gr)[id.col]), length(gap.gr))
+        if (id.col > 0 & ncol(GenomicRanges::mcols(gr)) >= id.col) {
+          GenomicRanges::mcols(gap.gr) <- rep(unique(GenomicRanges::mcols(gr)[id.col]), length(gap.gr))
         } else {
           warning("User defined 'id.col' number is larger the then total number of columns in input 'gr', skipping adding id column ...")
         }
-      }  
+      }
+            
+      ## Report alignment on each side of the gap
       if (length(gap.gr) > 0) {
-        ## Report upstream and downstream ranges
-        up.idx <- follow(gap.gr, gr)
-        toKeep <- !is.na(up.idx)
-        gap.gr$up.gr <- GRanges(seqnames=seqnames(gap.gr), ranges=IRanges(start=start(gap.gr), end=start(gap.gr)))
-        gap.gr$up.gr[toKeep] <- gr[up.idx[toKeep]][,0]
-        down.idx <- precede(gap.gr, gr)
-        toKeep <- !is.na(down.idx)
-        gap.gr$down.gr <- GRanges(seqnames=seqnames(gap.gr), ranges=IRanges(start=end(gap.gr), end=end(gap.gr)))
-        gap.gr$down.gr[toKeep] <- gr[down.idx[toKeep]][,0]
-      }  
+        ## Report upstream and downstream target ranges
+        ## Upstream
+        up.idx <- IRanges::follow(gap.gr, gr)
+        up.idx.keep <- !is.na(up.idx)
+        gap.gr$up.gr <- GenomicRanges::GRanges(seqnames=GenomeInfoDb::seqnames(gap.gr), 
+                                               ranges=IRanges::IRanges(start=GenomicRanges::start(gap.gr), end=GenomicRanges::start(gap.gr)))
+        gap.gr$up.gr[up.idx.keep] <- gr[up.idx[up.idx.keep]][,0]
+        ## Downstream
+        down.idx <- IRanges::precede(gap.gr, gr)
+        down.idx.keep <- !is.na(down.idx)
+        gap.gr$down.gr <- GenomicRanges::GRanges(seqnames=GenomeInfoDb::seqnames(gap.gr), 
+                                                 ranges=IRanges::IRanges(start=GenomicRanges::end(gap.gr), end=GenomicRanges::end(gap.gr)))
+        gap.gr$down.gr[down.idx.keep] <- gr[down.idx[down.idx.keep]][,0]
+        
+        ## ## Report upstream and downstream query ranges and gaps if defined
+        if ('query.gr' %in% names(mcols(gr)) & class(gr$query.gr) == 'GRanges') {
+          ## Upstream
+          gap.gr$query.up.gr <- GenomicRanges::GRanges(seqnames=GenomeInfoDb::seqnames(gap.gr), 
+                                                       ranges=IRanges::IRanges(start=GenomicRanges::start(gap.gr), end=GenomicRanges::start(gap.gr)))
+          suppressWarnings( gap.gr$query.up.gr[up.idx.keep] <- gr$query.gr[up.idx[up.idx.keep]][,0] )
+          ## Downstream
+          gap.gr$query.down.gr <- GenomicRanges::GRanges(seqnames=GenomeInfoDb::seqnames(gap.gr), 
+                                                         ranges=IRanges(start=GenomicRanges::end(gap.gr), end=GenomicRanges::end(gap.gr)))
+          suppressWarnings( gap.gr$query.down.gr[down.idx.keep] <- gr$query.gr[down.idx[down.idx.keep]][,0] )
+          ## Calculate gaps
+          gap.grl <- split(gap.gr, 1:length(gap.gr))
+          query.gap.grl <- S4Vectors::endoapply(gap.grl, function(x) getGaps(c(x$query.up.gr, x$query.down.gr)))
+          query.gap.gr <- unlist(query.gap.grl, use.names = FALSE)
+          ## Initialize gap ranges
+          gap.gr$query.gap.gr <- GenomicRanges::GRanges(seqnames=rep('unknown', length(gap.gr)), 
+                                                        ranges=IRanges::IRanges(start=1, end=1))
+          if (length(query.gap.gr) > 0) {
+            gap.idx <- which(lengths(query.gap.grl) > 0)
+            gap.gr$query.gap.gr[gap.idx] <- query.gap.gr
+          }
+        }
+      } 
     }
     ## Export final gap ranges
     return(gap.gr)
@@ -91,16 +132,55 @@ reportGaps <- function(ranges, id.col=NULL) {
   if (class(ranges) == "CompressedGRangesList") {
     ## Keep only contigs with split alignments
     ranges <- ranges[lengths(ranges) > 1]
-    gaps <-  suppressWarnings( S4Vectors::endoapply(ranges, function(gr) getGaps(gr=gr, id.col=id.col)) )
+    gaps <-  suppressWarnings( S4Vectors::endoapply(ranges, function(gr) processGaps(gr=gr, id.col=id.col)) )
     gaps <- unlist(gaps, use.names = FALSE)
   } else if (class(ranges) == "GRanges") {
-    gaps <- getGaps(gr=ranges, id.col=id.col)
+    gaps <- processGaps(gr=ranges, id.col=id.col)
   } else {
     stop("Only objescts of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
   }
   return(gaps)
 }
 
+
+#' This function will take in a \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object of genomic ranges of a 
+#' single a contig aligned to a reference and reports coverage of regions that overlaps each other. 
+#'
+#' @inheritParams collapseGaps
+#' @inheritParams reportGaps
+#' @return A \code{\link{GRanges-class}} object.
+#' @author David Porubsky
+#' @export
+#' 
+reportContigCoverage <- function(ranges, id.col=NULL) {
+  ## Helper function definitions
+  processContigCoverage <- function(gr=NULL, id.col=NULL) {
+    ## Get disjoin ranges
+    gr.disjoint <- GenomicRanges::disjoin(gr, ignore.strand=TRUE)
+    ## Add ID column from the original gr object if defined
+    if (!is.null(id.col)) {
+      if (id.col > 0 & ncol(GenomicRanges::mcols(gr)) >= id.col) {
+        GenomicRanges::mcols(gr.disjoint) <- rep(unique(GenomicRanges::mcols(gr)[id.col]), length(gr.disjoint))
+      } else {
+        warning("User defined 'id.col' number is larger the then total number of columns in input 'gr', skipping adding id column ...")
+      }
+    }
+    ## Report coverage of each disjoint range
+    gr.disjoint$cov <- IRanges::countOverlaps(gr.disjoint, gr)
+    ## Export final ranges with coverage
+    return(gr.disjoint)
+  }
+  
+  if (class(ranges) == "CompressedGRangesList") {
+    covs <-  suppressWarnings( S4Vectors::endoapply(ranges, function(gr) processContigCoverage(gr=gr, id.col=id.col)) )
+    covs <- unlist(covs, use.names = FALSE)
+  } else if (class(ranges) == "GRanges") {
+    covs <- processContigCoverage(gr=ranges, id.col=id.col)
+  } else {
+    stop("Only objects of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
+  }
+  return(covs)
+}
 
 #' This function will take in a \code{\link{GRanges-class}} object of genomic ranges and enumerate the number of overlapping bases
 #' with other set of user defined 'query' genomic ranges.
