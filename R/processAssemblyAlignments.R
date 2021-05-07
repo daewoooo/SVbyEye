@@ -54,16 +54,37 @@ reportGaps <- function(ranges, id.col=NULL) {
     gr <- GenomeInfoDb::keepSeqlevels(gr, value = as.character(unique(GenomeInfoDb::seqnames(gr))), pruning.mode = 'coarse')
     strand(gr) <- '*'
     gr <- GenomicRanges::sort(gr)
-    gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
-    gap.gr <- gap.gr[strand(gap.gr) == '*']
-    
-    if (!is.null(id.col)) {
-      if (id.col > 0 & ncol(mcols(gr)) >= id.col) {
-        mcols(gap.gr) <- rep(unique(mcols(gr)[id.col]), length(gap.gr))
-      } else {
-        warning("User defined 'id.col' number is larger the then total number of columns in input 'gr', skipping adding id column ...")
-      }
-    }  
+    ## Make sure rows are not named
+    names(gr) <- NULL
+    ## Keep only ranges with the same seqnames
+    #max.seqname <- seqlevels(gr)[which.max(runLength(seqnames(gr)))]
+    #gr <- gr[seqnames(gr) == max.seqname]
+    ## TODO for alignment landing on different chromosomes report gap == 0 and both alignments
+    if (length(gr) > 1) {
+      ## Calculate gaps
+      gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
+      gap.gr <- gap.gr[strand(gap.gr) == '*']
+      ## Add ID column from the original gr object if defined
+      if (!is.null(id.col)) {
+        if (id.col > 0 & ncol(mcols(gr)) >= id.col) {
+          mcols(gap.gr) <- rep(unique(mcols(gr)[id.col]), length(gap.gr))
+        } else {
+          warning("User defined 'id.col' number is larger the then total number of columns in input 'gr', skipping adding id column ...")
+        }
+      }  
+      if (length(gap.gr) > 0) {
+        ## Report upstream and downstream ranges
+        up.idx <- follow(gap.gr, gr)
+        toKeep <- !is.na(up.idx)
+        gap.gr$up.gr <- GRanges(seqnames=seqnames(gap.gr), ranges=IRanges(start=start(gap.gr), end=start(gap.gr)))
+        gap.gr$up.gr[toKeep] <- gr[up.idx[toKeep]][,0]
+        down.idx <- precede(gap.gr, gr)
+        toKeep <- !is.na(down.idx)
+        gap.gr$down.gr <- GRanges(seqnames=seqnames(gap.gr), ranges=IRanges(start=end(gap.gr), end=end(gap.gr)))
+        gap.gr$down.gr[toKeep] <- gr[down.idx[toKeep]][,0]
+      }  
+    }
+    ## Export final gap ranges
     return(gap.gr)
   }  
   

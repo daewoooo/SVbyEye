@@ -221,10 +221,12 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
     stop("None of the PAF alignments reach user defined mapping quality (min.mapq) !!!")
   }
   ## Convert data.frame to GRanges object
-  paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, keep.extra.columns = FALSE, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
+  #paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, keep.extra.columns = FALSE, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
+  paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, keep.extra.columns = FALSE, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
   mcols(paf.gr) <- paf[,c('q.len', 't.len', 'n.match', 'aln.len', 'mapq')]
   names(paf.gr) <- NULL
-  paf.gr$target.gr <- GenomicRanges::GRanges(seqnames=paf$t.name, ranges=IRanges::IRanges(start=paf$t.start, end=paf$t.end), 'q.name'= paf$q.name)
+  #paf.gr$target.gr <- GenomicRanges::GRanges(seqnames=paf$t.name, ranges=IRanges::IRanges(start=paf$t.start, end=paf$t.end), 'q.name'= paf$q.name)
+  paf.gr$query.gr <- GenomicRanges::GRanges(seqnames=paf$q.name, ranges=IRanges::IRanges(start=paf$q.start, end=paf$q.end), 't.name'= paf$t.name)
   ## Add index if defined
   if (!is.null(index) & is.character(index)) {
     paf.gr$ID <- index
@@ -234,7 +236,8 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   ## Filter out small alignments
   if (min.aln.width > 0) {
     message("Keeping alignments of min width: ", min.aln.width, 'bp')
-    paf.gr <- paf.gr[width(paf.gr) >= min.aln.width]
+    #paf.gr <- paf.gr[width(paf.gr) >= min.aln.width]
+    paf.gr <- paf.gr[paf.gr$aln.len >= min.aln.width]
   }
   if (length(paf.gr) == 0) {
     stop("None of the PAF alignments reach user defined alignment size (min.aln.width !!!")
@@ -247,26 +250,32 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   ## Keep only seqlevels that remained after data filtering
   if (length(paf.gr) > 0) {
     paf.gr <- GenomeInfoDb::keepSeqlevels(paf.gr, value = unique(as.character(GenomeInfoDb::seqnames(paf.gr))))
+    paf.gr$query.gr <- GenomeInfoDb::keepSeqlevels(paf.gr$query.gr, value = unique(as.character(GenomeInfoDb::seqnames(paf.gr$query.gr))))
   } else {
     stop("None of the PAF alignments reach user defined contig size (min.ctg.size) !!!")
   }
   
   if (report.ctg.ends == TRUE) {
     message("Reporting end positions for each contig")
-    paf.grl <- split(paf.gr, GenomeInfoDb::seqnames(paf.gr))
+    #paf.grl <- split(paf.gr, GenomeInfoDb::seqnames(paf.gr))
+    paf.grl <- split(paf.gr, GenomeInfoDb::seqnames(paf.gr$query.gr))
     to.collapse <- which(lengths(paf.grl) > 1)
-    ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(sort(x, ignore.strand=TRUE)$target.gr) )
+    #ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(sort(x, ignore.strand=TRUE)$target.gr) )
+    ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(x[order(x$query.gr)], ignore.strand=TRUE) )
     
     simple.ends.gr <- unlist(paf.grl[-to.collapse], use.names = FALSE)
-    simple.ends <- as.character(simple.ends.gr$target.gr)
-    names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr)))
+    #simple.ends <- as.character(simple.ends.gr$target.gr)
+    simple.ends <- as.character(simple.ends.gr)
+    #names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr)))
+    names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr$query.gr)))
     
     split.ends <- as.character(unlist(ctg.ends.grl))
     split.ends.l <- split(split.ends, names(split.ends))
     split.ends <- sapply(split.ends.l, function(x) paste(x, collapse = ';'))
     
     ctg.ends <- c(simple.ends, split.ends)
-    paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr)), names(ctg.ends))]
+    #paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr)), names(ctg.ends))]
+    paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr$query.gr)), names(ctg.ends))]
   }
   return(paf.gr)
 }  
