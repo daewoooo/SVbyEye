@@ -123,10 +123,12 @@ reportGaps <- function(ranges, id.col=NULL) {
             gap.gr$query.gap.gr[gap.idx] <- query.gap.gr
           }
         }
-      } 
+      }
+      ## Export final gap ranges
+      return(gap.gr)
+    } else {
+      return(GRanges())
     }
-    ## Export final gap ranges
-    return(gap.gr)
   }  
   
   if (class(ranges) == "CompressedGRangesList") {
