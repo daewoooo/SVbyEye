@@ -195,27 +195,34 @@ bed2ranges <- function(bed.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
 #' @param paf.file A BED file of contig alignments to a reference genome.
 #' @param min.ctg.size A minimum length a final contig after gaps are collapsed.
 #' @param report.ctg.ends Set to \code{TRUE} if aligned position of each contig ends should be reported
+#' @param min.ctg.ends A minimum length of alignment to be considered when reporting contig end alignments.
 #' @return A \code{\link{GRanges-class}} object.
 #' @import GenomicRanges
 #' @import GenomeInfoDb
 #' @author David Porubsky
 #' @export
 #' 
-paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=10000, min.ctg.size=500000, report.ctg.ends=FALSE) {
+paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=10000, min.ctg.size=500000, report.ctg.ends=FALSE, min.ctg.ends=50000) {
+  ## Get total processing time
+  ptm <- proc.time()
+  
   if (file.exists(paf.file)) {
-    message("Loading PAF file: ", paf.file)
+    ptm <- startTimedMessage("\nLoading PAF file: ", paf.file)
     paf <- utils::read.table(paf.file, stringsAsFactors = FALSE)
     ## Keep only first 12 columns
     paf <- paf[,c(1:12)]
     ## Add header
     header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq') 
     colnames(paf) <- header
+    stopTimedMessage(ptm)
   } else {
     stop(paste0("PAF file ", bedfile, " doesn't exists !!!"))
   }  
   ## Filter by mapping quality
   if (min.mapq > 0) {
+    ptm <- startTimedMessage("    Keeping alignments of min.mapq: ", min.mapq)
     paf <- paf[paf$mapq >= min.mapq,]
+    stopTimedMessage(ptm)
   }
   if (nrow(paf) == 0) {
     stop("None of the PAF alignments reach user defined mapping quality (min.mapq) !!!")
@@ -235,17 +242,19 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   #GenomicRanges::strand(paf.gr) <- '*'
   ## Filter out small alignments
   if (min.aln.width > 0) {
-    message("Keeping alignments of min width: ", min.aln.width, 'bp')
+    ptm <- startTimedMessage("    Keeping alignments of min width: ", min.aln.width, 'bp')
     #paf.gr <- paf.gr[width(paf.gr) >= min.aln.width]
     paf.gr <- paf.gr[paf.gr$aln.len >= min.aln.width]
+    stopTimedMessage(ptm)
   }
   if (length(paf.gr) == 0) {
     stop("None of the PAF alignments reach user defined alignment size (min.aln.width !!!")
   }
   ## Filter out small contig sizes
   if (min.ctg.size > 0) {
-    message("Keeping contigs of min size: ", min.ctg.size, 'bp')
+    ptm <- startTimedMessage("    Keeping contigs of min size: ", min.ctg.size, 'bp')
     paf.gr <- paf.gr[paf.gr$q.len >= min.ctg.size]
+    stopTimedMessage(ptm)
   }
   ## Keep only seqlevels that remained after data filtering
   if (length(paf.gr) > 0) {
@@ -256,12 +265,33 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   }
   
   if (report.ctg.ends == TRUE) {
-    message("Reporting end positions for each contig")
+    ptm <- startTimedMessage("    Reporting end positions of each contig")
     #paf.grl <- split(paf.gr, GenomeInfoDb::seqnames(paf.gr))
     paf.grl <- split(paf.gr, GenomeInfoDb::seqnames(paf.gr$query.gr))
     to.collapse <- which(lengths(paf.grl) > 1)
     #ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(sort(x, ignore.strand=TRUE)$target.gr) )
-    ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(x[order(x$query.gr)], ignore.strand=TRUE) )
+    
+    ## Helper function
+    gr2ranges <- function(gr, min.ctg.ends=0, report.longest.range=TRUE) {
+      if (min.ctg.ends > 0) {
+        gr <- gr[gr$aln.len >= min.ctg.ends]
+      }
+      gr.ranges <- range(gr[order(gr$query.gr)], ignore.strand=TRUE)
+      if (report.longest.range) {
+        return(gr.ranges[which.max(width(gr.ranges))])
+      } else {
+        return(gr.ranges)
+      }
+    }
+    
+    ## Report contigs alignment ranges only for alignments of a certain size (default: 50kb)
+    if (min.ctg.ends > 0) {
+      ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], 
+                                            function(x) gr2ranges(gr = x, min.ctg.ends = min.ctg.ends, report.longest.range = TRUE) )  
+    } else {
+      ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], 
+                                            function(x) gr2ranges(gr = x, report.longest.range = TRUE) )
+    }
     
     simple.ends.gr <- unlist(paf.grl[-to.collapse], use.names = FALSE)
     #simple.ends <- as.character(simple.ends.gr$target.gr)
@@ -276,7 +306,12 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
     ctg.ends <- c(simple.ends, split.ends)
     #paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr)), names(ctg.ends))]
     paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr$query.gr)), names(ctg.ends))]
+    stopTimedMessage(ptm)
   }
+  ## Report total processing time
+  time <- proc.time() - ptm
+  message("Total time: ", round(time[3],2), "s")
+  
   return(paf.gr)
 }  
 

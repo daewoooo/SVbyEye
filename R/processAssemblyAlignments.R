@@ -133,11 +133,19 @@ reportGaps <- function(ranges, id.col=NULL) {
   
   if (class(ranges) == "CompressedGRangesList") {
     ## Keep only contigs with split alignments
+    ptm <- startTimedMessage("Reporting gaps")
+    
     ranges <- ranges[lengths(ranges) > 1]
     gaps <-  suppressWarnings( S4Vectors::endoapply(ranges, function(gr) processGaps(gr=gr, id.col=id.col)) )
     gaps <- unlist(gaps, use.names = FALSE)
+    
+    stopTimedMessage(ptm)
   } else if (class(ranges) == "GRanges") {
+    ptm <- startTimedMessage("Reporting gaps")
+    
     gaps <- processGaps(gr=ranges, id.col=id.col)
+    
+    stopTimedMessage(ptm)
   } else {
     stop("Only objescts of class 'GRanges' or 'GRangesList' are allowed as input for parameter 'ranges' !!!")
   }

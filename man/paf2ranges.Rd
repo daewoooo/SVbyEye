@@ -10,7 +10,8 @@ paf2ranges(
   min.mapq = 10,
   min.aln.width = 10000,
   min.ctg.size = 5e+05,
-  report.ctg.ends = FALSE
+  report.ctg.ends = FALSE,
+  min.ctg.ends = 50000
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ paf2ranges(
 \item{min.ctg.size}{A minimum length a final contig after gaps are collapsed.}
 
 \item{report.ctg.ends}{Set to \code{TRUE} if aligned position of each contig ends should be reported}
+
+\item{min.ctg.ends}{A minimum length of alignment to be considered when reporting contig end alignments.}
 }
 \value{
 A \code{\link{GRanges-class}} object.
