@@ -272,25 +272,41 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
     #ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(sort(x, ignore.strand=TRUE)$target.gr) )
     
     ## Helper function
-    gr2ranges <- function(gr, min.ctg.ends=0, report.longest.range=TRUE) {
+    gr2ranges <- function(gr, min.ctg.ends=0) {
       if (min.ctg.ends > 0) {
         gr <- gr[gr$aln.len >= min.ctg.ends]
       }
-      gr.ranges <- range(gr[order(gr$query.gr)], ignore.strand=TRUE)
-      if (report.longest.range) {
-        return(gr.ranges[which.max(width(gr.ranges))])
+      if (length(gr) > 0) {
+        ## Order by contig alignments
+        gr <- gr[order(gr$query.gr)]
+        
+        ## Report target sequence with the highest number of continuosly aligned bases
+        #target2keep <- names(which.max(sum(split(width(gr), seqnames(gr)))))
+        #gr <- gr[seqnames(gr) == target2keep]
+        
+        ## Report target ranges corresponding to the contig ends
+        gr.ends <- gr[c(1, length(gr))]
+        ## Get genomic range
+        gr.range <- range(gr.ends, ignore.strand=TRUE)
+        # gr.ranges <- range(gr[order(gr$query.gr)], ignore.strand=TRUE)
+        # if (report.longest.range) {
+        #   return(gr.ranges[which.max(width(gr.ranges))])
+        # } else {
+        #   return(gr.ranges)
+        # }
       } else {
-        return(gr.ranges)
-      }
+        gr.range <- GRanges()
+      }  
+      return(gr.range)
     }
     
     ## Report contigs alignment ranges only for alignments of a certain size (default: 50kb)
     if (min.ctg.ends > 0) {
       ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], 
-                                            function(x) gr2ranges(gr = x, min.ctg.ends = min.ctg.ends, report.longest.range = TRUE) )  
+                                            function(x) gr2ranges(gr = x, min.ctg.ends = min.ctg.ends) )  
     } else {
       ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], 
-                                            function(x) gr2ranges(gr = x, report.longest.range = TRUE) )
+                                            function(x) gr2ranges(gr = x) )
     }
     
     simple.ends.gr <- unlist(paf.grl[-to.collapse], use.names = FALSE)
@@ -299,19 +315,35 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
     #names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr)))
     names(simple.ends) <- unique(as.character(GenomeInfoDb::seqnames(simple.ends.gr$query.gr)))
     
+    simple.gr <- simple.ends.gr[,0]
+    strand(simple.gr) <- '*'
+    simple.gr$q.name <- as.character(seqnames(simple.ends.gr$query.gr))
+    
     split.ends <- as.character(unlist(ctg.ends.grl))
     split.ends.l <- split(split.ends, names(split.ends))
     split.ends <- sapply(split.ends.l, function(x) paste(x, collapse = ';'))
     
+    split.ends.gr <- unlist(ctg.ends.grl)
+    split.ends.gr$q.name <- names(split.ends.gr)
+    names(split.ends.gr) <- NULL
+    
     ctg.ends <- c(simple.ends, split.ends)
     #paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr)), names(ctg.ends))]
-    paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr$query.gr)), names(ctg.ends))]
+    #paf.gr$ctg.end.pos <- ctg.ends[match(as.character(seqnames(paf.gr$query.gr)), names(ctg.ends))]
+    
+    ends.gr <- sort(c(simple.gr, split.ends.gr))
+    ends.gr$ID <- unique(paf.gr$ID)
+    
     stopTimedMessage(ptm)
+    return(list('ctg.aln'=paf.gr, 'ctg.ends'=ends.gr))
+  } else {
+    return(list('ctg.aln'=paf.gr, 'ctg.ends'=NULL))
   }
+  
   ## Report total processing time
   time <- proc.time() - ptm
   message("Total time: ", round(time[3],2), "s")
   
-  return(paf.gr)
+  #return(paf.gr)
 }  
 
