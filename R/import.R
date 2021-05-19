@@ -273,32 +273,61 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
     
     ## Helper function
     gr2ranges <- function(gr, min.ctg.ends=0) {
+      gr <- GenomeInfoDb::keepSeqlevels(gr, value = unique(as.character(seqnames(gr))))
       if (min.ctg.ends > 0) {
         gr <- gr[gr$aln.len >= min.ctg.ends]
       }
       if (length(gr) > 0) {
         ## Order by contig alignments
         gr <- gr[order(gr$query.gr)]
-        
         ## Report target sequence with the highest number of continuosly aligned bases
         #target2keep <- names(which.max(sum(split(width(gr), seqnames(gr)))))
         #gr <- gr[seqnames(gr) == target2keep]
-        
-        ## Report target ranges corresponding to the contig ends
-        gr.ends <- gr[c(1, length(gr))]
-        ## Get genomic range
-        gr.range <- range(gr.ends, ignore.strand=TRUE)
-        # gr.ranges <- range(gr[order(gr$query.gr)], ignore.strand=TRUE)
-        # if (report.longest.range) {
-        #   return(gr.ranges[which.max(width(gr.ranges))])
-        # } else {
-        #   return(gr.ranges)
-        # }
+        if (length(gr) > 1) {
+          ## Report target ranges corresponding to the contig ends
+          gr.ends <- gr[c(1, length(gr))]
+          ## Report genomic range
+          gr.range <- range(gr.ends, ignore.strand=TRUE)
+          ## Get best contiguous alignment
+          gr.contig <- gr[,0]
+          strand(gr.contig) <- '*'
+          gr.gaps <- gaps(gr.contig, start = min(start(gr.contig)))
+          if (length(gr.gaps) > 0) {
+            ## Remove gaps longer than query(contig) length
+            q.len <- unique(gr$q.len)
+            gr.gaps <- gr.gaps[width(gr.gaps) < q.len]
+            ## Keep only gaps that together with contig length are no longer than query(contig) length
+            ctg.size <- sum(width(gr.contig))
+            gap.size <- sum(width(gr.gaps))  
+            while ((ctg.size + gap.size) > q.len & length(gr.gaps) > 0) {
+              ## Remove longest gap
+              gr.gaps <- gr.gaps[-which.max(width(gr.gaps))]
+              gap.size <- sum(width(gr.gaps))
+            }
+          }  
+          ## Allow only gaps that are no longer than smallest alignment
+          #gr.gaps <- gr.gaps[width(gr.gaps) <= min(gr$aln.len)]
+          ## Collapse contiguous ranges
+          gr.contig <- reduce(c(gr.contig, gr.gaps))
+          gr.contig <- gr.contig[which.max(width(gr.contig))]
+          # gr.ranges <- range(gr[order(gr$query.gr)], ignore.strand=TRUE)
+          # if (report.longest.range) {
+          #   return(gr.ranges[which.max(width(gr.ranges))])
+          # } else {
+          #   return(gr.ranges)
+          # }
+          gr.range$longest.aln <- gr.contig
+        } else {
+          gr.range <- gr[,0]
+          gr.range$longest.aln <- gr.range
+        }  
       } else {
         gr.range <- GRanges()
       }  
       return(gr.range)
     }
+    
+    #ctg.ends.grl <- S4Vectors::endoapply( paf.grl[to.collapse], function(x) range(x[order(x$query.gr)], ignore.strand=TRUE) )
     
     ## Report contigs alignment ranges only for alignments of a certain size (default: 50kb)
     if (min.ctg.ends > 0) {
@@ -317,6 +346,7 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
     
     simple.gr <- simple.ends.gr[,0]
     strand(simple.gr) <- '*'
+    simple.gr$longest.aln <- simple.gr
     simple.gr$q.name <- as.character(seqnames(simple.ends.gr$query.gr))
     
     split.ends <- as.character(unlist(ctg.ends.grl))
