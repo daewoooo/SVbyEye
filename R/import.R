@@ -25,15 +25,18 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq') 
     colnames(paf) <- header
   } else {
-    stop(paste0("PAF file ", bedfile, " doesn't exists !!!"))
+    stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
   }  
   
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
+  #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
+  
+  ## Get unique alignment ID
+  paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
   
   ## Get number of alignments per sequence pair
   if (min.align.n > 0) {
-    paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
     paf <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::mutate(align.n = n())
     paf <- paf[paf$align.n >= min.align.n,]
   }
@@ -280,16 +283,16 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
       if (length(gr) > 0) {
         ## Order by contig alignments
         gr <- gr[order(gr$query.gr)]
-        ## Report target sequence with the highest number of continuosly aligned bases
-        #target2keep <- names(which.max(sum(split(width(gr), seqnames(gr)))))
-        #gr <- gr[seqnames(gr) == target2keep]
         if (length(gr) > 1) {
           ## Report target ranges corresponding to the contig ends
           gr.ends <- gr[c(1, length(gr))]
           ## Report genomic range
           gr.range <- range(gr.ends, ignore.strand=TRUE)
-          ## Get best contiguous alignment
-          gr.contig <- gr[,0]
+          ## Get best contiguous alignment ##
+          ## Report target sequence with the highest number of continuously aligned bases
+          target2keep <- names(which.max(sum(split(width(gr), seqnames(gr)))))
+          gr.contig <- gr[seqnames(gr) == target2keep]
+          gr.contig <- gr.contig[,0]
           strand(gr.contig) <- '*'
           gr.gaps <- gaps(gr.contig, start = min(start(gr.contig)))
           if (length(gr.gaps) > 0) {
@@ -297,8 +300,8 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
             q.len <- unique(gr$q.len)
             gr.gaps <- gr.gaps[width(gr.gaps) < q.len]
             ## Keep only gaps that together with contig length are no longer than query(contig) length
-            ctg.size <- sum(width(gr.contig))
-            gap.size <- sum(width(gr.gaps))  
+            ctg.size <- sum(width(reduce(gr.contig)))
+            gap.size <- sum(width(reduce(gr.gaps)))  
             while ((ctg.size + gap.size) > q.len & length(gr.gaps) > 0) {
               ## Remove longest gap
               gr.gaps <- gr.gaps[-which.max(width(gr.gaps))]
@@ -319,6 +322,7 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
           gr.range$longest.aln <- gr.contig
         } else {
           gr.range <- gr[,0]
+          strand(gr.range) <- '*'
           gr.range$longest.aln <- gr.range
         }  
       } else {

@@ -10,7 +10,7 @@ StatMiropeats <- ggplot2::ggproto('StatMiropeats', ggplot2::Stat,
                               data
                             },
                             compute_panel = function(data, scales, strength = 0.5, n = 100) {
-                              data <- data[order(data$group, coords$y), ]
+                              data <- data[order(data$group, data$y), ]
                               coords1 <- data[c(TRUE, FALSE, TRUE, FALSE), ]
                               coords2 <- data[c(FALSE, TRUE, FALSE, TRUE), ]
                               coords1 <- add.control.points(coords1, strength)

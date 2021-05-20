@@ -84,7 +84,7 @@ paf.file <- '/media/porubsky/DavStore/HGSVC/INVcompanion/Visualize_CHM13rois/chr
 #coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.n = 1, min.align.len = 10000)
 coords <- paf2coords(paf.file = paf.file, min.mapq = 20, min.align.len = 1000, min.align.n = 1)
 
-#coords <- coords[coords$align.id == 'chr7:57512711-61778829__chr7',]
+#coords <- coords[coords$align.id == 'chr7:57756897-60222354__chr16',]
 coords <- coords[coords$align.id == 'chr7:57756897-60222354__chr7',]
 
 
