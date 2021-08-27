@@ -9,6 +9,7 @@ paf2coords(
   min.mapq = 10,
   min.align.len = 1000,
   min.align.n = 1,
+  target.region = NULL,
   seqname.grep = NULL
 )
 }
