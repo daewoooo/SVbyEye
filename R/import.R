@@ -18,7 +18,7 @@
 paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, seqname.grep=NULL) {
   if (file.exists(paf.file)) {
     message("Loading PAF file: ", paf.file)
-    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE)
+    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&')
     ## Keep only first 12 columns
     paf <- paf[,c(1:12)]
     ## Add header
@@ -211,7 +211,7 @@ paf2ranges <- function(paf.file=NULL, index=NULL, min.mapq=10, min.aln.width=100
   
   if (file.exists(paf.file)) {
     ptm <- startTimedMessage("\nLoading PAF file: ", paf.file)
-    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE)
+    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&')
     ## Keep only first 12 columns
     paf <- paf[,c(1:12)]
     ## Add header
