@@ -15,7 +15,7 @@
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, seqname.grep=NULL) {
+paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqname.grep=NULL) {
   if (file.exists(paf.file)) {
     message("Loading PAF file: ", paf.file)
     paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&')
@@ -27,7 +27,17 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
   } else {
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
   }  
-  
+  ## Filer alignments by target region
+  if (!is.null(target.region)) {
+    if (grepl(target.region, pattern = '\\w+\\d+:\\d+-\\d+')) {
+      target.region.gr <- as(target.region, 'GRanges')
+    } else if (class(target.region.gr) == 'GRanges') {
+      target.region.gr <- target.region
+    } else {
+      message("Parameter 'target.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
+    }
+    paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
+  }
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
   #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
@@ -83,13 +93,13 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
   aln.len <- rep(paf$aln.len, each=4)
   mapq <- rep(paf$mapq, each=4)
   align.id <- rep(paf$seq.pair, each=4)
-  #direction <- rep(paf$strand, each=4)
+  direction <- rep(paf$strand, each=4)
   
   coords <- data.frame(x=x, 
                        y=y, 
                        group=group, 
                        seq.pos=seq.pos,
-                       #direction=direction,
+                       direction=direction,
                        seq.name=seq.name, 
                        seq.id=seq.id,
                        n.match=n.match,
