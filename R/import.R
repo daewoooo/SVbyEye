@@ -36,7 +36,11 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     } else {
       message("Parameter 'target.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
     }
-    paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
+    ## Subset PAF by ranges overlaps
+    target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
+    hits <- GenomicRanges::findOverlaps(target.gr, target.region.gr)
+    paf <- paf[queryHits(hits),]
+    #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
   }
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
