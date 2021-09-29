@@ -9,8 +9,10 @@
 #' @param min.mapq Minimum mapping quality to retain for PAF alignment file.
 #' @param min.align.len Minimum alignment length to retain for PAF alignment file.
 #' @param min.align.n Minimum number of alignments between a pair of sequences/regions.
+#' @param target.region A user defined target region to load in a character string ('chr:start-end') or as
+#' a \code{\link{GRanges-class}} object containing a single genomic region.
 #' @param seqname.grep Retain only a specific sequence/region name with a given character string.
-#' @return A \code{vector} of rescaled coordinate values.
+#' @return A \code{vector} of re-scaled coordinate values.
 #' @importFrom dplyr group_by mutate
 #' @importFrom utils read.table
 #' @author David Porubsky
@@ -39,7 +41,7 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     ## Subset PAF by ranges overlaps
     target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
     hits <- GenomicRanges::findOverlaps(target.gr, target.region.gr)
-    paf <- paf[queryHits(hits),]
+    paf <- paf[S4Vectors::queryHits(hits),]
     #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
   }
   ## Flip start-end if strand == '-'
@@ -62,11 +64,11 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     paf <- paf[grep(paf$t.name, pattern = seqname.grep),]
   }
   ## Filter by mapping quality
-  if (min.mapq > 0) {
+  if (min.mapq > 0 & is.numeric(paf$mapq)) {
     paf <- paf[paf$mapq >= min.mapq,]
   }
   ## Filter by alignment length
-  if (min.align.len > 0) {
+  if (min.align.len > 0 & is.numeric(paf$aln.len)) {
     paf <- paf[paf$aln.len >= min.align.len,]
   }
   

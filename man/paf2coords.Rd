@@ -22,10 +22,13 @@ paf2coords(
 
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
 
+\item{target.region}{A user defined target region to load in a character string ('chr:start-end') or as
+a \code{\link{GRanges-class}} object containing a single genomic region.}
+
 \item{seqname.grep}{Retain only a specific sequence/region name with a given character string.}
 }
 \value{
-A \code{vector} of rescaled coordinate values.
+A \code{vector} of re-scaled coordinate values.
 }
 \description{
 This function takes PAF output file from minimap2 alignemts, loads the file and
