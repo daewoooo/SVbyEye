@@ -53,6 +53,7 @@ reportGaps <- function(ranges, id.col=NULL) {
   getGaps <- function(gr=NULL) {
     gap.gr <- GenomicRanges::gaps(gr, start = min(start(gr)))
     gap.gr <- gap.gr[GenomicRanges::strand(gap.gr) == '*']
+    return(gap.gr)
   }  
   
   processGaps <- function(gr, id.col=NULL) {
@@ -123,11 +124,25 @@ reportGaps <- function(ranges, id.col=NULL) {
             gap.gr$query.gap.gr[gap.idx] <- query.gap.gr
           }
         }
+        return(gap.gr)
+      } else {
+        dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
+        dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        dummy.gr$query.up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        dummy.gr$query.down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        dummy.gr$query.gap.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        return(dummy.gr)
       }
-      ## Export final gap ranges
-      return(gap.gr)
     } else {
-      return(GRanges())
+      dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
+      dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      dummy.gr$query.up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      dummy.gr$query.down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      dummy.gr$query.gap.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      return(dummy.gr)
+      #return(GRanges())
     }
   }  
   
@@ -138,6 +153,10 @@ reportGaps <- function(ranges, id.col=NULL) {
     ranges <- ranges[lengths(ranges) > 1]
     gaps <-  suppressWarnings( S4Vectors::endoapply(ranges, function(gr) processGaps(gr=gr, id.col=id.col)) )
     gaps <- unlist(gaps, use.names = FALSE)
+    ## Remove empty ranges
+    gaps <- gaps[seqnames(gaps) != 'dummy']
+    #gaps <-  suppressWarnings( S4Vectors::lapply(ranges, function(gr) processGaps(gr=gr, id.col=id.col)) )
+    #do.call(c, gaps)
     
     stopTimedMessage(ptm)
   } else if (class(ranges) == "GRanges") {

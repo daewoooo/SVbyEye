@@ -33,4 +33,4 @@ VignetteBuilder: knitr
 URL: https://github.com/daewoooo/SVbyEye
 BugReports: https://github.com/daewoooo/SVbyEye/issues
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2

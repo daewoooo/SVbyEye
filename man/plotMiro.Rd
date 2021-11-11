@@ -13,11 +13,11 @@ plotMiro(
 )
 }
 \arguments{
-\item{paf.file}{A \code{data.frame} containing x and y coordinates.}
+\item{paf.file}{A path to a PAF file containing alignments to be loaded.}
 
-\item{min.mapq}{Minimum mapping quality to retain for PAF alignment file.}
+\item{min.mapq}{Minimum mapping quality to retain.}
 
-\item{min.align.len}{Minimum alignment length to retain for PAF alignment file.}
+\item{min.align.len}{Minimum alignment length to retain.}
 
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
 

@@ -14,11 +14,11 @@ paf2coords(
 )
 }
 \arguments{
-\item{paf.file}{A \code{data.frame} containing x and y coordinates.}
+\item{paf.file}{A path to a PAF file containing alignments to be loaded.}
 
-\item{min.mapq}{Minimum mapping quality to retain for PAF alignment file.}
+\item{min.mapq}{Minimum mapping quality to retain.}
 
-\item{min.align.len}{Minimum alignment length to retain for PAF alignment file.}
+\item{min.align.len}{Minimum alignment length to retain.}
 
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
 
@@ -32,7 +32,7 @@ A \code{vector} of re-scaled coordinate values.
 }
 \description{
 This function takes PAF output file from minimap2 alignemts, loads the file and
-perform user defined filtering of input alignements based on mapping quality and
+perform user defined filtering of input alignments based on mapping quality and
 alignment length.
 }
 \author{

@@ -1,13 +1,13 @@
 #' Read and filter PAF input file
 #' 
 #' This function takes PAF output file from minimap2 alignemts, loads the file and
-#' perform user defined filtering of input alignements based on mapping quality and
+#' perform user defined filtering of input alignments based on mapping quality and
 #' alignment length.
 #'
 #'
-#' @param paf.file A \code{data.frame} containing x and y coordinates.
-#' @param min.mapq Minimum mapping quality to retain for PAF alignment file.
-#' @param min.align.len Minimum alignment length to retain for PAF alignment file.
+#' @param paf.file A path to a PAF file containing alignments to be loaded.
+#' @param min.mapq Minimum mapping quality to retain.
+#' @param min.align.len Minimum alignment length to retain.
 #' @param min.align.n Minimum number of alignments between a pair of sequences/regions.
 #' @param target.region A user defined target region to load in a character string ('chr:start-end') or as
 #' a \code{\link{GRanges-class}} object containing a single genomic region.
@@ -20,7 +20,8 @@
 paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqname.grep=NULL) {
   if (file.exists(paf.file)) {
     message("Loading PAF file: ", paf.file)
-    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&')
+    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE)
+    #paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&')
     ## Keep only first 12 columns
     paf <- paf[,c(1:12)]
     ## Add header
@@ -44,6 +45,37 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     paf <- paf[S4Vectors::queryHits(hits),]
     #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
   }
+  ## Sync by majority strand directionality
+  majority.strand = '+'
+  ## Define majority and minority strand
+  if (majority.strand == '+') {
+    minority.strand = '-'
+  } else if (majority.strand == '-') {
+    minority.strand = '+'
+  } else {
+    stop("Parameter 'majority.strand' can only be defined as '+' or '-' !!!")
+  }
+  
+  paf.l <- split(paf, paf$q.name)
+  for (i in seq_along(paf.l)) {
+    paf.ctg <- paf.l[[i]]
+    ## Flip directionality based to make sure majority strand covers the most bases
+    if (sum(paf.ctg$aln.len[paf.ctg$strand == majority.strand]) > sum(paf.ctg$aln.len[paf.ctg$strand == minority.strand])) {
+      paf.l[[i]] <- paf.ctg
+    } else {
+      paf.ctg.new <- paf.ctg
+      ## Flip alignment orientation
+      paf.ctg.new$strand[paf.ctg$strand == majority.strand] <- minority.strand
+      paf.ctg.new$strand[paf.ctg$strand == minority.strand] <- majority.strand
+      ## Flip query coordinates
+      paf.ctg.new$q.end <- paf.ctg$q.len - paf.ctg$q.start
+      paf.ctg.new$q.start <- paf.ctg$q.len - paf.ctg$q.end
+      
+      paf.l[[i]] <- paf.ctg.new
+    }
+  }
+  paf <- do.call(rbind, paf.l)
+  
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
   #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])

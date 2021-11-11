@@ -128,7 +128,7 @@ makeContent.arrowheadtree <- function(x) {
       range[, c("xmin", "xmax")] <- range[, c("xmax", "xmin")]
     }
     
-    # Set arrow and arrowhead heights. Divide by 2 for convenince to calculate polygon coordinates
+    # Set arrowhead heights. Divide by 2 for convenience to calculate polygon coordinates
     arrowhead_height <- as.numeric(grid::convertHeight(x$arrowhead_height, "native")) / 2
     
     # Create polygon grob
