@@ -9,7 +9,8 @@ selfdotplot(
   format = "nucmer",
   min.align.len = 1000,
   min.align.dist = 1000,
-  collapse.overlaps = TRUE
+  collapse.overlaps = TRUE,
+  title = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ selfdotplot(
 \item{min.align.dist}{Keep alignment pairs with this or larger distance from each other.}
 
 \item{collapse.overlaps}{Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.}
+
+\item{title}{A title to be added to the final dotplot.}
 }
 \value{
 A \code{ggplot} object.

@@ -10,7 +10,8 @@ paf2coords(
   min.align.len = 1000,
   min.align.n = 1,
   target.region = NULL,
-  seqname.grep = NULL
+  seqname.grep = NULL,
+  drop.self.align = TRUE
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ paf2coords(
 a \code{\link{GRanges-class}} object containing a single genomic region.}
 
 \item{seqname.grep}{Retain only a specific sequence/region name with a given character string.}
+
+\item{drop.self.align}{Remove alignments of a given sequence to itself.}
 }
 \value{
 A \code{vector} of re-scaled coordinate values.
