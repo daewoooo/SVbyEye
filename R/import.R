@@ -12,12 +12,13 @@
 #' @param target.region A user defined target region to load in a character string ('chr:start-end') or as
 #' a \code{\link{GRanges-class}} object containing a single genomic region.
 #' @param seqname.grep Retain only a specific sequence/region name with a given character string.
+#' @param drop.self.align Remove alignments of a given sequence to itself.
 #' @return A \code{vector} of re-scaled coordinate values.
 #' @importFrom dplyr group_by mutate
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqname.grep=NULL) {
+paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqname.grep=NULL, drop.self.align=TRUE) {
   if (file.exists(paf.file)) {
     message("Loading PAF file: ", paf.file)
     paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE)
@@ -102,6 +103,10 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
   ## Filter by alignment length
   if (min.align.len > 0 & is.numeric(paf$aln.len)) {
     paf <- paf[paf$aln.len >= min.align.len,]
+  }
+  ## Filter out self-alignments
+  if (drop.self.align) {
+    paf <- paf[!(paf$q.name == paf$t.name),]
   }
   
   ## Sync scales between alignments [per region id]
