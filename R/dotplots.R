@@ -209,7 +209,7 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
                               direction=rep('forw', each=4))
   }  
   
-  if (nrow(poly.rev.df) > 0) {
+  if (nrow(plt.rev.df) > 0) {
     poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
                               y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
                               group=rep(1:nrow(plt.rev.df), each=4),
