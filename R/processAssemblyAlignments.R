@@ -102,7 +102,7 @@ reportGaps <- function(ranges, id.col=NULL) {
                                                  ranges=IRanges::IRanges(start=GenomicRanges::end(gap.gr), end=GenomicRanges::end(gap.gr)))
         gap.gr$down.gr[down.idx.keep] <- gr[down.idx[down.idx.keep]][,0]
         
-        ## ## Report upstream and downstream query ranges and gaps if defined
+        ## Report upstream and downstream query ranges and gaps if defined
         if ('query.gr' %in% names(mcols(gr)) & class(gr$query.gr) == 'GRanges') {
           ## Upstream
           gap.gr$query.up.gr <- GenomicRanges::GRanges(seqnames=GenomeInfoDb::seqnames(gap.gr), 
@@ -126,21 +126,35 @@ reportGaps <- function(ranges, id.col=NULL) {
         }
         return(gap.gr)
       } else {
+        ## Report upstream and downstream query ranges and gaps if defined
+        if ('query.gr' %in% names(mcols(gr)) & class(gr$query.gr) == 'GRanges') {
+          dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
+          dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+          dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+          dummy.gr$query.up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+          dummy.gr$query.down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+          dummy.gr$query.gap.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        } else {
+          dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
+          dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+          dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        }  
+        return(dummy.gr)
+      }
+    } else {
+      ## Report upstream and downstream query ranges and gaps if defined
+      if ('query.gr' %in% names(mcols(gr)) & class(gr$query.gr) == 'GRanges') {
         dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
         dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
         dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
         dummy.gr$query.up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
         dummy.gr$query.down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
         dummy.gr$query.gap.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
-        return(dummy.gr)
-      }
-    } else {
-      dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
-      dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
-      dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
-      dummy.gr$query.up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
-      dummy.gr$query.down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
-      dummy.gr$query.gap.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      } else {
+        dummy.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1), ID='dummy')
+        dummy.gr$up.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+        dummy.gr$down.gr <- GRanges(seqnames = 'dummy', ranges = IRanges(start=1, end=1))
+      }  
       return(dummy.gr)
       #return(GRanges())
     }

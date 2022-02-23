@@ -17,6 +17,7 @@ Imports:
   scales,
   stats,
   dplyr,
+  stringr,
   magrittr,
   utils,
   GenomicRanges,

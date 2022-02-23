@@ -8,12 +8,15 @@
 #' @param format Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', [default: 'nucmer']
 #' @param min.align.dist Keep alignment pairs with this or larger distance from each other.
 #' @param collapse.overlaps Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.
+#' @param highlight.pos A single or a set of positions to be highlighted as vertical solid lines.
+#' @param highlight.region A pair of positions to be highlighted as vertical range.
 #' @param title A title to be added to the final dotplot.
+#' @param return Define desired output, either alignment plot as 'plot' or self-alignments in stored \code{\link{GRanges-class}} object as 'selfaln', [default: 'plot']
 #' @inheritParams paf2coords
 #' @return A \code{ggplot} object.
 #' @author David Porubsky
 #' @export
-selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, min.align.dist=1000, collapse.overlaps=TRUE, title=NULL) {
+selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, min.align.dist=1000, collapse.overlaps=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL, return='plot') {
   ## Check if the submitted file exists
   if (!nchar(aln.coords) > 0 | !file.exists(aln.coords)) {
     stop("Submitted file in 'aln.coords' does not exists !!!")
@@ -62,7 +65,7 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
   ## Get distance between alignments
   coords.df <- transform(coords.df, dist = abs(pmin(s2.start, s2.end) - pmax(s1.start, s1.end)))
   
-  ## Get max position (for plotting)
+  ## Get max position (for x-axis plotting)
   max.pos <- max(c(coords.df$s1.start, coords.df$s1.end, coords.df$s2.start, coords.df$s2.end))
   
   ## Data filtering ##
@@ -83,6 +86,9 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
   xmin <- apply(coords.df[,c('s1.start', 's1.end', 's2.start', 's2.end')], 1, min)
   xmax <- apply(coords.df[,c('s1.start', 's1.end', 's2.start', 's2.end')], 1, max)
   coords.df <- coords.df[!duplicated(paste(xmin, xmax, sep = '_')),]
+  
+  ## Data transformations ##
+  ##########################
   ## Add alignment directionality
   coords.df$dir <- 'rev'
   forw.mask <- (coords.df$s1.start < coords.df$s1.end) & (coords.df$s2.start < coords.df$s2.end)
@@ -106,63 +112,65 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
     ## Get self-alignments
     hits1 <- IRanges::findOverlaps(s1.gr, drop.self=TRUE)
     hits2 <- IRanges::findOverlaps(s2.gr, drop.self=TRUE)
-    ## Keep unique overlap pairs
-    mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
-    hits1 <- hits1[mask1]
-    mask2 <- !duplicated(paste0(pmin(queryHits(hits2), subjectHits(hits2)), pmax(queryHits(hits2), subjectHits(hits2))))
-    hits2 <- hits2[mask2]
-    ## Keep pairs overlapping each other
-    mask1 <- paste0(queryHits(hits1), subjectHits(hits1)) %in% paste0(queryHits(hits2), subjectHits(hits2))
-    mask2 <- paste0(queryHits(hits2), subjectHits(hits2)) %in% paste0(queryHits(hits1), subjectHits(hits1))
-    hits1 <- hits1[mask1]
-    hits2 <- hits2[mask2]
-    ## Keep pairs having the same dir
-    mask <- s1.gr$dir[queryHits(hits1)] == s1.gr$dir[subjectHits(hits1)] & s2.gr$dir[queryHits(hits2)] == s2.gr$dir[subjectHits(hits2)]
-    hits1 <- hits1[mask]
-    hits2 <- hits2[mask]
-    
-    ## Get groups alignments overlapping each other
-    groups <- list()
-    #for (i in seq_along(hits1)) {
-    for (i in order(subjectHits(hits1))) {
-      pair <- hits1[i]
-      pair <- c(queryHits(pair), subjectHits(pair))
-      if (length(groups) == 0) {
-        groups[[length(groups) + 1]] <- pair
-        group.id <- 1
-      } else {
-        if (any(pair %in% groups[[group.id]])) {
-          groups[[group.id]] <- unique(c(groups[[group.id]], pair))
+    if (length(hits1) > 1 & length(hits2) > 1) {
+      ## Keep unique overlap pairs
+      mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
+      hits1 <- hits1[mask1]
+      mask2 <- !duplicated(paste0(pmin(queryHits(hits2), subjectHits(hits2)), pmax(queryHits(hits2), subjectHits(hits2))))
+      hits2 <- hits2[mask2]
+      ## Keep pairs overlapping each other
+      mask1 <- paste0(queryHits(hits1), subjectHits(hits1)) %in% paste0(queryHits(hits2), subjectHits(hits2))
+      mask2 <- paste0(queryHits(hits2), subjectHits(hits2)) %in% paste0(queryHits(hits1), subjectHits(hits1))
+      hits1 <- hits1[mask1]
+      hits2 <- hits2[mask2]
+      ## Keep pairs having the same dir
+      mask <- s1.gr$dir[queryHits(hits1)] == s1.gr$dir[subjectHits(hits1)] & s2.gr$dir[queryHits(hits2)] == s2.gr$dir[subjectHits(hits2)]
+      hits1 <- hits1[mask]
+      hits2 <- hits2[mask]
+      
+      ## Get groups alignments overlapping each other
+      groups <- list()
+      #for (i in seq_along(hits1)) {
+      for (i in order(subjectHits(hits1))) {
+        pair <- hits1[i]
+        pair <- c(queryHits(pair), subjectHits(pair))
+        if (length(groups) == 0) {
+          groups[[length(groups) + 1]] <- pair
+          group.id <- 1
         } else {
-          group.id <- group.id + 1
-          groups[[group.id]] <- pair
+          if (any(pair %in% groups[[group.id]])) {
+            groups[[group.id]] <- unique(c(groups[[group.id]], pair))
+          } else {
+            group.id <- group.id + 1
+            groups[[group.id]] <- pair
+          }
         }
       }
+      ## Get alignment groups
+      grp <- unlist(groups)
+      names(grp) <- rep(1:length(groups), lengths(groups))
+      ## Assign alignment groups to GRanges
+      s1.gr$group <- 0
+      s2.gr$group <- 0
+      s1.gr$group[grp] <- names(grp)
+      s2.gr$group[grp] <- names(grp)
+      ## Collapse ranges from the same group
+      ## alignment1
+      s1.collapse.grl <- GenomicRanges::split(s1.gr[s1.gr$group > 0], s1.gr$group[s1.gr$group > 0])
+      s1.collapse.gr <- unlist(S4Vectors::endoapply(s1.collapse.grl, range))
+      s1.collapse.gr$dir <- sapply(s1.collapse.grl, function(x) unique(x$dir))
+      s1.collapse.gr$group <- unique(s1.gr$group[s1.gr$group > 0])
+      names(s1.collapse.gr) <- NULL
+      ## alignment2
+      s2.collapse.grl <- split(s2.gr[s1.gr$group > 0], s2.gr$group[s2.gr$group > 0])
+      s2.collapse.gr <- unlist(endoapply(s2.collapse.grl, range))
+      s2.collapse.gr$dir <- sapply(s2.collapse.grl, function(x) unique(x$dir))
+      s2.collapse.gr$group <- unique(s2.gr$group[s2.gr$group > 0])
+      names(s2.collapse.gr) <- NULL
+      ## Replace collapsed ranges
+      s1.gr <- c(s1.gr[s1.gr$group == 0], s1.collapse.gr)
+      s2.gr <- c(s2.gr[s2.gr$group == 0], s2.collapse.gr) 
     }
-    ## Get alignment groups
-    grp <- unlist(groups)
-    names(grp) <- rep(1:length(groups), lengths(groups))
-    ## Assign alignment groups to GRanges
-    s1.gr$group <- 0
-    s2.gr$group <- 0
-    s1.gr$group[grp] <- names(grp)
-    s2.gr$group[grp] <- names(grp)
-    ## Collapse ranges from the same group
-    ## alignment1
-    s1.collapse.grl <- GenomicRanges::split(s1.gr[s1.gr$group > 0], s1.gr$group[s1.gr$group > 0])
-    s1.collapse.gr <- unlist(S4Vectors::endoapply(s1.collapse.grl, range))
-    s1.collapse.gr$dir <- sapply(s1.collapse.grl, function(x) unique(x$dir))
-    s1.collapse.gr$group <- unique(s1.gr$group[s1.gr$group > 0])
-    names(s1.collapse.gr) <- NULL
-    ## alignment2
-    s2.collapse.grl <- split(s2.gr[s1.gr$group > 0], s2.gr$group[s2.gr$group > 0])
-    s2.collapse.gr <- unlist(endoapply(s2.collapse.grl, range))
-    s2.collapse.gr$dir <- sapply(s2.collapse.grl, function(x) unique(x$dir))
-    s2.collapse.gr$group <- unique(s2.gr$group[s2.gr$group > 0])
-    names(s2.collapse.gr) <- NULL
-    ## Replace collapsed ranges
-    s1.gr <- c(s1.gr[s1.gr$group == 0], s1.collapse.gr)
-    s2.gr <- c(s2.gr[s2.gr$group == 0], s2.collapse.gr) 
   }  
   ## Prepare object of self-alignments for export
   self.gr <- s1.gr[,0]
@@ -187,12 +195,34 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
   
   plt.df <- coords.df
   ## Get y-axis coordinates
-  s1.sums <- cumsum(plt.df$s1.width)
-  s2.sums <- cumsum(plt.df$s2.width)
-  plt.df$y1 <- c(1, s1.sums[-length(s1.sums)])
-  plt.df$y1end <- s1.sums
-  plt.df$y2 <- c(1, s2.sums[-length(s2.sums)])
-  plt.df$y2end <- s2.sums
+  # s1.sums <- cumsum(plt.df$s1.width)
+  # s2.sums <- cumsum(plt.df$s2.width)
+  # plt.df$y1 <- c(1, s1.sums[-length(s1.sums)])
+  # plt.df$y1end <- s1.sums
+  # plt.df$y2 <- c(1, s2.sums[-length(s2.sums)])
+  # plt.df$y2end <- s2.sums
+  plt.df$y1 <- 0
+  plt.df$y1end <- 0
+  plt.df$y2 <- 0
+  plt.df$y2end <- 0
+  for (i in 1:nrow(plt.df)) {
+    row.df <- plt.df[i,]
+    if (i == 1) {
+      row.df$y1 <- 1
+      row.df$y2 <- 1
+      row.df$y1end <- row.df$s1.width
+      row.df$y2end <- row.df$s2.width
+      offset <- max(row.df$y1end, row.df$y2end)
+    } else {
+      row.df$y1 <- offset
+      row.df$y2 <- offset
+      row.df$y1end <- offset + row.df$s1.width
+      row.df$y2end <- offset + row.df$s2.width
+      offset <- max(row.df$y1end, row.df$y2end)
+    }
+    plt.df[i,] <- row.df
+  }
+  
   ## Get polygon coordinates
   plt.dir.df <- plt.df[plt.df$dir == 'forw',]
   plt.rev.df <- plt.df[plt.df$dir == 'rev',]
@@ -257,6 +287,24 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
   
   plt <- plt + geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir))
   
+  ## Highlight user defined positions 
+  if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
+    highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
+
+    if (length(highlight.pos) > 0) {
+      plt <- plt + geom_vline(xintercept = highlight.pos)
+    }  
+  }
+  
+  ## Highlight user defined region
+  if (!is.null(highlight.region)) {
+    highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
+    
+    if (nrow(highlight.region) > 0) {
+      plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
+    }  
+  }
+  
   ## Add title if defined
   if (!is.null(title)) {
     if (nchar(title) > 0) {
@@ -264,8 +312,14 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
     }
   }
   
-  ## Return final plot
-  return(plt)
-  ## Return final self-alignments
-  #return(self.gr)
+  if (return == 'plot') {
+    ## Return final plot
+    return(plt)
+  } else if (return == 'selfaln') {
+    ## Return final self-alignments
+    return(self.gr)    
+  } else {
+    warning("Please define as 'plot' or 'selfaln', returing plot by default !!!")
+    return(plt)
+  }
 }

@@ -1,9 +1,8 @@
 #' Read and filter PAF input file
 #' 
-#' This function takes PAF output file from minimap2 alignemts, loads the file and
+#' This function takes PAF output file from minimap2 alignments, loads the file and
 #' perform user defined filtering of input alignments based on mapping quality and
 #' alignment length.
-#'
 #'
 #' @param paf.file A path to a PAF file containing alignments to be loaded.
 #' @param min.mapq Minimum mapping quality to retain.
@@ -13,7 +12,7 @@
 #' a \code{\link{GRanges-class}} object containing a single genomic region.
 #' @param seqname.grep Retain only a specific sequence/region name with a given character string.
 #' @param drop.self.align Remove alignments of a given sequence to itself.
-#' @return A \code{vector} of re-scaled coordinate values.
+#' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @importFrom dplyr group_by mutate
 #' @importFrom utils read.table
 #' @author David Porubsky
@@ -33,7 +32,7 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
   }  
   ## Filer alignments by target region
   if (!is.null(target.region)) {
-    if (grepl(target.region, pattern = '\\w+\\d+:\\d+-\\d+')) {
+    if (grepl(target.region, pattern = '\\w+[\\d+,X,Y]:\\d+-\\d+')) { ## TODO This does expect strandard chromosome names only!!!
       target.region.gr <- as(target.region, 'GRanges')
     } else if (class(target.region.gr) == 'GRanges') {
       target.region.gr <- target.region
@@ -42,7 +41,7 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     }
     ## Subset PAF by ranges overlaps
     target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
-    hits <- GenomicRanges::findOverlaps(target.gr, target.region.gr)
+    hits <- GenomicRanges::findOverlaps(target.gr, target.region.gr) ## TODO Take only overlaps regions itself is not shrinked!!!
     paf <- paf[S4Vectors::queryHits(hits),]
     #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
   }

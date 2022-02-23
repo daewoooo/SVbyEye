@@ -9,7 +9,8 @@ plotMiro(
   min.mapq = 10,
   min.align.len = 100,
   min.align.n = 1,
-  sd.annot = NULL
+  sd.annot = NULL,
+  drop.self.align = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ plotMiro(
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
 
 \item{sd.annot}{A \code{\link[GenomicRanges]{GRanges}} object containing segmental duplication coordinates.}
+
+\item{drop.self.align}{Remove alignments of a given sequence to itself.}
 }
 \value{
 A \code{list} of miropeat style plots.

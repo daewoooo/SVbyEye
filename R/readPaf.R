@@ -1,5 +1,16 @@
-
-
+#' Read PAF from an input file
+#' 
+#' This function takes an PAF output file from minimap2 and  loads the file along
+#' with user defined set of additional alignment tags (see PAF specification).
+#'
+#' @param paf.file A path to a PAF file containing alignments to be loaded.
+#' @param include.paf.tags Set to \code{TRUE} if all additional PAF alignment tags should be included in the output.
+#' @param restrict.paf.tags Define a set of PAF tag ids (e.g. NM, cg) to be reported in the output. 
+#' @importFrom stringr str_split
+#' @importFrom dplyr bind_cols
+#' @importFrom S4Vectors lapply
+#' @author David Porubsky
+#' @export
 readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('NM', 'cg')) {
   ## Check user input ##
   if (is.null(paf.file)) {
@@ -39,6 +50,14 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
   }  
 }  
 
+#' Process PAF specific alignment tags.
+#'
+#' @param paf.tags ...
+#' @inheritParams readPaf
+#' @importFrom stringr str_split
+#' @importFrom dplyr bind_rows
+#' @author David Porubsky
+#' @export
 processPafTags <- function(paf.tags, restrict.paf.tags=c('NM', 'cg')) {
   ## Make sure restrict.paf.tags takes only expected values
   allowed.tags <- c('tp', 'cm', 's1', 's2', 'NM', 'MD', 'AS', 'SA', 'ms', 'nn', 'ts', 'cg', 'cs', 'dv', 'de', 'rl')

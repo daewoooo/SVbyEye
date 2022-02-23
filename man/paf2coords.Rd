@@ -31,10 +31,10 @@ a \code{\link{GRanges-class}} object containing a single genomic region.}
 \item{drop.self.align}{Remove alignments of a given sequence to itself.}
 }
 \value{
-A \code{vector} of re-scaled coordinate values.
+A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 }
 \description{
-This function takes PAF output file from minimap2 alignemts, loads the file and
+This function takes PAF output file from minimap2 alignments, loads the file and
 perform user defined filtering of input alignments based on mapping quality and
 alignment length.
 }

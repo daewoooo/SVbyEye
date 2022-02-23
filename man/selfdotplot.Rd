@@ -10,7 +10,10 @@ selfdotplot(
   min.align.len = 1000,
   min.align.dist = 1000,
   collapse.overlaps = TRUE,
-  title = NULL
+  highlight.pos = NULL,
+  highlight.region = NULL,
+  title = NULL,
+  return = "plot"
 )
 }
 \arguments{
@@ -24,7 +27,13 @@ selfdotplot(
 
 \item{collapse.overlaps}{Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.}
 
+\item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
+
+\item{highlight.region}{A pair of positions to be highlighted as vertical range.}
+
 \item{title}{A title to be added to the final dotplot.}
+
+\item{return}{Define desired output, either alignment plot as 'plot' or self-alignments in stored \code{\link{GRanges-class}} object as 'selfaln', \link{default: 'plot'}}
 }
 \value{
 A \code{ggplot} object.
