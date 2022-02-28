@@ -39,7 +39,7 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
     
     if (include.paf.tags) {
       if (any(lengths(fields) > 12)) {
-        paf.tags <- S4Vectors::sapply(fields, function(x) paste(x[13:length(x)]))
+        paf.tags <- S4Vectors::lapply(fields, function(x) paste(x[13:length(x)]))
         paf <- dplyr::bind_cols(paf, processPafTags(paf.tags = paf.tags, restrict.paf.tags = restrict.paf.tags))
       }
     }
