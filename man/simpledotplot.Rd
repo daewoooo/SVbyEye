@@ -8,6 +8,7 @@ simpledotplot(
   aln.coords = NULL,
   format = "nucmer",
   min.align.len = 1000,
+  keep.longest.aln = FALSE,
   highlight.pos = NULL,
   highlight.region = NULL,
   shape = "segm",
@@ -19,6 +20,8 @@ simpledotplot(
 \item{aln.coords}{A path to a file containing self-alignment coordinates.}
 
 \item{format}{Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', \link{default: 'nucmer'}}
+
+\item{keep.longest.aln}{Set to \code{TRUE} if a target sequence with a single longest alignment should be kept.}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 

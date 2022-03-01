@@ -31,7 +31,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
   
   ## Read in PAF file
   if (file.exists(paf.file)) {
-    message("Loading PAF file: ", paf.file)
+    #message("Loading PAF file: ", paf.file)
     paf <- tryCatch(
       #utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE), error = function(e) NULL
       readPaf(paf.file = paf.file, include.paf.tags = FALSE), error = function(e) NULL

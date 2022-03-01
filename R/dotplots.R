@@ -332,13 +332,14 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
 #'
 #' @param shape A shape used to plot aligned sequences: Either 'segm' or 'point'.
 #' @param genome.coords Set to \code{TRUE} if the target sequence should be reported in genomic coordinates.
+#' @param keep.longest.aln Set to \code{TRUE} if a target sequence with a single longest alignment should be kept.
 #' @inheritParams selfdotplot
 #' @return A \code{ggplot} object.
 #' @importFrom scales comma
 #' @author David Porubsky
 #' @export
 #' 
-simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, highlight.pos=NULL, highlight.region=NULL, shape='segm', title=NULL, genome.coord=FALSE) {
+simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, keep.longest.aln=FALSE, highlight.pos=NULL, highlight.region=NULL, shape='segm', title=NULL, genome.coord=FALSE) {
   
   ## Helper function
   remapCoord <- function(x = NULL, new.range = NULL) {
@@ -408,6 +409,13 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, 
   xmax <- apply(coords.df[,c('s1.start', 's1.end', 's2.start', 's2.end')], 1, max)
   coords.df <- coords.df[!duplicated(paste(xmin, xmax, sep = '_')),]
   
+  ## Keep only the target sequence with the longest alignment
+  if (keep.longest.aln) {
+    s2.aln.len <- sapply(split(coords.df$s2.width, coords.df$s2.id), sum)
+    to.keep <- names(s2.aln.len)[which.max(s2.aln.len)]
+    coords.df <- coords.df[coords.df$s2.id == to.keep,]
+  }
+  
   ## Data transformations ##
   ##########################
   ## Add alignment directionality
@@ -422,7 +430,7 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, 
   coords.df <- coords.df[order(coords.df$aln.size, decreasing = TRUE),]
   
   ## Coerce shape segment in minimap alignments are loaded
-  if (format == 'mm2') {
+  if (format == 'mm2' & shape == 'point') {
     shape <- 'segm'
     message("     Coercing shape == 'segm' for alignments in 'mm2' format!")
   }
@@ -437,14 +445,27 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, 
     plt <- ggplot2::ggplot(coords.df, aes(x=s1.midpoint, y=s2.midpoint, color=dir)) + 
       geom_point()
   }  
-  plt <- plt +  
-    xlab(unique(coords.df$s1.id)) +
-    ylab(unique(coords.df$s2.id)) +
-    theme_bw() + 
-    theme(aspect.ratio=1) + #force x and y axis to have the same proportion
-    scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
-    scale_x_continuous(labels = scales::comma) +
-    scale_y_continuous(labels = scales::comma)
+  ## If there are multiple alignment to the target sequence use facets to divide the dotplot
+  n.seq <- length(unique(coords.df$s2.id))
+  if (n.seq > 1) {
+    plt <- plt +
+      facet_grid(s2.id ~ ., space='free', scale='free') +
+      xlab(unique(coords.df$s1.id)) +
+      ylab(paste(unique(coords.df$s2.id), collapse = ';')) +
+      theme_bw() + 
+      scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
+      scale_x_continuous(labels = scales::comma) +
+      scale_y_continuous(labels = scales::comma)
+  } else {
+    plt <- plt +  
+      xlab(unique(coords.df$s1.id)) +
+      ylab(unique(coords.df$s2.id)) +
+      theme_bw() + 
+      #theme(aspect.ratio=1) + #force x and y axis to have the same proportion
+      scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
+      scale_x_continuous(labels = scales::comma) +
+      scale_y_continuous(labels = scales::comma)
+  }
   
   ## Highlight user defined positions 
   if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
