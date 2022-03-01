@@ -35,7 +35,7 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
     }
     paf <- dplyr::bind_rows(paf.fields)
     cols.num <- c(2, 3, 4, 7:12)
-    paf[cols.num] <- S4Vectors::sapply(paf[cols.num], as.numeric)
+    paf[cols.num] <- dplyr::bind_cols(S4Vectors::lapply(paf[cols.num], as.numeric))
     
     if (include.paf.tags) {
       if (any(lengths(fields) > 12)) {
