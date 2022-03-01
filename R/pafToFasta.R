@@ -33,15 +33,16 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
   if (file.exists(paf.file)) {
     message("Loading PAF file: ", paf.file)
     paf <- tryCatch(
-      utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE), error = function(e) NULL)
-    #paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE)
-    if (!is.null(paf)) {
-      ## Keep only first 12 columns
-      paf <- paf[,c(1:12)]
-      ## Add header
-      header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq') 
-      colnames(paf) <- header
-    }  
+      #utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE), error = function(e) NULL
+      readPaf(paf.file = paf.file, include.paf.tags = FALSE), error = function(e) NULL
+      )
+    # if (!is.null(paf)) {
+    #   ## Keep only first 12 columns
+    #   paf <- paf[,c(1:12)]
+    #   ## Add header
+    #   header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq') 
+    #   colnames(paf) <- header
+    # }  
   } else {
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
   }  
