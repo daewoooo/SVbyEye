@@ -112,7 +112,9 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
     ## Get self-alignments
     hits1 <- IRanges::findOverlaps(s1.gr, drop.self=TRUE)
     hits2 <- IRanges::findOverlaps(s2.gr, drop.self=TRUE)
-    if (length(hits1) > 1 & length(hits2) > 1) {
+    
+    #if (length(hits1) > 1 & length(hits2) > 1) {
+    while (length(hits1) > 1 & length(hits2) > 1) {
       ## Keep unique overlap pairs
       mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
       hits1 <- hits1[mask1]
@@ -169,159 +171,191 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
       names(s2.collapse.gr) <- NULL
       ## Replace collapsed ranges
       s1.gr <- c(s1.gr[s1.gr$group == 0], s1.collapse.gr)
-      s2.gr <- c(s2.gr[s2.gr$group == 0], s2.collapse.gr) 
+      s2.gr <- c(s2.gr[s2.gr$group == 0], s2.collapse.gr)
+      
+      ## Recalculate self-alignments
+      hits1 <- IRanges::findOverlaps(s1.gr, drop.self=TRUE)
+      hits2 <- IRanges::findOverlaps(s2.gr, drop.self=TRUE)
+      ## Keep unique overlap pairs
+      mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
+      hits1 <- hits1[mask1]
+      mask2 <- !duplicated(paste0(pmin(queryHits(hits2), subjectHits(hits2)), pmax(queryHits(hits2), subjectHits(hits2))))
+      hits2 <- hits2[mask2]
+      ## Keep pairs overlapping each other
+      mask1 <- paste0(queryHits(hits1), subjectHits(hits1)) %in% paste0(queryHits(hits2), subjectHits(hits2))
+      mask2 <- paste0(queryHits(hits2), subjectHits(hits2)) %in% paste0(queryHits(hits1), subjectHits(hits1))
+      hits1 <- hits1[mask1]
+      hits2 <- hits2[mask2]
+      ## Keep pairs having the same dir
+      mask <- s1.gr$dir[queryHits(hits1)] == s1.gr$dir[subjectHits(hits1)] & s2.gr$dir[queryHits(hits2)] == s2.gr$dir[subjectHits(hits2)]
+      hits1 <- hits1[mask]
+      hits2 <- hits2[mask]
     }
   }  
-  ## Prepare object of self-alignments for export
-  self.gr <- s1.gr[,0]
-  self.gr$s2 <- s2.gr[,0]
-  strand(self.gr) <- '+'
-  strand(self.gr$s2) <- ifelse(s1.gr$dir == 'forw', '+', '-')
-  
-  ## Prepare data for plotting ##
-  ###############################
-  coords.df <- data.frame(s1.start = start(s1.gr), 
-                          s1.end = end(s1.gr),
-                          s2.start = start(s2.gr),
-                          s2.end = end(s2.gr),
-                          s1.width = width(s1.gr),
-                          s2.width = width(s2.gr),
-                          dir = s1.gr$dir)
-  ## Flip start and end for reverse oriented alignments
-  coords.df[coords.df$dir == 'rev',] <- transform(coords.df[coords.df$dir == 'rev',], 's2.start' = s2.end, 's2.end' = s2.start)
-  ## Order alignments by size
-  coords.df$aln.size <- coords.df$s1.width + coords.df$s2.width
-  coords.df <- coords.df[order(coords.df$aln.size, decreasing = TRUE),]
-  
-  plt.df <- coords.df
-  ## Get y-axis coordinates
-  # s1.sums <- cumsum(plt.df$s1.width)
-  # s2.sums <- cumsum(plt.df$s2.width)
-  # plt.df$y1 <- c(1, s1.sums[-length(s1.sums)])
-  # plt.df$y1end <- s1.sums
-  # plt.df$y2 <- c(1, s2.sums[-length(s2.sums)])
-  # plt.df$y2end <- s2.sums
-  plt.df$y1 <- 0
-  plt.df$y1end <- 0
-  plt.df$y2 <- 0
-  plt.df$y2end <- 0
-  for (i in 1:nrow(plt.df)) {
-    row.df <- plt.df[i,]
-    if (i == 1) {
-      row.df$y1 <- 1
-      row.df$y2 <- 1
-      row.df$y1end <- row.df$s1.width
-      row.df$y2end <- row.df$s2.width
-      offset <- max(row.df$y1end, row.df$y2end)
-    } else {
-      row.df$y1 <- offset
-      row.df$y2 <- offset
-      row.df$y1end <- offset + row.df$s1.width
-      row.df$y2end <- offset + row.df$s2.width
-      offset <- max(row.df$y1end, row.df$y2end)
-    }
-    plt.df[i,] <- row.df
+  ## Remove remaining self-overlapping ranges
+  if (min.align.dist > 0) {
+    s2.copy.gr <- s2.gr
+    seqlevels(s2.copy.gr) <- 's1'
+    mask <- which(IRanges::distance(s1.gr, s2.copy.gr) == 0)
+    s1.gr <- s1.gr[-mask]
+    s2.gr <- s2.gr[-mask]
   }
   
-  ## Get polygon coordinates
-  plt.dir.df <- plt.df[plt.df$dir == 'forw',]
-  plt.rev.df <- plt.df[plt.df$dir == 'rev',]
-  if (nrow(plt.dir.df) > 0) {
-    poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
-                              #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
-                              y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
-                              group=rep(1:nrow(plt.dir.df), each=4),
-                              direction=rep(plt.dir.df$dir, each=4))
-  } else {
-    poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                              y=c(rbind(NaN, NaN, NaN, NaN)),
-                              group=rep(1, each=4),
-                              direction=rep('forw', each=4))
-  }  
-  
-  if (nrow(plt.rev.df) > 0) {
-    poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
-                              y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
-                              group=rep(1:nrow(plt.rev.df), each=4),
-                              direction=rep(plt.rev.df$dir, each=4))
-  } else {
-    poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                              y=c(rbind(NaN, NaN, NaN, NaN)),
-                              group=rep(1, each=4),
-                              direction=rep('rev', each=4))
-  }  
-  
-  ## Make dotplot ##
-  ##################
-  y.limit <- max(c(plt.df$y1end, plt.df$y2end))
-  ## Plot alignment pairs
-  plt <- ggplot(plt.df) +
-    geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
-    geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
-    geom_polygon(data=poly.dir.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
-    geom_polygon(data=poly.rev.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
-    scale_x_continuous(limits = c(0, max.pos), labels = scales::comma, expand = c(0, 0)) +
-    scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
-    ylab('Self-alignments') +
-    xlab('Contig position (bp)') +
-    scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
-    coord_fixed(ratio = 1) +
-    theme_minimal() +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank())
-  
-  ## Add alignment dotted lines
-  plt <- plt + 
-    geom_linerange(aes(x=s1.start, ymin=0, ymax=y1), linetype='dotted') +
-    geom_linerange(aes(x=s1.end, ymin=0, ymax=y1end), linetype='dotted') +
-    geom_linerange(aes(x=s2.start, ymin=0, ymax=y2), linetype='dotted') +
-    geom_linerange(aes(x=s2.end, ymin=0, ymax=y2end), linetype='dotted')
-  
-  ## Add alignment arrows
-  arrow.df <- data.frame('xmin' = c(rbind(coords.df$s1.start, coords.df$s2.start)),
-                         'xmax' = c(rbind(coords.df$s1.end, coords.df$s2.end)),
-                         'dir' = c(rbind('forw', coords.df$dir))) # to make sure s1 is always forward
-  arrow.df$direction <- ifelse(arrow.df$dir == 'forw', 1, -1)         
-  ## Make sure start is always smaller than end of the alignment
-  arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
-  
-  plt <- plt + geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir))
-  
-  ## Highlight user defined positions 
-  if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
-    highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
-
-    if (length(highlight.pos) > 0) {
-      plt <- plt + geom_vline(xintercept = highlight.pos)
-    }  
-  }
-  
-  ## Highlight user defined region
-  if (!is.null(highlight.region)) {
-    highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
+  if (length(s1.gr) > 0 & length(s2.gr) > 0) {
+    ## Prepare object of self-alignments for export
+    self.gr <- s1.gr[,0]
+    self.gr$s2 <- s2.gr[,0]
+    strand(self.gr) <- '+'
+    strand(self.gr$s2) <- ifelse(s1.gr$dir == 'forw', '+', '-')
     
-    if (nrow(highlight.region) > 0) {
-      plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
-    }  
-  }
-  
-  ## Add title if defined
-  if (!is.null(title)) {
-    if (nchar(title) > 0) {
-      plt <- plt + ggtitle(title)
+    ## Prepare data for plotting ##
+    ###############################
+    coords.df <- data.frame(s1.start = start(s1.gr), 
+                            s1.end = end(s1.gr),
+                            s2.start = start(s2.gr),
+                            s2.end = end(s2.gr),
+                            s1.width = width(s1.gr),
+                            s2.width = width(s2.gr),
+                            dir = s1.gr$dir)
+    ## Flip start and end for reverse oriented alignments
+    coords.df[coords.df$dir == 'rev',] <- transform(coords.df[coords.df$dir == 'rev',], 's2.start' = s2.end, 's2.end' = s2.start)
+    ## Order alignments by size
+    coords.df$aln.size <- coords.df$s1.width + coords.df$s2.width
+    coords.df <- coords.df[order(coords.df$aln.size, decreasing = TRUE),]
+    
+    plt.df <- coords.df
+    ## Get y-axis coordinates
+    # s1.sums <- cumsum(plt.df$s1.width)
+    # s2.sums <- cumsum(plt.df$s2.width)
+    # plt.df$y1 <- c(1, s1.sums[-length(s1.sums)])
+    # plt.df$y1end <- s1.sums
+    # plt.df$y2 <- c(1, s2.sums[-length(s2.sums)])
+    # plt.df$y2end <- s2.sums
+    plt.df$y1 <- 0
+    plt.df$y1end <- 0
+    plt.df$y2 <- 0
+    plt.df$y2end <- 0
+    for (i in 1:nrow(plt.df)) {
+      row.df <- plt.df[i,]
+      if (i == 1) {
+        row.df$y1 <- 1
+        row.df$y2 <- 1
+        row.df$y1end <- row.df$s1.width
+        row.df$y2end <- row.df$s2.width
+        offset <- max(row.df$y1end, row.df$y2end)
+      } else {
+        row.df$y1 <- offset
+        row.df$y2 <- offset
+        row.df$y1end <- offset + row.df$s1.width
+        row.df$y2end <- offset + row.df$s2.width
+        offset <- max(row.df$y1end, row.df$y2end)
+      }
+      plt.df[i,] <- row.df
     }
-  }
+    
+    ## Get polygon coordinates
+    plt.dir.df <- plt.df[plt.df$dir == 'forw',]
+    plt.rev.df <- plt.df[plt.df$dir == 'rev',]
+    if (nrow(plt.dir.df) > 0) {
+      poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
+                                #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
+                                y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
+                                group=rep(1:nrow(plt.dir.df), each=4),
+                                direction=rep(plt.dir.df$dir, each=4))
+    } else {
+      poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
+                                y=c(rbind(NaN, NaN, NaN, NaN)),
+                                group=rep(1, each=4),
+                                direction=rep('forw', each=4))
+    }  
+    
+    if (nrow(plt.rev.df) > 0) {
+      poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
+                                y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
+                                group=rep(1:nrow(plt.rev.df), each=4),
+                                direction=rep(plt.rev.df$dir, each=4))
+    } else {
+      poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
+                                y=c(rbind(NaN, NaN, NaN, NaN)),
+                                group=rep(1, each=4),
+                                direction=rep('rev', each=4))
+    }  
+    
+    ## Make dotplot ##
+    ##################
+    y.limit <- max(c(plt.df$y1end, plt.df$y2end))
+    ## Plot alignment pairs
+    plt <- ggplot(plt.df) +
+      geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
+      geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
+      geom_polygon(data=poly.dir.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
+      geom_polygon(data=poly.rev.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
+      scale_x_continuous(limits = c(0, max.pos), labels = scales::comma, expand = c(0, 0)) +
+      scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+      ylab('Self-alignments') +
+      xlab('Contig position (bp)') +
+      scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
+      coord_fixed(ratio = 1) +
+      theme_minimal() +
+      theme(axis.text.y = element_blank(),
+            axis.ticks.y = element_blank())
+    
+    ## Add alignment dotted lines
+    plt <- plt + 
+      geom_linerange(aes(x=s1.start, ymin=0, ymax=y1), linetype='dotted') +
+      geom_linerange(aes(x=s1.end, ymin=0, ymax=y1end), linetype='dotted') +
+      geom_linerange(aes(x=s2.start, ymin=0, ymax=y2), linetype='dotted') +
+      geom_linerange(aes(x=s2.end, ymin=0, ymax=y2end), linetype='dotted')
+    
+    ## Add alignment arrows
+    arrow.df <- data.frame('xmin' = c(rbind(coords.df$s1.start, coords.df$s2.start)),
+                           'xmax' = c(rbind(coords.df$s1.end, coords.df$s2.end)),
+                           'dir' = c(rbind('forw', coords.df$dir))) # to make sure s1 is always forward
+    arrow.df$direction <- ifelse(arrow.df$dir == 'forw', 1, -1)         
+    ## Make sure start is always smaller than end of the alignment
+    arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
+    
+    plt <- plt + geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir))
+    
+    ## Highlight user defined positions 
+    if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
+      highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
   
-  if (return == 'plot') {
-    ## Return final plot
-    return(plt)
-  } else if (return == 'selfaln') {
-    ## Return final self-alignments
-    return(self.gr)    
+      if (length(highlight.pos) > 0) {
+        plt <- plt + geom_vline(xintercept = highlight.pos)
+      }  
+    }
+    
+    ## Highlight user defined region
+    if (!is.null(highlight.region)) {
+      highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
+      
+      if (nrow(highlight.region) > 0) {
+        plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
+      }  
+    }
+    
+    ## Add title if defined
+    if (!is.null(title)) {
+      if (nchar(title) > 0) {
+        plt <- plt + ggtitle(title)
+      }
+    }
+    
+    if (return == 'plot') {
+      ## Return final plot
+      return(plt)
+    } else if (return == 'selfaln') {
+      ## Return final self-alignments
+      return(self.gr)    
+    } else {
+      warning("Please define as 'plot' or 'selfaln', returing plot by default !!!")
+      return(plt)
+    }
   } else {
-    warning("Please define as 'plot' or 'selfaln', returing plot by default !!!")
-    return(plt)
-  }
+    warning("No alignments meeting defined filtering criteria !!!")
+    return(NULL)
+  }  
 }
 
 
