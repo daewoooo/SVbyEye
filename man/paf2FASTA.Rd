@@ -9,6 +9,7 @@ paf2FASTA(
   bsgenome = NULL,
   asm.fasta = NULL,
   majority.strand = "+",
+  report.longest.aln = FALSE,
   fasta.save = NULL
 )
 }
@@ -20,6 +21,8 @@ paf2FASTA(
 \item{asm.fasta}{An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.}
 
 \item{majority.strand}{A desired majority strand directionality to be reported.}
+
+\item{report.longest.aln}{If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.}
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 }

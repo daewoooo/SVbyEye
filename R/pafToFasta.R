@@ -4,6 +4,7 @@
 #' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from. 
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
 #' @param majority.strand A desired majority strand directionality to be reported.
+#' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
 #' @param fasta.save A path to a filename where to store final FASTA file.
 #' @importFrom Rsamtools indexFa FaFile scanFa scanFaIndex
 #' @importFrom BSgenome getSeq
@@ -11,7 +12,7 @@
 #' @author David Porubsky
 #' @export
 #'
-paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', fasta.save=NULL) {
+paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', report.longest.aln=FALSE, fasta.save=NULL) {
   ## Load BSgenome object
   if (class(bsgenome) != 'BSgenome') {
     if (is.character(bsgenome)) {
@@ -52,7 +53,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end', strand='*')
     paf.gr$target.gr <- target.gr
     ## Make sure no genomic region starts with zero
-    start(paf.gr) <- pmax(start(paf.gr), 1)
+    GenomicRanges::start(paf.gr) <- pmax(GenomicRanges::start(paf.gr), 1)
     
     ## Sync alignment directionality based on preferred majority strand
     paf.grl <- split(paf.gr, seqnames(paf.gr))
@@ -120,13 +121,18 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       stop("Please set a 'bsgenome' or 'asm.fasta' parameter!!!")
     }
     
-    ## Concatenate multiple sequence into a single FASTA
-    if (length(paf.gr) > 1) {
-      ## Concatenate all sequences into a single FASTA separated by 100 N's.
-      delim <- paste(rep('N', 100), collapse = '')
-      gr.seq.collapsed <- Biostrings::DNAStringSet(paste(gr.seq, collapse = delim))
-      names(gr.seq.collapsed) <- paste(names(gr.seq), collapse = ';')
-      gr.seq <- gr.seq.collapsed
+    ## If TRUE report only the contig with the longest alignment
+    if (report.longest.aln) {
+      gr.seq <- gr.seq[which.max(width(gr.seq))]
+    } else {
+      ## Concatenate multiple sequence into a single FASTA
+      if (length(paf.gr) > 1) {
+        ## Concatenate all sequences into a single FASTA separated by 100 N's.
+        delim <- paste(rep('N', 100), collapse = '')
+        gr.seq.collapsed <- Biostrings::DNAStringSet(paste(gr.seq, collapse = delim))
+        names(gr.seq.collapsed) <- paste(names(gr.seq), collapse = ';')
+        gr.seq <- gr.seq.collapsed
+      }
     }  
     
     ## Write final FASTA
