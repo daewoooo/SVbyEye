@@ -7,6 +7,7 @@
 selfdotplot(
   aln.coords = NULL,
   format = "nucmer",
+  shape = "segment",
   min.align.len = 1000,
   min.align.dist = 1000,
   collapse.overlaps = TRUE,
@@ -20,6 +21,8 @@ selfdotplot(
 \item{aln.coords}{A path to a file containing self-alignment coordinates.}
 
 \item{format}{Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', \link{default: 'nucmer'}}
+
+\item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'arc'.}
 
 \item{min.align.dist}{Keep alignment pairs with this or larger distance from each other.}
 

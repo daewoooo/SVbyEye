@@ -7,11 +7,11 @@
 simpledotplot(
   aln.coords = NULL,
   format = "nucmer",
+  shape = "segment",
   min.align.len = 1000,
   keep.longest.aln = FALSE,
   highlight.pos = NULL,
   highlight.region = NULL,
-  shape = "segm",
   title = NULL,
   genome.coord = FALSE
 )
@@ -21,13 +21,13 @@ simpledotplot(
 
 \item{format}{Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', \link{default: 'nucmer'}}
 
+\item{shape}{A shape used to plot aligned sequences: Either 'segm' or 'point'.}
+
 \item{keep.longest.aln}{Set to \code{TRUE} if a target sequence with a single longest alignment should be kept.}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 
 \item{highlight.region}{A pair of positions to be highlighted as vertical range.}
-
-\item{shape}{A shape used to plot aligned sequences: Either 'segm' or 'point'.}
 
 \item{title}{A title to be added to the final dotplot.}
 

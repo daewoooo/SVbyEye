@@ -6,6 +6,7 @@
 #'
 #' @param aln.coords A path to a file containing self-alignment coordinates.
 #' @param format Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', [default: 'nucmer']
+#' @param shape A shape used to plot aligned sequences: Either 'segment' or 'arc'.
 #' @param min.align.dist Keep alignment pairs with this or larger distance from each other.
 #' @param collapse.overlaps Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.
 #' @param highlight.pos A single or a set of positions to be highlighted as vertical solid lines.
@@ -16,7 +17,7 @@
 #' @importFrom scales comma
 #' @author David Porubsky
 #' @export
-selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, min.align.dist=1000, collapse.overlaps=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL, return='plot') {
+selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.align.len=1000, min.align.dist=1000, collapse.overlaps=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL, return='plot') {
   ## Check if the submitted file exists
   if (!nchar(aln.coords) > 0 | !file.exists(aln.coords)) {
     stop("Submitted file in 'aln.coords' does not exists !!!")
@@ -37,17 +38,7 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
                             s2.id=coords$V12, 
                             stringsAsFactors = FALSE)
   } else if (format == 'mm2') {
-    # ## Read in coordinates from minimap2 output
-    # coords <- utils::read.table(aln.coords, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE)
-    # coords.df <- data.frame(s1.start=coords$V3,
-    #                         s1.end=coords$V4,
-    #                         s2.start=coords$V8,
-    #                         s2.end=coords$V9,
-    #                         s1.width=coords$V11,
-    #                         s2.width=coords$V11,
-    #                         s1.id=coords$V1,
-    #                         s2.id=coords$V2, 
-    #                         stringsAsFactors = FALSE)
+    ## Read in coordinates from minimap2 output
     paf.data <- readPaf(paf.file = aln.coords, include.paf.tags = FALSE)
     coords.df <- data.frame(s1.start=paf.data$q.start,
                             s1.end=paf.data$q.end,
@@ -112,24 +103,23 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
     ## Get self-alignments
     hits1 <- IRanges::findOverlaps(s1.gr, drop.self=TRUE)
     hits2 <- IRanges::findOverlaps(s2.gr, drop.self=TRUE)
+    ## Keep unique overlap pairs
+    mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
+    hits1 <- hits1[mask1]
+    mask2 <- !duplicated(paste0(pmin(queryHits(hits2), subjectHits(hits2)), pmax(queryHits(hits2), subjectHits(hits2))))
+    hits2 <- hits2[mask2]
+    ## Keep pairs overlapping each other
+    mask1 <- paste0(queryHits(hits1), subjectHits(hits1)) %in% paste0(queryHits(hits2), subjectHits(hits2))
+    mask2 <- paste0(queryHits(hits2), subjectHits(hits2)) %in% paste0(queryHits(hits1), subjectHits(hits1))
+    hits1 <- hits1[mask1]
+    hits2 <- hits2[mask2]
+    ## Keep pairs having the same dir
+    mask <- s1.gr$dir[queryHits(hits1)] == s1.gr$dir[subjectHits(hits1)] & s2.gr$dir[queryHits(hits2)] == s2.gr$dir[subjectHits(hits2)]
+    hits1 <- hits1[mask]
+    hits2 <- hits2[mask]
     
     #if (length(hits1) > 1 & length(hits2) > 1) {
     while (length(hits1) > 1 & length(hits2) > 1) {
-      ## Keep unique overlap pairs
-      mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
-      hits1 <- hits1[mask1]
-      mask2 <- !duplicated(paste0(pmin(queryHits(hits2), subjectHits(hits2)), pmax(queryHits(hits2), subjectHits(hits2))))
-      hits2 <- hits2[mask2]
-      ## Keep pairs overlapping each other
-      mask1 <- paste0(queryHits(hits1), subjectHits(hits1)) %in% paste0(queryHits(hits2), subjectHits(hits2))
-      mask2 <- paste0(queryHits(hits2), subjectHits(hits2)) %in% paste0(queryHits(hits1), subjectHits(hits1))
-      hits1 <- hits1[mask1]
-      hits2 <- hits2[mask2]
-      ## Keep pairs having the same dir
-      mask <- s1.gr$dir[queryHits(hits1)] == s1.gr$dir[subjectHits(hits1)] & s2.gr$dir[queryHits(hits2)] == s2.gr$dir[subjectHits(hits2)]
-      hits1 <- hits1[mask]
-      hits2 <- hits2[mask]
-      
       ## Get groups alignments overlapping each other
       groups <- list()
       #for (i in seq_along(hits1)) {
@@ -150,7 +140,7 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
       }
       ## Get alignment groups
       grp <- unlist(groups)
-      names(grp) <- rep(1:length(groups), lengths(groups))
+      names(grp) <- rep(1:length(groups), times=lengths(groups))
       ## Assign alignment groups to GRanges
       s1.gr$group <- 0
       s2.gr$group <- 0
@@ -223,90 +213,120 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
     coords.df$aln.size <- coords.df$s1.width + coords.df$s2.width
     coords.df <- coords.df[order(coords.df$aln.size, decreasing = TRUE),]
     
-    plt.df <- coords.df
-    ## Get y-axis coordinates
-    # s1.sums <- cumsum(plt.df$s1.width)
-    # s2.sums <- cumsum(plt.df$s2.width)
-    # plt.df$y1 <- c(1, s1.sums[-length(s1.sums)])
-    # plt.df$y1end <- s1.sums
-    # plt.df$y2 <- c(1, s2.sums[-length(s2.sums)])
-    # plt.df$y2end <- s2.sums
-    plt.df$y1 <- 0
-    plt.df$y1end <- 0
-    plt.df$y2 <- 0
-    plt.df$y2end <- 0
-    for (i in 1:nrow(plt.df)) {
-      row.df <- plt.df[i,]
-      if (i == 1) {
-        row.df$y1 <- 1
-        row.df$y2 <- 1
-        row.df$y1end <- row.df$s1.width
-        row.df$y2end <- row.df$s2.width
-        offset <- max(row.df$y1end, row.df$y2end)
-      } else {
-        row.df$y1 <- offset
-        row.df$y2 <- offset
-        row.df$y1end <- offset + row.df$s1.width
-        row.df$y2end <- offset + row.df$s2.width
-        offset <- max(row.df$y1end, row.df$y2end)
-      }
-      plt.df[i,] <- row.df
-    }
-    
-    ## Get polygon coordinates
-    plt.dir.df <- plt.df[plt.df$dir == 'forw',]
-    plt.rev.df <- plt.df[plt.df$dir == 'rev',]
-    if (nrow(plt.dir.df) > 0) {
-      poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
-                                #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
-                                y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
-                                group=rep(1:nrow(plt.dir.df), each=4),
-                                direction=rep(plt.dir.df$dir, each=4))
-    } else {
-      poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                                y=c(rbind(NaN, NaN, NaN, NaN)),
-                                group=rep(1, each=4),
-                                direction=rep('forw', each=4))
-    }  
-    
-    if (nrow(plt.rev.df) > 0) {
-      poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
-                                y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
-                                group=rep(1:nrow(plt.rev.df), each=4),
-                                direction=rep(plt.rev.df$dir, each=4))
-    } else {
-      poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                                y=c(rbind(NaN, NaN, NaN, NaN)),
-                                group=rep(1, each=4),
-                                direction=rep('rev', each=4))
-    }  
-    
     ## Make dotplot ##
     ##################
-    y.limit <- max(c(plt.df$y1end, plt.df$y2end))
-    ## Plot alignment pairs
-    plt <- ggplot(plt.df) +
-      geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
-      geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
-      geom_polygon(data=poly.dir.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
-      geom_polygon(data=poly.rev.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
-      scale_x_continuous(limits = c(0, max.pos), labels = scales::comma, expand = c(0, 0)) +
-      scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
-      ylab('Self-alignments') +
-      xlab('Contig position (bp)') +
-      scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
-      coord_fixed(ratio = 1) +
-      theme_minimal() +
-      theme(axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
+    plt.df <- coords.df
     
-    ## Add alignment dotted lines
-    plt <- plt + 
-      geom_linerange(aes(x=s1.start, ymin=0, ymax=y1), linetype='dotted') +
-      geom_linerange(aes(x=s1.end, ymin=0, ymax=y1end), linetype='dotted') +
-      geom_linerange(aes(x=s2.start, ymin=0, ymax=y2), linetype='dotted') +
-      geom_linerange(aes(x=s2.end, ymin=0, ymax=y2end), linetype='dotted')
-    
+    if (shape == 'segment') {
+      plt.df$y1 <- 0
+      plt.df$y1end <- 0
+      plt.df$y2 <- 0
+      plt.df$y2end <- 0
+      for (i in 1:nrow(plt.df)) {
+        row.df <- plt.df[i,]
+        if (i == 1) {
+          row.df$y1 <- 1
+          row.df$y2 <- 1
+          row.df$y1end <- row.df$s1.width
+          row.df$y2end <- row.df$s2.width
+          offset <- max(row.df$y1end, row.df$y2end)
+        } else {
+          row.df$y1 <- offset
+          row.df$y2 <- offset
+          row.df$y1end <- offset + row.df$s1.width
+          row.df$y2end <- offset + row.df$s2.width
+          offset <- max(row.df$y1end, row.df$y2end)
+        }
+        plt.df[i,] <- row.df
+      }
+      
+      ## Get polygon coordinates
+      plt.dir.df <- plt.df[plt.df$dir == 'forw',]
+      plt.rev.df <- plt.df[plt.df$dir == 'rev',]
+      if (nrow(plt.dir.df) > 0) {
+        poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
+                                  #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
+                                  y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
+                                  group=rep(1:nrow(plt.dir.df), each=4),
+                                  direction=rep(plt.dir.df$dir, each=4))
+      } else {
+        poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
+                                  y=c(rbind(NaN, NaN, NaN, NaN)),
+                                  group=rep(1, each=4),
+                                  direction=rep('forw', each=4))
+      }  
+      
+      if (nrow(plt.rev.df) > 0) {
+        poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
+                                  y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
+                                  group=rep(1:nrow(plt.rev.df), each=4),
+                                  direction=rep(plt.rev.df$dir, each=4))
+      } else {
+        poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
+                                  y=c(rbind(NaN, NaN, NaN, NaN)),
+                                  group=rep(1, each=4),
+                                  direction=rep('rev', each=4))
+      }  
+      
+      ## Make segment dotplot
+      y.limit <- max(c(plt.df$y1end, plt.df$y2end))
+      ## Plot alignment pairs
+      plt <- ggplot(plt.df) +
+        geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
+        geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
+        geom_polygon(data=poly.dir.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
+        geom_polygon(data=poly.rev.df, aes(x=x, y=y, group=group, fill=direction), alpha=0.25, inherit.aes=FALSE) +
+        scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+        scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+        coord_cartesian(xlim = c(0, max.pos)) +
+        ylab('Self-alignments') +
+        xlab('Contig position (bp)') +
+        scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
+        #coord_fixed(ratio = 1) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+      
+      ## Add alignment dotted lines
+      # plt <- plt + 
+      #   geom_linerange(aes(x=s1.start, ymin=0, ymax=y1), linetype='dotted') +
+      #   geom_linerange(aes(x=s1.end, ymin=0, ymax=y1end), linetype='dotted') +
+      #   geom_linerange(aes(x=s2.start, ymin=0, ymax=y2), linetype='dotted') +
+      #   geom_linerange(aes(x=s2.end, ymin=0, ymax=y2end), linetype='dotted')
+    } else if (shape == 'arc') {
+      ## Make Arc plot
+      x <- c(rbind(plt.df$s1.start, plt.df$s2.start, plt.df$s1.end, plt.df$s2.end))
+      group <- rep(1:nrow(plt.df), each=4)
+      seq.id <- c(rbind('s1', 's2', 's1', 's2'))
+      direction <- rep(plt.df$dir, each=4)
+      
+      plt.df <- data.frame(x=x,
+                              y=0,
+                              group=group,
+                              seq.id=seq.id,
+                              direction=direction)
+      
+      plt <- ggplot(plt.df) +
+        geom_wide_arc(aes(x=x, y=y, group=group, fill=direction), color='gray', alpha=0.25) +
+        scale_x_continuous(labels = comma, expand = c(0, 0)) +
+        coord_cartesian(xlim = c(0, max.pos)) +
+        ylab('Self-alignments') +
+        xlab('Contig position (bp)') +
+        scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+    } else {
+      warning("Paremeter shape can only take values 'segment' or 'arc' !!!")
+      plt <- ggplot() +
+        scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
+        ylab('Self-alignments') +
+        xlab('Contig position (bp)') +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+    }
+  
     ## Add alignment arrows
     arrow.df <- data.frame('xmin' = c(rbind(coords.df$s1.start, coords.df$s2.start)),
                            'xmax' = c(rbind(coords.df$s1.end, coords.df$s2.end)),
@@ -373,7 +393,7 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, mi
 #' @author David Porubsky
 #' @export
 #' 
-simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, keep.longest.aln=FALSE, highlight.pos=NULL, highlight.region=NULL, shape='segm', title=NULL, genome.coord=FALSE) {
+simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.align.len=1000, keep.longest.aln=FALSE, highlight.pos=NULL, highlight.region=NULL, title=NULL, genome.coord=FALSE) {
   
   ## Helper function
   remapCoord <- function(x = NULL, new.range = NULL) {
@@ -465,11 +485,11 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, 
   
   ## Coerce shape segment in minimap alignments are loaded
   if (format == 'mm2' & shape == 'point') {
-    shape <- 'segm'
+    shape <- 'segment'
     message("     Coercing shape == 'segm' for alignments in 'mm2' format!")
   }
   
-  if (shape == 'segm') {
+  if (shape == 'segment') {
     ## Plot alignments
     plt <- ggplot2::ggplot(coords.df, aes(x=s1.start,xend=s1.end,y=s2.start,yend=s2.end, color=dir)) + 
       geom_segment()
@@ -478,6 +498,9 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', min.align.len=1000, 
     coords.df$s2.midpoint <- coords.df$s2.start + ((coords.df$s2.end - coords.df$s2.start)/2)
     plt <- ggplot2::ggplot(coords.df, aes(x=s1.midpoint, y=s2.midpoint, color=dir)) + 
       geom_point()
+  } else {
+    warning("Paremeter shape can only take values 'segment' or 'point' !!!")
+    plt <- ggplot()
   }  
   ## If there are multiple alignment to the target sequence use facets to divide the dotplot
   n.seq <- length(unique(coords.df$s2.id))
