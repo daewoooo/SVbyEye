@@ -15,6 +15,8 @@
 #' @param return Define desired output, either alignment plot as 'plot' or self-alignments in stored \code{\link{GRanges-class}} object as 'selfaln', [default: 'plot']
 #' @return A \code{ggplot} object.
 #' @importFrom scales comma
+#' @importFrom S4Vectors subjectHits queryHits endoapply
+#' @import Geno
 #' @author David Porubsky
 #' @export
 selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.align.len=1000, min.align.dist=1000, collapse.overlaps=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL, return='plot') {
@@ -61,8 +63,15 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
   
   ## Data filtering ##
   ####################
-  ## Remove self-alignments
-  ## Remove alignments with the same start and end position
+  ## Keep diagonals (self-alignments) for export
+  # diagonals.df <- coords.df[coords.df$s1.start == coords.df$s2.start & coords.df$s1.end == coords.df$s2.end,]
+  # if (nrow(diagonals.df) > 0) {
+  #   diagonals.gr <- GenomicRanges::makeGRangesFromDataFrame(diagonals.df, seqnames.field = 's1.id', start.field = 's1.start', end.field = 's1.end')
+  #   names(diagonals.gr) <- NULL
+  # } else {
+  #   diagonals.gr <- NULL
+  # }  
+  ## Remove diagonals (self-alignments) with the same start and end position
   coords.df <- coords.df[!(coords.df$s1.start == coords.df$s2.start & coords.df$s1.end == coords.df$s2.end),]
   ## Filter by alignment length
   if (min.align.len > 0) {
@@ -104,17 +113,17 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
     hits1 <- IRanges::findOverlaps(s1.gr, drop.self=TRUE)
     hits2 <- IRanges::findOverlaps(s2.gr, drop.self=TRUE)
     ## Keep unique overlap pairs
-    mask1 <- !duplicated(paste0(pmin(queryHits(hits1), subjectHits(hits1)), pmax(queryHits(hits1), subjectHits(hits1))))
+    mask1 <- !duplicated(paste0(pmin(S4Vectors::queryHits(hits1), S4Vectors::subjectHits(hits1)), pmax(S4Vectors::queryHits(hits1), S4Vectors::subjectHits(hits1))))
     hits1 <- hits1[mask1]
-    mask2 <- !duplicated(paste0(pmin(queryHits(hits2), subjectHits(hits2)), pmax(queryHits(hits2), subjectHits(hits2))))
+    mask2 <- !duplicated(paste0(pmin(S4Vectors::queryHits(hits2), S4Vectors::subjectHits(hits2)), pmax(S4Vectors::queryHits(hits2), S4Vectors::subjectHits(hits2))))
     hits2 <- hits2[mask2]
     ## Keep pairs overlapping each other
-    mask1 <- paste0(queryHits(hits1), subjectHits(hits1)) %in% paste0(queryHits(hits2), subjectHits(hits2))
-    mask2 <- paste0(queryHits(hits2), subjectHits(hits2)) %in% paste0(queryHits(hits1), subjectHits(hits1))
+    mask1 <- paste0(S4Vectors::queryHits(hits1), S4Vectors::subjectHits(hits1)) %in% paste0(S4Vectors::queryHits(hits2), S4Vectors::subjectHits(hits2))
+    mask2 <- paste0(S4Vectors::queryHits(hits2), S4Vectors::subjectHits(hits2)) %in% paste0(S4Vectors::queryHits(hits1), S4Vectors::subjectHits(hits1))
     hits1 <- hits1[mask1]
     hits2 <- hits2[mask2]
     ## Keep pairs having the same dir
-    mask <- s1.gr$dir[queryHits(hits1)] == s1.gr$dir[subjectHits(hits1)] & s2.gr$dir[queryHits(hits2)] == s2.gr$dir[subjectHits(hits2)]
+    mask <- s1.gr$dir[S4Vectors::queryHits(hits1)] == s1.gr$dir[S4Vectors::subjectHits(hits1)] & s2.gr$dir[S4Vectors::queryHits(hits2)] == s2.gr$dir[S4Vectors::subjectHits(hits2)]
     hits1 <- hits1[mask]
     hits2 <- hits2[mask]
     
@@ -123,9 +132,9 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
       ## Get groups alignments overlapping each other
       groups <- list()
       #for (i in seq_along(hits1)) {
-      for (i in order(subjectHits(hits1))) {
+      for (i in order(S4Vectors::subjectHits(hits1))) {
         pair <- hits1[i]
-        pair <- c(queryHits(pair), subjectHits(pair))
+        pair <- c(S4Vectors::queryHits(pair), S4Vectors::subjectHits(pair))
         if (length(groups) == 0) {
           groups[[length(groups) + 1]] <- pair
           group.id <- 1
@@ -155,7 +164,7 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
       names(s1.collapse.gr) <- NULL
       ## alignment2
       s2.collapse.grl <- split(s2.gr[s1.gr$group > 0], s2.gr$group[s2.gr$group > 0])
-      s2.collapse.gr <- unlist(endoapply(s2.collapse.grl, range))
+      s2.collapse.gr <- unlist(S4Vectors::endoapply(s2.collapse.grl, range))
       s2.collapse.gr$dir <- sapply(s2.collapse.grl, function(x) unique(x$dir))
       s2.collapse.gr$group <- unique(s2.gr$group[s2.gr$group > 0])
       names(s2.collapse.gr) <- NULL
@@ -307,12 +316,14 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
                               direction=direction)
       
       plt <- ggplot(plt.df) +
-        geom_wide_arc(aes(x=x, y=y, group=group, fill=direction), color='gray', alpha=0.25) +
+        #geom_wide_arc(aes(x=x, y=y, group=group, fill=direction), color='gray', alpha=0.25) +
+        geom_wide_arc(aes(x=x, y=y, group=group, fill=direction, color=direction), size=0.1, alpha=0.25) +
         scale_x_continuous(labels = comma, expand = c(0, 0)) +
         coord_cartesian(xlim = c(0, max.pos)) +
         ylab('Self-alignments') +
         xlab('Contig position (bp)') +
         scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
+        scale_color_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
         theme_minimal() +
         theme(axis.text.y = element_blank(),
               axis.ticks.y = element_blank())
@@ -367,7 +378,8 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
       return(plt)
     } else if (return == 'selfaln') {
       ## Return final self-alignments
-      return(self.gr)    
+      #return(list('selfalignments' = self.gr, 'diagonals' = diagonals.gr))
+      return(self.gr)  
     } else {
       warning("Please define as 'plot' or 'selfaln', returing plot by default !!!")
       return(plt)
@@ -412,7 +424,7 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
   ################
   if (format == 'nucmer') {
     ## Read in coordinates from nucmer output
-    coords <- utils::read.table(aln.coords, skip=5, stringsAsFactors = FALSE)
+    coords <- utils::read.table(aln.coords, skip=5, stringsAsFactors = FALSE, comment.char = '&')
     coords.df <- data.frame(s1.start=coords$V1,
                             s1.end=coords$V2,
                             s2.start=coords$V4,
