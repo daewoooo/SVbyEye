@@ -10,7 +10,8 @@ paf2FASTA(
   asm.fasta = NULL,
   majority.strand = "+",
   report.longest.aln = FALSE,
-  fasta.save = NULL
+  fasta.save = NULL,
+  return = "fasta"
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ paf2FASTA(
 \item{report.longest.aln}{If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.}
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
+
+\item{return}{Set to either 'fasta' or 'index' to return either FASTA in \code{\link{DNAStringSet-class}} object or region index in \code{\link{GRanges-class}} object is returned.}
 }
 \description{
 Export FASTA sequences from a set of alignments reported in PAF formatted file.

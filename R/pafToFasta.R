@@ -6,13 +6,14 @@
 #' @param majority.strand A desired majority strand directionality to be reported.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
 #' @param fasta.save A path to a filename where to store final FASTA file.
+#' @param return Set to either 'fasta' or 'index' to return either FASTA in \code{\link{DNAStringSet-class}} object or region index in \code{\link{GRanges-class}} object is returned.
 #' @importFrom Rsamtools indexFa FaFile scanFa scanFaIndex
 #' @importFrom BSgenome getSeq
 #' @importFrom Biostrings writeXStringSet
 #' @author David Porubsky
 #' @export
 #'
-paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', report.longest.aln=FALSE, fasta.save=NULL) {
+paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', report.longest.aln=FALSE, fasta.save=NULL, return='fasta') {
   ## Load BSgenome object
   if (class(bsgenome) != 'BSgenome') {
     if (is.character(bsgenome)) {
@@ -92,6 +93,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     ## Collapse consecutive alignments coming from the same contig/sequence
     #paf.gr$q.id <- as.character(GenomeInfoDb::seqnames(paf.gr))
     #paf.gr <- primatR::collapseBins(paf.gr, id.field = 3)
+    
     ## Extract FASTA sequence
     if (!is.null(bsgenome)) {
       ## Extract FASTA from BSgenome object
@@ -124,6 +126,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     ## If TRUE report only the contig with the longest alignment
     if (report.longest.aln) {
       gr.seq <- gr.seq[which.max(width(gr.seq))]
+      index.gr <- paf.gr[which.max(width(paf.gr))]
     } else {
       ## Concatenate multiple sequence into a single FASTA
       if (length(paf.gr) > 1) {
@@ -133,6 +136,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
         names(gr.seq.collapsed) <- paste(names(gr.seq), collapse = ';')
         gr.seq <- gr.seq.collapsed
       }
+      index.gr <- paf.gr
     }  
     
     ## Write final FASTA
@@ -140,10 +144,17 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       ## Remove comment character from sequence names
       names(gr.seq) <- gsub(names(gr.seq), pattern = '#', replacement = '_')
       Biostrings::writeXStringSet(x = gr.seq, filepath = fasta.save, format = 'fasta')
+    } #else {
+      #warning("Please speficify 'fasta.save' if you want to export FASTA into a file!!!")
+    #}
+    ## Return extracted FASTA or index
+    if (return == 'fasta') {
+      return(gr.seq)
+    } else if (return == 'index') {
+      return(index.gr)
     } else {
-      warning("Please speficify 'fasta.save' if you want to export FASTA into a file!!!")
+      return(NULL)
     }  
-    return(gr.seq)
   } else {
     return(paf)
   }  

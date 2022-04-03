@@ -16,7 +16,7 @@
 #' @return A \code{ggplot} object.
 #' @importFrom scales comma
 #' @importFrom S4Vectors subjectHits queryHits endoapply
-#' @import Geno
+#' @import GenomicRanges
 #' @author David Porubsky
 #' @export
 selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.align.len=1000, min.align.dist=1000, collapse.overlaps=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL, return='plot') {
