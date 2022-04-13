@@ -10,7 +10,7 @@ paf2coords(
   min.align.len = 1000,
   min.align.n = 1,
   target.region = NULL,
-  seqname.grep = NULL,
+  seqnames.grep = NULL,
   drop.self.align = TRUE
 )
 }
@@ -26,9 +26,9 @@ paf2coords(
 \item{target.region}{A user defined target region to load in a character string ('chr:start-end') or as
 a \code{\link{GRanges-class}} object containing a single genomic region.}
 
-\item{seqname.grep}{Retain only a specific sequence/region name with a given character string.}
-
 \item{drop.self.align}{Remove alignments of a given sequence to itself.}
+
+\item{seqname.grep}{Retain only a specific sequence/region name with a given character string.}
 }
 \value{
 A \code{data.frame} of PAF alignments reported as x and y coordinate values.

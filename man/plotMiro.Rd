@@ -30,7 +30,7 @@ plotMiro(
 A \code{list} of miropeat style plots.
 }
 \description{
-This function takes PAF output file from minimap2 alignemts, and visualize the alignments
+This function takes PAF output file from minimap2 alignments, and visualize the alignments
 in miropeat style.
 }
 \author{

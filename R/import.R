@@ -4,7 +4,6 @@
 #' perform user defined filtering of input alignments based on mapping quality and
 #' alignment length.
 #'
-#' @param paf.file A path to a PAF file containing alignments to be loaded.
 #' @param min.mapq Minimum mapping quality to retain.
 #' @param min.align.len Minimum alignment length to retain.
 #' @param min.align.n Minimum number of alignments between a pair of sequences/regions.
@@ -12,21 +11,15 @@
 #' a \code{\link{GRanges-class}} object containing a single genomic region.
 #' @param seqname.grep Retain only a specific sequence/region name with a given character string.
 #' @param drop.self.align Remove alignments of a given sequence to itself.
+#' @inheritParams readPaf
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @importFrom dplyr group_by mutate
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqname.grep=NULL, drop.self.align=TRUE) {
+paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqnames.grep=NULL, drop.self.align=TRUE) {
   if (file.exists(paf.file)) {
-    message("Loading PAF file: ", paf.file)
-    paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE)
-    #paf <- utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&')
-    ## Keep only first 12 columns
-    paf <- paf[,c(1:12)]
-    ## Add header
-    header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq') 
-    colnames(paf) <- header
+    paf <- readPaf(paf.file = paf.file, include.paf.tags = FALSE)
   } else {
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
   }  
@@ -91,9 +84,9 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
   
   ## Filter PAF alignments ##
   ## Keep only specific sequence/region name
-  if (!is.null(seqname.grep)) {
-    paf <- paf[grep(paf$q.name, pattern = seqname.grep),]
-    paf <- paf[grep(paf$t.name, pattern = seqname.grep),]
+  if (!is.null(seqnames.grep)) {
+    paf <- paf[grep(paf$q.name, pattern = seqnames.grep),]
+    paf <- paf[grep(paf$t.name, pattern = seqnames.grep),]
   }
   ## Filter by mapping quality
   if (min.mapq > 0 & is.numeric(paf$mapq)) {
