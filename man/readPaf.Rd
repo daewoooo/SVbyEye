@@ -18,7 +18,7 @@ readPaf(
 \item{restrict.paf.tags}{Define a set of PAF tag ids (e.g. NM, cg) to be reported in the output.}
 }
 \description{
-This function takes an PAF output file from minimap2 and  loads the file along
+This function takes an PAF output file from minimap2 and loads the file along
 with user defined set of additional alignment tags (see PAF specification).
 }
 \author{

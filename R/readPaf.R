@@ -1,6 +1,6 @@
 #' Read PAF from an input file
 #' 
-#' This function takes an PAF output file from minimap2 and  loads the file along
+#' This function takes an PAF output file from minimap2 and loads the file along
 #' with user defined set of additional alignment tags (see PAF specification).
 #'
 #' @param paf.file A path to a PAF file containing alignments to be loaded.
