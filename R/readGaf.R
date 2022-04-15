@@ -16,13 +16,13 @@ readGaf <- function(gaf.file = NULL) {
   }
   
   ## Load GAF file ##
-  con <- file(filepath, "r")
+  file.con <- file(gaf.file, "r")
   paths <- list()
   gaf.aln <- NULL
   gaf <- NULL
   path.aligns <- list()
   while (TRUE) {
-    line <- readLines(con, n = 1)
+    line <- readLines(file.con, n = 1)
     if (length(line) != 0) {
       fields <- stringr::str_split(line, pattern = "\t")
       if (!grepl(line, pattern = '\\*')) {
@@ -86,7 +86,7 @@ readGaf <- function(gaf.file = NULL) {
       break
     }
   }
-  close(con)
+  close(file.con)
   paths.tbl <- dplyr::bind_rows(paths)
   paths.tbl$s.name <- gsub(paths.tbl$s.name, pattern = '<|>', replacement = '')
   num.cols <- c(2, 3, 4, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20)
