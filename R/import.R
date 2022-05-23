@@ -94,13 +94,20 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     paf <- paf[grep(paf$t.name, pattern = seqnames.grep),]
   }
   ## Filter by mapping quality
-  if (min.mapq > 0 & is.numeric(paf$mapq)) {
-    paf <- paf[paf$mapq >= min.mapq,]
-  }
+  ## Make sure mapping quality is defined
+  if (all(is.na(paf$mapq))) {
+    paf$mapq[is.na(paf$mapq)] <- min.mapq
+    if (min.mapq > 0 & is.numeric(paf$mapq)) {
+      paf <- paf[paf$mapq >= min.mapq,]
+    }
+  }  
   ## Filter by alignment length
-  if (min.align.len > 0 & is.numeric(paf$aln.len)) {
-    paf <- paf[paf$aln.len >= min.align.len,]
-  }
+  if (all(is.na(paf$aln.len))) {
+    paf$aln.len[is.na(paf$aln.len)] <- min.align.len
+    if (min.align.len > 0 & is.numeric(paf$aln.len)) {
+      paf <- paf[paf$aln.len >= min.align.len,]
+    }
+  }  
   ## Filter out self-alignments
   if (drop.self.align) {
     paf <- paf[!(paf$q.name == paf$t.name),]
