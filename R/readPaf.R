@@ -17,6 +17,20 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
     stop("Path to a PAF file to load is not defined!!!")
   }
   
+  ## Check if file exists and is TAB delimited 
+  if (file.exists(paf.file)) {
+    con <- file(paf.file,"r")
+    first.line <- readLines(con, n=1)
+    n.fields <- length(stringr::str_split(first.line, "\t")[[1]])
+    if (n.fields < 12) {
+      stop("User defined 'paf.file' has less then 12 expected tab-delimeted fields!!!")
+    }
+    close(con)
+  } else {
+    stop("User defined 'paf.file' doesn't exist!!!")
+  }
+    
+  
   ## Load PAF file ##
   if (file.exists(paf.file)) {
     message("Loading PAF file: ", paf.file)
@@ -35,7 +49,7 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
     }
     paf <- dplyr::bind_rows(paf.fields)
     cols.num <- c(2, 3, 4, 7:12)
-    paf[cols.num] <- dplyr::bind_cols(S4Vectors::lapply(paf[cols.num], as.numeric))
+    paf[cols.num] <- suppressWarnings( dplyr::bind_cols(S4Vectors::lapply(paf[cols.num], as.numeric)) )
     
     if (include.paf.tags) {
       if (any(lengths(fields) > 12)) {

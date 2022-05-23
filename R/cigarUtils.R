@@ -154,4 +154,9 @@ cigar2ranges <- function(paf.file=NULL, coordinate.space='reference', min.insert
   ## Return 
   final.gr <- c(matches.gr, mismatches.gr, insertions.gr, deletions.gr)
   return(final.gr)
-} 
+}
+
+cigar2divergence <- function(cigar.str=NULL, coordinate.space = 'reference') {
+  ## Parse CIGAR string ##
+  cg.ranges <- parseCigarString(cigar.str = cigar.str, coordinate.space = coordinate.space)
+}

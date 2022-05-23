@@ -173,6 +173,11 @@ plotAVA <- function(paf.file = NULL, seqnames.order=NULL, seqnames.grep=NULL, ta
     paf <- paf[!(paf$q.name == paf$t.name),]
   }
   
+  ## Check if there are any alignments left after filtering to plot
+  if (nrow(paf) == 0) {
+    stop("All alignments were filtered out, Please check if the input 'paf.file' contains correct all-vs-all alignments!")
+  }
+  
   ## Sync by majority strand directionality
   if (!is.null(majority.strand)) {
     ## Define majority and minority strand
