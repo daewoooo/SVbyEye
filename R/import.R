@@ -25,7 +25,7 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
   }  
   ## Filer alignments by target region
   if (!is.null(target.region)) {
-    if (grepl(target.region, pattern = '\\w+[\\d+,X,Y]:\\d+-\\d+')) { ## TODO This does expect strandard chromosome names only!!!
+    if (is.character(target.region)) {
       target.region.gr <- as(target.region, 'GRanges')
     } else if (class(target.region.gr) == 'GRanges') {
       target.region.gr <- target.region
