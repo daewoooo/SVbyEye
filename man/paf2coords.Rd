@@ -11,7 +11,8 @@ paf2coords(
   min.align.n = 1,
   target.region = NULL,
   seqnames.grep = NULL,
-  drop.self.align = TRUE
+  drop.self.align = TRUE,
+  majority.strand = NULL
 )
 }
 \arguments{
@@ -27,6 +28,8 @@ paf2coords(
 a \code{\link{GRanges-class}} object containing a single genomic region.}
 
 \item{drop.self.align}{Remove alignments of a given sequence to itself.}
+
+\item{majority.strand}{A desired majority strand directionality to be reported.}
 
 \item{seqname.grep}{Retain only a specific sequence/region name with a given character string.}
 }

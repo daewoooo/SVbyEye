@@ -12,12 +12,13 @@
 #' @param seqname.grep Retain only a specific sequence/region name with a given character string.
 #' @param drop.self.align Remove alignments of a given sequence to itself.
 #' @inheritParams readPaf
+#' @inheritParams syncRangesDir
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @importFrom dplyr group_by mutate
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqnames.grep=NULL, drop.self.align=TRUE) {
+paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqnames.grep=NULL, drop.self.align=TRUE, majority.strand=NULL) {
   if (file.exists(paf.file)) {
     paf <- readPaf(paf.file = paf.file, include.paf.tags = FALSE)
   } else {
@@ -39,41 +40,41 @@ paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1,
     #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
   }
   ## Sync by majority strand directionality
-  majority.strand = '+'
-  ## Define majority and minority strand
-  if (majority.strand == '+') {
-    minority.strand = '-'
-  } else if (majority.strand == '-') {
-    minority.strand = '+'
-  } else {
-    stop("Parameter 'majority.strand' can only be defined as '+' or '-' !!!")
-  }
-  
-  ## Make sure alignment is defined before deciding on majority directionality
-  if (!is.na(sum(paf$aln.len)))  {
-    if (sum(paf$aln.len) > 0) {
-      paf.l <- split(paf, paf$q.name)
-      for (i in seq_along(paf.l)) {
-        paf.ctg <- paf.l[[i]]
-        ## Flip directionality based to make sure majority strand covers the most bases
-        if (sum(paf.ctg$aln.len[paf.ctg$strand == majority.strand]) > sum(paf.ctg$aln.len[paf.ctg$strand == minority.strand])) {
-          paf.l[[i]] <- paf.ctg
-        } else {
-          paf.ctg.new <- paf.ctg
-          ## Flip alignment orientation
-          paf.ctg.new$strand[paf.ctg$strand == majority.strand] <- minority.strand
-          paf.ctg.new$strand[paf.ctg$strand == minority.strand] <- majority.strand
-          ## Flip query coordinates
-          paf.ctg.new$q.end <- paf.ctg$q.len - paf.ctg$q.start
-          paf.ctg.new$q.start <- paf.ctg$q.len - paf.ctg$q.end
-          
-          paf.l[[i]] <- paf.ctg.new
+  if (!is.null(majority.strand)) {
+    ## Define majority and minority strand
+    if (majority.strand == '+') {
+      minority.strand = '-'
+    } else if (majority.strand == '-') {
+      minority.strand = '+'
+    } else {
+      stop("Parameter 'majority.strand' can only be defined as '+' or '-' !!!")
+    }
+    
+    ## Make sure alignment is defined before deciding on majority directionality
+    if (!is.na(sum(paf$aln.len)))  {
+      if (sum(paf$aln.len) > 0) {
+        paf.l <- split(paf, paf$q.name)
+        for (i in seq_along(paf.l)) {
+          paf.ctg <- paf.l[[i]]
+          ## Flip directionality based to make sure majority strand covers the most bases
+          if (sum(paf.ctg$aln.len[paf.ctg$strand == majority.strand]) > sum(paf.ctg$aln.len[paf.ctg$strand == minority.strand])) {
+            paf.l[[i]] <- paf.ctg
+          } else {
+            paf.ctg.new <- paf.ctg
+            ## Flip alignment orientation
+            paf.ctg.new$strand[paf.ctg$strand == majority.strand] <- minority.strand
+            paf.ctg.new$strand[paf.ctg$strand == minority.strand] <- majority.strand
+            ## Flip query coordinates
+            paf.ctg.new$q.end <- paf.ctg$q.len - paf.ctg$q.start
+            paf.ctg.new$q.start <- paf.ctg$q.len - paf.ctg$q.end
+            
+            paf.l[[i]] <- paf.ctg.new
+          }
         }
-      }
-      paf <- do.call(rbind, paf.l)
+        paf <- do.call(rbind, paf.l)
+      }  
     }  
-  }  
-  
+  }
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
   #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])

@@ -3,10 +3,10 @@
 #' @param paf.file paf.file A path to a PAF file containing alignments to be loaded.
 #' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from. 
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
-#' @param majority.strand A desired majority strand directionality to be reported.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
 #' @param fasta.save A path to a filename where to store final FASTA file.
 #' @param return Set to either 'fasta' or 'index' to return either FASTA in \code{\link{DNAStringSet-class}} object or region index in \code{\link{GRanges-class}} object is returned.
+#' @inheritParams syncRangesDir
 #' @importFrom Rsamtools indexFa FaFile scanFa scanFaIndex
 #' @importFrom BSgenome getSeq
 #' @importFrom Biostrings writeXStringSet
