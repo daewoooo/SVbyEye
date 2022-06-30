@@ -16,7 +16,7 @@
 #' @author David Porubsky
 #' @export
 #'
-paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=FALSE, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
+paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=NULL, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
   ## Load BSgenome object
   if (class(bsgenome) != 'BSgenome') {
     if (is.character(bsgenome)) {
@@ -99,9 +99,9 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       paf.grl[[i]] <- gr
     }
     paf.gr <- unlist(paf.grl, use.names = FALSE)
-    ## Force reverse complement if 'revcomp' parameter is TRUE
-    if (revcomp) {
-      paf.gr$revcomp <- TRUE
+    ## Force reverse complement if 'revcomp' parameter is set to TRUE/FALSE
+    if (!is.null(revcomp)) {
+      paf.gr$revcomp <- revcomp
     }
     
     ## Order regions by query position
