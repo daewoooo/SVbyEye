@@ -6,8 +6,9 @@
 \usage{
 plotVariantDensity(
   infile = NULL,
+  vcf.gr = NULL,
   chromosomes = NULL,
-  binsize = 20000,
+  binsize = 2e+05,
   stepsize = 2e+05,
   layout = "horizontal",
   reverse.x = FALSE,
@@ -15,7 +16,9 @@ plotVariantDensity(
   blacklist = NULL,
   bsgenome = NULL,
   ref.fasta = NULL,
-  gap.cent.bed = NULL
+  gap.cent.bed = NULL,
+  zoom.region = NULL,
+  highlight.region = NULL
 )
 }
 \arguments{
@@ -40,6 +43,10 @@ plotVariantDensity(
 \item{ref.fasta}{A user defined reference FASTA file from which chromosome lengths will be extracted.}
 
 \item{gap.cent.bed}{A set of ranges in BED format to be highlighted as centromeres and/or gaps as white rectangles.}
+
+\item{zoom.region}{A \code{\link{GRanges-class}} object of a single genomic region to be zoomed in.}
+
+\item{highlight.region}{A \code{\link{GRanges-class}} object of genomic regions to be highlighted by dashed rectangles.}
 }
 \value{
 A \code{ggplot} object.

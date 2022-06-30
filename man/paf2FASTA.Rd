@@ -9,7 +9,10 @@ paf2FASTA(
   bsgenome = NULL,
   asm.fasta = NULL,
   majority.strand = "+",
+  revcomp = FALSE,
   report.longest.aln = FALSE,
+  report.query.name = NULL,
+  concatenate.aln = TRUE,
   fasta.save = NULL,
   return = "fasta"
 )
@@ -23,7 +26,13 @@ paf2FASTA(
 
 \item{majority.strand}{A desired majority strand directionality to be reported.}
 
+\item{revcomp}{If set to \code{TRUE} FASTA sequence will be reverse complemented.}
+
 \item{report.longest.aln}{If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.}
+
+\item{report.query.name}{A single query (contig) name/id to be reported as FASTA sequence.}
+
+\item{concatenate.aln}{Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence \link{default: TRUE}.}
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 

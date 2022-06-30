@@ -3,7 +3,10 @@
 #' @param paf.file paf.file A path to a PAF file containing alignments to be loaded.
 #' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from. 
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
+#' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
+#' @param report.query.name A single query (contig) name/id to be reported as FASTA sequence.
+#' @param concatenate.aln Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence [default: TRUE].
 #' @param fasta.save A path to a filename where to store final FASTA file.
 #' @param return Set to either 'fasta' or 'index' to return either FASTA in \code{\link{DNAStringSet-class}} object or region index in \code{\link{GRanges-class}} object is returned.
 #' @inheritParams syncRangesDir
@@ -13,7 +16,7 @@
 #' @author David Porubsky
 #' @export
 #'
-paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', report.longest.aln=FALSE, fasta.save=NULL, return='fasta') {
+paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=FALSE, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
   ## Load BSgenome object
   if (class(bsgenome) != 'BSgenome') {
     if (is.character(bsgenome)) {
@@ -56,6 +59,17 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     ## Make sure no genomic region starts with zero
     GenomicRanges::start(paf.gr) <- pmax(GenomicRanges::start(paf.gr), 1)
     
+    ## If defined process only a certain query name(s)
+    if (!is.null(report.query.name)) {
+      if (report.query.name %in% as.character(GenomeInfoDb::seqnames(paf.gr))) {
+        paf.gr <- GenomeInfoDb::keepSeqlevels(paf.gr, value = report.query.name, pruning.mode = 'coarse')
+        ## Make sure parameter 'report.longest.aln' is set to FALSE
+        report.longest.aln <- FALSE
+      } else {
+        warning("User defined 'report.query.name', ", report.query.name, " doesn't exist in submitted paf file!!!")
+      }
+    }
+    
     ## Sync alignment directionality based on preferred majority strand
     paf.grl <- split(paf.gr, seqnames(paf.gr))
     for (i in seq_along(paf.grl)) {
@@ -85,6 +99,10 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       paf.grl[[i]] <- gr
     }
     paf.gr <- unlist(paf.grl, use.names = FALSE)
+    ## Force reverse complement if 'revcomp' parameter is TRUE
+    if (revcomp) {
+      paf.gr$revcomp <- TRUE
+    }
     
     ## Order regions by query position
     #paf.gr <- GenomicRanges::sort(paf.gr, ignore.strand=TRUE)
@@ -127,8 +145,8 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     if (report.longest.aln) {
       gr.seq <- gr.seq[which.max(width(gr.seq))]
       index.gr <- paf.gr[which.max(width(paf.gr))]
-    } else {
-      ## Concatenate multiple sequence into a single FASTA
+    } else if (concatenate.aln) {
+      ## Concatenate multiple sequences into a single FASTA
       if (length(paf.gr) > 1) {
         ## Concatenate all sequences into a single FASTA separated by 100 N's.
         delim <- paste(rep('N', 100), collapse = '')
@@ -137,7 +155,10 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
         gr.seq <- gr.seq.collapsed
       }
       index.gr <- paf.gr
-    }  
+    } else {
+      index.gr <- paf.gr
+      gr.seq <- gr.seq
+    } 
     
     ## Write final FASTA
     if (is.character(fasta.save)) {

@@ -458,8 +458,8 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
   ## Get max position (for x-axis plotting)
   max.pos <- max(c(coords.df$s1.start, coords.df$s1.end, coords.df$s2.start, coords.df$s2.end))
   
-  
-  ## Translate sequence coordinates to genome-wide coordinates
+  ## Translate sequence coordinates to genome-wide coordinates [only works for nucmer]
+  if (format == 'mm2') {genome.coord <- FALSE}
   if (genome.coord) {
     s2.region <- unique(coords.df$s2.id)
     s2.region <- strsplit(s2.region, ":")[[1]][2]
@@ -467,7 +467,6 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
     coords.df$s2.start <- remapCoord(x = coords.df$s2.start, new.range = s2.range)
     coords.df$s2.end <- remapCoord(x = coords.df$s2.end, new.range = s2.range)
   }
-  
   
   ## Data filtering ##
   ####################

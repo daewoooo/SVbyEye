@@ -8,6 +8,8 @@
 #' @param bsgenome A \code{\link{BSgenome-class}} object to provide chromosome lengths for plotting.
 #' @param ref.fasta A user defined reference FASTA file from which chromosome lengths will be extracted.
 #' @param gap.cent.bed A set of ranges in BED format to be highlighted as centromeres and/or gaps as white rectangles.
+#' @param zoom.region A \code{\link{GRanges-class}} object of a single genomic region to be zoomed in.
+#' @param highlight.region A \code{\link{GRanges-class}} object of genomic regions to be highlighted by dashed rectangles.
 #' @inheritParams makeBins
 #' @import ggplot2
 #' @importFrom data.table fread
@@ -19,17 +21,18 @@
 #' @importFrom IRanges subsetByOverlaps
 #' @importFrom stats quantile
 #' @importFrom wesanderson wes_palette
+#' @importFrom primatR makeBins
 #' @return A \code{ggplot} object.
 #' @author David Porubsky
 #' @export
 #' 
-plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, stepsize=200000, layout='horizontal', reverse.x=FALSE, title=NULL, blacklist=NULL, bsgenome=NULL, ref.fasta=NULL, gap.cent.bed=NULL) {
+plotVariantDensity <- function(infile=NULL, vcf.gr=NULL, chromosomes=NULL, binsize=200000, stepsize=200000, layout='horizontal', reverse.x=FALSE, title=NULL, blacklist=NULL, bsgenome=NULL, ref.fasta=NULL, gap.cent.bed=NULL, zoom.region=NULL, highlight.region=NULL) {
 
   ## Load the data
   if (!is.null(infile)) { 
     if (file.exists((infile))) {
       var.dt <- data.table::fread(infile, sep='\t', stringsAsFactors = FALSE)
-      if (ncol(svs.dt) >= 3) {
+      if (ncol(var.dt) >= 3) {
         var.dt <- var.dt[,c(1:3)]
         colnames(var.dt) <- c('seqnames', 'start', 'end')
         var.gr <- GenomicRanges::makeGRangesFromDataFrame(var.dt, keep.extra.columns = FALSE)
@@ -39,8 +42,10 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
     } else {
       stop("User defined input file, '", infile, "' doesn't exists!!!")
     }
-  } else {
-    stop("No input file defined to plot!!!")
+  } else if (!is.null(vcf.gr)) {
+    if (class(vcf.gr) == 'GRanges') {
+      var.gr <- vcf.gr
+    }
   }
   
   ## Keep only user defined chromosomes
@@ -72,19 +77,20 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
   }
   
   ## Check input format of regions to be masked on the ideogram
-  if (file.exists(gap.cent.bed)) {
-    gap.cent.bed.df <- utils::read.table(file = gap.cent.bed, header = FALSE, sep = '\t', stringsAsFactors = FALSE)
-    if (ncol(gap.cent.bed.df) >= 3) {
-      gap.cent.bed.df <- gap.cent.bed.df[,c(1:3)]
+  if (!is.null(gap.cent.bed)) {
+    if (file.exists(gap.cent.bed)) {
+      gap.cent.bed.df <- utils::read.table(file = gap.cent.bed, header = FALSE, sep = '\t', stringsAsFactors = FALSE)
+      if (ncol(gap.cent.bed.df) >= 3) {
+        gap.cent.bed.df <- gap.cent.bed.df[,c(1:3)]
+      } else {
+        gap.cent.bed <- NULL
+        warning("The BED file, '", gap.cent.bed, "' doesn't contain required fields ('chr.name', 'start', 'end').")
+      }
     } else {
       gap.cent.bed <- NULL
-      warning("The BED file, '", gap.cent.bed, "' doesn't contain required fields ('chr.name', 'start', 'end').")
+      warning("The BED file, '", gap.cent.bed, "' doesn't exists.")
     }
-  } else {
-    gap.cent.bed <- NULL
-    warning("The BED file, '", gap.cent.bed, "' doesn't exists.")
-  }
-  
+  }  
   ## Check user input
   ## Load BSgenome
   if (class(bsgenome) != 'BSgenome') {
@@ -119,13 +125,16 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
     fa.idx <- Rsamtools::scanFaIndex(ref.fasta)
     ## Get chromosome length from reference fasta
     seq.len <- GenomeInfoDb::seqlengths(fa.idx)[chroms2use]
+    ## Remove any NA values
+    seq.len <- seq.len[!is.na(names(seq.len))]
+    chroms2use <- chroms2use[chroms2use %in% names(seq.len)]
   }
 
   ## Bin the data
   if (!is.null(bsgenome)) {
-    bins <- makeBins(bsgenome = bsgenome, chromosomes = chroms2use, binsize = binsize, stepsize = stepsize)
+    bins <- primatR::makeBins(bsgenome = bsgenome, chromosomes = chroms2use, binsize = binsize, stepsize = stepsize)
   } else if (!is.null(ref.fasta)) {
-    bins <- makeBins(fai = paste0(ref.fasta, ".fai"), chromosomes = chroms2use, binsize = binsize, stepsize = stepsize)
+    bins <- primatR::makeBins(fai = paste0(ref.fasta, ".fai"), chromosomes = chroms2use, binsize = binsize, stepsize = stepsize)
   }
   
   ## Filter variants from blacklisted regions
@@ -140,7 +149,7 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
   ## Set outlier bins to the limit
   bins$counts[bins$counts >= outlier] <- outlier
   
-  ## Prepare the ideogram
+  ## Prepare the ideogram ##
   ideo.df <- data.frame(seqnames=names(seq.len), length=seq.len)
   ideo.df$seqnames <- factor(ideo.df$seqnames, levels=chroms2use)
   ideo.df$levels <- 1:length(seq.len)
@@ -157,7 +166,8 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
   pal <- wesanderson::wes_palette("Zissou1", 100, type = "continuous")
 
   ## Plotting themes
-  theme_horizontal <- theme(axis.title.y=element_blank(),
+  theme_horizontal <- theme(legend.position ="bottom",
+                            axis.title.y=element_blank(),
                             axis.text.y=element_blank(),
                             axis.ticks.y=element_blank(),
                             panel.grid.major = element_blank(), 
@@ -176,6 +186,10 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
                           panel.background = element_blank(),
                           strip.background = element_rect(colour="white", fill="white"))
   
+  if (class(zoom.region) == 'GRanges') {
+    bins <- subsetByOverlaps(bins, zoom.region)
+  }
+  
   ## Prepare data for plotting
   bins.df <- BiocGenerics::as.data.frame(bins)
   
@@ -185,22 +199,46 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
   labels <- breaks / 1000000
   labels <- paste0(labels, 'Mb')
   
-  ## Make ideogram
-  if (layout == 'horizontal') {
-    plt <- ideo + 
+  ## Make ideogram ##
+  if (class(zoom.region) == 'GRanges') {
+    layout == 'horizontal'
+    plt <- ggplot() + 
       geom_rect(data=bins.df, aes(xmin=start, xmax=end, ymin=0, ymax=1, fill=counts)) +
-      scale_fill_gradientn(colours = pal, guide="none") +
+      scale_fill_gradientn(colours = pal, name='Variant\ncount') +
       facet_grid(seqnames ~ ., switch = 'y') +
-      scale_x_continuous(expand = c(0,0), breaks = breaks, labels = labels, name="") +
+      scale_x_continuous(expand = c(0,0), limits = c(start(zoom.region), end(zoom.region)), labels = comma, name="") +
       theme_horizontal
-  } else if (layout == 'vertical') {
-    plt <- ideo + 
-      geom_rect(data=bins.df, aes(ymin=start, ymax=end, xmin=0, xmax=1, fill=counts)) +
-      scale_fill_gradientn(colours = pal, guide="none") +
-      facet_grid(. ~ seqnames, switch = 'x') +
-      scale_y_continuous(expand = c(0,0), breaks = breaks, labels = labels, name="") +
-      theme_vertical
-  }  
+  } else {
+    if (layout == 'horizontal') {
+      plt <- ideo + 
+        geom_rect(data=bins.df, aes(xmin=start, xmax=end, ymin=0, ymax=1, fill=counts)) +
+        scale_fill_gradientn(colours = pal, name='Variant\ncount') +
+        facet_grid(seqnames ~ ., switch = 'y') +
+        scale_x_continuous(expand = c(0,0), breaks = breaks, labels = labels, name="") +
+        theme_horizontal
+    } else if (layout == 'vertical') {
+      plt <- ideo + 
+        geom_rect(data=bins.df, aes(ymin=start, ymax=end, xmin=0, xmax=1, fill=counts)) +
+        scale_fill_gradientn(colours = pal, name='Variant\ncount') +
+        facet_grid(. ~ seqnames, switch = 'x') +
+        scale_y_continuous(expand = c(0,0), breaks = breaks, labels = labels, name="") +
+        theme_vertical
+    }  
+  }
+  
+  ## Highlight positions with dashed lines
+  if (!is.null(highlight.region)) {
+    if (class(highlight.region) == 'GRanges') {
+      highlight.region.df <- as.data.frame(highlight.region)
+      if (layout == 'horizontal') {
+        plt <- plt + 
+          geom_rect(data=highlight.region.df, aes(xmin=start, xmax=end, ymin=0, ymax=1), fill=NA, color='black', linetype='dashed')
+      } else if (layout == 'vertical') {
+        plt <- plt + 
+          geom_rect(data=highlight.region.df, aes(ymin=start, ymax=end, xmin=0, xmax=1), fill=NA, color='black', linetype='dashed')
+      }  
+    }
+  }
   
   ## Overlay positions of centromeres and gaps as white rectangles
   if (!is.null(gap.cent.bed)) {
@@ -215,8 +253,10 @@ plotVariantDensity <- function(infile=NULL, chromosomes=NULL, binsize=20000, ste
     plt <- suppressMessages( plt + scale_x_reverse() )
   }
   ## Add title
-  if (!is.null(title) & nchar(title > 0)) {
-    plt <- plt + ggplot2::ggtitle(title)
+  if (!is.null(title)) {
+    if (nchar(title > 0)) {
+      plt <- plt + ggplot2::ggtitle(title)
+    }  
   }
   
   ## Highlight a user defined loci [TODO: allow region highlights]
