@@ -98,7 +98,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     } else {
       stop('No seglength provided!!!')
     }
-    if (all(end(gr) < gr.len)) {
+    if (!all(end(gr) <= gr.len)) {
       stop("One or all submitted ranges are outside of defined seqlength!!!")
     }
     starts <- gr.len - end(gr)
@@ -200,7 +200,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
       #end(query.del.gr) <- seqlengths(query.match.gr) - end(query.del.gr)
       #start(query.del.gr) <- seqlengths(query.match.gr) - start(query.del.gr)
       if (paf.aln$strand == '-') {
-        query.del.gr <- mirrorRanges(query.del.gr, seqlength = seqlengths(query.match.gr))
+        query.del.gr <- mirrorRanges(gr = query.del.gr, seqlength = seqlengths(query.match.gr))
         query.del.gr <- GenomicRanges::shift(query.del.gr[,0], shift = paf.aln$q.start)
       } else {  
         query.del.gr <- GenomicRanges::shift(query.del.gr, shift = paf.aln$q.start)
