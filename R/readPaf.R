@@ -66,7 +66,7 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
 
 #' Process PAF specific alignment tags.
 #'
-#' @param paf.tags ...
+#' @param paf.tags A \code{list} of PAF specific tag extracted from each alignment.
 #' @inheritParams readPaf
 #' @importFrom stringr str_split
 #' @importFrom dplyr bind_rows

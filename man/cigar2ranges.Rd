@@ -17,9 +17,9 @@ cigar2ranges(
 
 \item{coordinate.space}{A used defined coordinate space given CIGAR should be parsed against, either 'reference' or 'query'.}
 
-\item{min.insertion.size}{A minimum size (in basepairs) of an insertion to be retained.}
+\item{min.insertion.size}{A minimum size (in base pairs) of an insertion to be retained.}
 
-\item{min.deletion.size}{A minimum size (in basepairs) of a deletion to be retained.}
+\item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
 
 \item{collapse.mismatches}{Set to \code{TRUE} if mismatches should be collapsed in order expand matched regions.}
 }

@@ -9,7 +9,7 @@ paf2FASTA(
   bsgenome = NULL,
   asm.fasta = NULL,
   majority.strand = "+",
-  revcomp = FALSE,
+  revcomp = NULL,
   report.longest.aln = FALSE,
   report.query.name = NULL,
   concatenate.aln = TRUE,

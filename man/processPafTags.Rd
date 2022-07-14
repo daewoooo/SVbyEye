@@ -7,7 +7,7 @@
 processPafTags(paf.tags, restrict.paf.tags = c("NM", "cg"))
 }
 \arguments{
-\item{paf.tags}{...}
+\item{paf.tags}{A \code{list} of PAF specific tag extracted from each alignment.}
 
 \item{restrict.paf.tags}{Define a set of PAF tag ids (e.g. NM, cg) to be reported in the output.}
 }

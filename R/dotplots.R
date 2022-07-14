@@ -41,8 +41,9 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
                             stringsAsFactors = FALSE)
   } else if (format == 'mm2') {
     ## Read in coordinates from minimap2 output
-    paf.data <- readPaf(paf.file = aln.coords, include.paf.tags = FALSE)
-    #paf.data <- readPaf(paf.file = aln.coords, include.paf.tags = TRUE)
+    paf.data <- readPaf(paf.file = aln.coords, restrict.paf.tags = 'cg')
+    #paf.data <- expandPaf(paf.table = paf.data, min.deletion.size = 1000, min.insertion.size = 1000, report.sv = TRUE)
+    #paf.data <- paf.data$M
     coords.df <- data.frame(s1.start=paf.data$q.start,
                             s1.end=paf.data$q.end,
                             s2.start=paf.data$t.start,
@@ -56,10 +57,6 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
     ## Flip start and end for reverse oriented alignments
     coords.df[paf.data$strand == '-',] <- transform(coords.df[paf.data$strand == '-',], 's2.start' = s2.end, 's2.end' = s2.start)
   }
-  ## Parse CIGAR to get alignment identity [TODO]
-  #parseCigarString(paf.data$cg[1])
-  #data.gr <- cigar2ranges(paf.file = aln.coords)
-  
   ## Get distance between alignments
   coords.df <- transform(coords.df, dist = abs(pmin(s2.start, s2.end) - pmax(s1.start, s1.end)))
   
@@ -201,14 +198,17 @@ selfdotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.a
     s2.copy.gr <- s2.gr
     seqlevels(s2.copy.gr) <- 's1'
     mask <- which(IRanges::distance(s1.gr, s2.copy.gr) == 0)
-    s1.gr <- s1.gr[-mask]
-    s2.gr <- s2.gr[-mask]
+    if (length(mask) > 0) {
+      s1.gr <- s1.gr[-mask]
+      s2.gr <- s2.gr[-mask]
+    }    
   }
   
   if (length(s1.gr) > 0 & length(s2.gr) > 0) {
     ## Prepare object of self-alignments for export
-    self.gr <- s1.gr[,0]
-    self.gr$s2 <- s2.gr[,0]
+    self.gr <- GenomicRanges::GRanges(seqnames=unique(coords.df$s1.id), ranges=ranges(s1.gr[,0]))
+    #self.gr$s2 <- s2.gr[,0]
+    self.gr$s2 <- GenomicRanges::GRanges(seqnames=unique(coords.df$s1.id), ranges=ranges(s2.gr[,0]))
     strand(self.gr) <- '+'
     strand(self.gr$s2) <- ifelse(s1.gr$dir == 'forw', '+', '-')
     

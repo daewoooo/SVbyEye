@@ -16,13 +16,12 @@ parseCigarString <- function(cigar.str=NULL, coordinate.space = 'reference') {
   ## Get Reference space coords
   if (coordinate.space == 'reference') {
     cigar.ranges <- GenomicAlignments::cigarRangesAlongReferenceSpace(cigar.str)[[1]]
+    #start(cigar.ranges[cigar.id == 'I']) <- end(cigar.ranges[cigar.id == 'I'])
   } else if (coordinate.space == 'query') {
     cigar.ranges <- GenomicAlignments::cigarRangesAlongQuerySpace(cigar.str)[[1]]
   } else {
     stop("Parameter 'coordinate.space' can only take values 'reference' or 'query' !!!")
   }
-  ## Add insertion sizes
-  cigar.ranges[cigar.id == 'I'] <- GenomicRanges::resize(cigar.ranges[cigar.id == 'I'], width = cigar.len[cigar.id == 'I'], fix = 'center')
   ## Translate cigar symbols
   cigar.id.trans <- dplyr::recode(cigar.id, '=' = 'match', 'I' = 'insertion', 'D' = 'deletion', 'X' = 'mismatch')
   ## Export ranges
@@ -34,12 +33,12 @@ parseCigarString <- function(cigar.str=NULL, coordinate.space = 'reference') {
 #' Function to load PAF alignments into a set of genomic ranges.
 #'
 #' @param paf.file A character string containing alignment represented as a CIGAR string.
-#' @param min.insertion.size A minimum size (in basepairs) of an insertion to be retained.
-#' @param min.deletion.size A minimum size (in basepairs) of a deletion to be retained.
+#' @param min.insertion.size A minimum size (in base pairs) of an insertion to be retained.
+#' @param min.deletion.size A minimum size (in base pairs) of a deletion to be retained.
 #' @param collapse.mismatches Set to \code{TRUE} if mismatches should be collapsed in order expand matched regions.
 #' @inheritParams readPaf
 #' @inheritParams parseCigarString
-#' @importFrom GenomicRanges GRanges shift reduce
+#' @importFrom GenomicRanges GRanges width shift reduce
 #' @return A \code{\link{GRanges}} object.
 #' @author David Porubsky
 #' @export
@@ -49,7 +48,7 @@ cigar2ranges <- function(paf.file=NULL, coordinate.space='reference', min.insert
   paf.data <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
   qname <- paste(unique(paf.data$q.name), collapse = ';')
   ## Order by target sequence
-  paf.data <- paf.data[order(paf.data$t.start),]
+  #paf.data <- paf.data[order(paf.data$t.start),]
   
   ## Process alignments ##
   matches <- list()
@@ -63,34 +62,47 @@ cigar2ranges <- function(paf.file=NULL, coordinate.space='reference', min.insert
     ## Get cigar ranges and offset ranges based on alignment starting position
     if (length(cg.ranges$match) > 0) {
       match.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$match)
-      match.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$t.start)
     } else {
-      match.gr <- NULL
+      match.gr <- GenomicRanges::GRanges()
     }  
     if (length(cg.ranges$mismatch) > 0) {
       mismatch.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$mismatch)
-      mismatch.gr <- GenomicRanges::shift(mismatch.gr, shift = paf.aln$t.start)
+      mismatch.gr$size <- 1
     } else {
-      mismatch.gr <- NULL
+      mismatch.gr <- GenomicRanges::GRanges()
     }  
     if (length(cg.ranges$deletion) > 0) { 
       del.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$deletion)
-      del.gr <- GenomicRanges::shift(del.gr, shift = paf.aln$t.start)
-      ## Filter deletions by size
-      del2reduce <- del.gr[width(del.gr) < min.deletion.size]
-      del.gr <- GenomicRanges::reduce(del.gr[width(del.gr) >= min.deletion.size])
+      ## In case of query coordinates get deletion size from the reference coordinates
+      if (coordinate.space == 'query') {
+        ref.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'reference')
+        del.gr$size <- GenomicRanges::width(ref.ranges$deletion)
+      } else {
+        del.gr$size <- GenomicRanges::width(del.gr)
+      }   
+      ## Filter deletions by size [in reference coordinates]
+      del2reduce <- del.gr[del.gr$size < min.deletion.size]
+      del.gr <- del.gr[del.gr$size >= min.deletion.size]
     } else {
-      del2reduce <- NULL
-      del.gr <- NULL
+      del2reduce <- GenomicRanges::GRanges()
+      del.gr <- GenomicRanges::GRanges()
     }  
     if (length(cg.ranges$insertion) > 0) {  
       ins.gr <- GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$insertion)
-      ins.gr <- GenomicRanges::shift(ins.gr, shift = paf.aln$t.start)
-      ## Filter insertions by size
-      ins.gr <- GenomicRanges::reduce(ins.gr[width(ins.gr) >= min.insertion.size])
+      ## In case of reference coordinates get insertion size from the query coordinates
+      if (coordinate.space == 'reference') {
+        qry.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'query')
+        ins.gr$size <- GenomicRanges::width(qry.ranges$insertion)
+      } else {
+        ins.gr$size <- GenomicRanges::width(ins.gr)
+      }   
+      ## Filter insertions by size [in query coordinates]
+      ins2reduce <- ins.gr[ins.gr$size < min.insertion.size]
+      ins.gr <- ins.gr[ins.gr$size >= min.insertion.size]
     } else {
-      ins.gr <- NULL
-    }
+      ins2reduce <- GenomicRanges::GRanges()
+      ins.gr <- GenomicRanges::GRanges()
+    }  
     
     ## Collapse simple mismatches
     if (collapse.mismatches) {
@@ -98,46 +110,56 @@ cigar2ranges <- function(paf.file=NULL, coordinate.space='reference', min.insert
     } else {
       match.gr <- GenomicRanges::reduce(match.gr)
     }
-    
     ## Collapse filtered deletions
     if (!is.null(del2reduce) & length(del2reduce) > 0) {
       match.gr <- GenomicRanges::reduce(c(match.gr, del2reduce))
     }
+    ## Collapse filtered insertions
+    if (!is.null(ins2reduce) & length(ins2reduce) > 0) {
+      match.gr <- GenomicRanges::reduce(c(match.gr, ins2reduce))
+    }
+    ## Set size of the final matched bases
+    match.gr$size <- GenomicRanges::width(match.gr)
+    
+    ## Convert to query or target coordinates
+    if (coordinate.space == 'reference') {
+      match.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$t.start)
+      mismatch.gr <- GenomicRanges::shift(mismatch.gr, shift = paf.aln$t.start)
+      del.gr <- GenomicRanges::shift(del.gr, shift = paf.aln$t.start)
+      ins.gr <- GenomicRanges::shift(ins.gr, shift = paf.aln$t.start)
+    } else {
+      match.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$q.start)
+      mismatch.gr <- GenomicRanges::shift(mismatch.gr, shift = paf.aln$q.start)
+      del.gr <- GenomicRanges::shift(del.gr, shift = paf.aln$q.start)
+      ins.gr <- GenomicRanges::shift(ins.gr, shift = paf.aln$q.start)
+    } 
     
     ## Prepare data for export
     if (length(match.gr) > 0) {
       strand(match.gr) <- paf.aln$strand
       match.gr$aln.id <- paste0('aln', i)
       match.gr$cg <- 'M'
-    } else {
-      match.gr <- NULL
     } 
     if (length(mismatch.gr) > 0) {
       strand(mismatch.gr) <- paf.aln$strand
       mismatch.gr$aln.id <- paste0('aln', i)
       mismatch.gr$cg <- 'X'
-    } else {
-      mismatch.gr <- NULL
-    }
+    } 
     if (length(ins.gr) > 0) {
       strand(ins.gr) <- paf.aln$strand
       ins.gr$aln.id <- paste0('aln', i)
       ins.gr$cg <- 'I'
-    } else {
-      ins.gr <- NULL
-    }
+    } 
     if (length(del.gr) > 0) {
       strand(del.gr) <- paf.aln$strand
       del.gr$aln.id <- paste0('aln', i)
       del.gr$cg <- 'D'
-    } else {
-      del.gr <- NULL
     }
     
-    matches[[i]] <- match.gr
-    mismatches[[i]] <- mismatch.gr
-    insertions[[i]] <- ins.gr
-    deletions[[i]] <- del.gr
+    matches[[length(matches) + 1]] <- match.gr
+    mismatches[[length(mismatches) + 1]] <- mismatch.gr
+    insertions[[length(insertions) + 1]] <- ins.gr
+    deletions[[length(deletions) + 1]] <- del.gr
   }
   matches.gr <- do.call(c, matches)
   mismatches.gr <- do.call(c, mismatches)
@@ -156,7 +178,7 @@ cigar2ranges <- function(paf.file=NULL, coordinate.space='reference', min.insert
   return(final.gr)
 }
 
-cigar2divergence <- function(cigar.str=NULL, coordinate.space = 'reference') {
-  ## Parse CIGAR string ##
-  cg.ranges <- parseCigarString(cigar.str = cigar.str, coordinate.space = coordinate.space)
-}
+# cigar2divergence <- function(cigar.str=NULL, coordinate.space = 'reference') {
+#   ## Parse CIGAR string ##
+#   cg.ranges <- parseCigarString(cigar.str = cigar.str, coordinate.space = coordinate.space)
+# }
