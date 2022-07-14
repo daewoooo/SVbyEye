@@ -98,6 +98,9 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     } else {
       stop('No seglength provided!!!')
     }
+    if (all(end(gr) < gr.len)) {
+      stop("One or all submitted ranges are outside of defined seqlength!!!")
+    }
     starts <- gr.len - end(gr)
     ends <- (gr.len - start(gr)) 
     #starts <- gr.len - cumsum(width(gr))
