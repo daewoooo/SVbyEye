@@ -261,7 +261,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
 #' @author David Porubsky
 #' @export
 #'
-expandPaf <- function(paf.table=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
+breakPaf <- function(paf.table=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
   ## Extract matching bases for each PAF record
   matches <- list()
   svs <- list()
