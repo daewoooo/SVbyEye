@@ -29,7 +29,6 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
   } else {
     stop("User defined 'paf.file' doesn't exist!!!")
   }
-    
   
   ## Load PAF file ##
   if (file.exists(paf.file)) {
