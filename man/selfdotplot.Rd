@@ -5,26 +5,16 @@
 \title{Make a horizontal self-alignment dot plot.}
 \usage{
 selfdotplot(
-  aln.coords = NULL,
-  format = "nucmer",
+  selfaln.gr = NULL,
   shape = "segment",
-  min.align.len = 1000,
-  min.align.dist = 1000,
   collapse.overlaps = TRUE,
   highlight.pos = NULL,
   highlight.region = NULL,
-  title = NULL,
-  return = "plot"
+  title = NULL
 )
 }
 \arguments{
-\item{aln.coords}{A path to a file containing self-alignment coordinates.}
-
-\item{format}{Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', \link{default: 'nucmer'}}
-
 \item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'arc'.}
-
-\item{min.align.dist}{Keep alignment pairs with this or larger distance from each other.}
 
 \item{collapse.overlaps}{Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.}
 
@@ -34,7 +24,7 @@ selfdotplot(
 
 \item{title}{A title to be added to the final dotplot.}
 
-\item{return}{Define desired output, either alignment plot as 'plot' or self-alignments in stored \code{\link{GRanges-class}} object as 'selfaln', \link{default: 'plot'}}
+\item{aln.coords}{A path to a file containing self-alignment coordinates.}
 }
 \value{
 A \code{ggplot} object.

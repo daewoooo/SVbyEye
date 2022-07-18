@@ -19,8 +19,6 @@ simpledotplot(
 \arguments{
 \item{aln.coords}{A path to a file containing self-alignment coordinates.}
 
-\item{format}{Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', \link{default: 'nucmer'}}
-
 \item{shape}{A shape used to plot aligned sequences: Either 'segm' or 'point'.}
 
 \item{keep.longest.aln}{Set to \code{TRUE} if a target sequence with a single longest alignment should be kept.}
