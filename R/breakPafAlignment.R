@@ -186,7 +186,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
       target.ins.gr <- GenomicRanges::shift(target.ins.gr, shift = paf.aln$t.start)
       #query.ins.gr <- GenomicRanges::shift(query.ins.gr[,0], shift = paf.aln$q.start)
       ## Create insertion ID
-      ins.cg <- paste0(width(query.ins.gr) - 1, 'I')
+      ins.cg <- paste0(width(query.ins.gr), 'I')
       ## Create paf alignment
       ins.paf.aln <- dplyr::tibble( q.name=as.character(seqnames(query.ins.gr)),
                                     q.len=paf.aln$q.len,
