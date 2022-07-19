@@ -38,7 +38,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   ## Parse CIGAR string ##
   t.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'reference')
   q.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'query')
-  ## Create paf alignment object
+  ## Create PAF alignment object
   alignment <- GenomicAlignments::GAlignments(seqnames = paf.aln$t.name, pos = 1L, cigar = paf.aln$cg, strand=GenomicRanges::strand(paf.aln$strand), names = 'target')
   #alignment <- GenomicAlignments::GAlignments(seqnames = paf.aln$t.name, pos = 1L, cigar = paf.aln$cg, strand=strand(paf.aln$strand), names = 'query')
   #test.gr <- GRanges(seqnames = 'target', ranges=IRanges(start=95514, width = width(match.gr)))
