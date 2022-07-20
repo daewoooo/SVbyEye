@@ -7,7 +7,6 @@
 selfdotplot(
   selfaln.gr = NULL,
   shape = "segment",
-  collapse.overlaps = TRUE,
   highlight.pos = NULL,
   highlight.region = NULL,
   title = NULL
@@ -15,8 +14,6 @@ selfdotplot(
 }
 \arguments{
 \item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'arc'.}
-
-\item{collapse.overlaps}{Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 

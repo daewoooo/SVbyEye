@@ -25,7 +25,7 @@ breakPafAlignment(
 \item{report.sv}{Set to \code{TRUE} if to report also ranges of deleted and inserted bases.}
 }
 \value{
-A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally vairable ('SV') bases if 'report.sv' is TRUE.
+A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 }
 \description{
 Function to break PAF alignment into matching bases between query and target sequence.

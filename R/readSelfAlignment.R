@@ -37,9 +37,13 @@ readSelfAlignments <- function(aln.coords=NULL, format='nucmer', min.align.len=1
                             s1.id=coords$V12,
                             s2.id=coords$V12, 
                             stringsAsFactors = FALSE)
+    ## Get max genomic position as sequence length
+    seq.len <- max(c(coords.df$s1.start, coords.df$s1.end, coords.df$s2.start, coords.df$s2.end))
   } else if (format == 'mm2') {
     ## Read in coordinates from minimap2 output
     paf.data <- readPaf(paf.file = aln.coords, restrict.paf.tags = 'cg')
+    ## Get sequence length
+    seq.len <- unique(paf.data$q.len)
     ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than target start
     paf.data <- paf.data[paf.data$q.start < paf.data$t.start,]
     ## Break paf alignments
@@ -215,8 +219,11 @@ readSelfAlignments <- function(aln.coords=NULL, format='nucmer', min.align.len=1
     self.gr$s2 <- GenomicRanges::GRanges(seqnames=unique(coords.df$s1.id), ranges=ranges(s2.gr[,0]))
     strand(self.gr) <- '+'
     strand(self.gr$s2) <- ifelse(s1.gr$dir == 'forw', '+', '-')
+    ## Add sequence length
+    seqlengths(self.gr) <- seq.len
+    seqlengths(self.gr$s2) <- seq.len
   } else {
-    self.gr <- NULL
+    self.gr <- GenomicRanges::GRanges()
   } 
   ## Prepare reported SVs for export
   if (format == 'mm2') {
@@ -225,10 +232,15 @@ readSelfAlignments <- function(aln.coords=NULL, format='nucmer', min.align.len=1
       sv.gr$s2 <- GenomicRanges::GRanges(seqnames=paf.data.sv$t.name, ranges=IRanges(start=paf.data.sv$t.start, end=paf.data.sv$t.end), strand = strand('*'))
       sv.gr$sv.type <- gsub(paf.data.sv$cg, pattern = '\\d+', replacement = '')
       sv.gr$sv.size <- gsub(paf.data.sv$cg, pattern = '[A-Z,=]', replacement = '', ignore.case = TRUE)
-    }  
+      ## Add sequence length
+      seqlengths(sv.gr) <- seq.len
+    } else {
+      sv.gr <- GenomicRanges::GRanges()
+    } 
   } else {
     sv.gr <- GenomicRanges::GRanges()
   }
+
   ## Return self-alignments
   return(list('SelfAlnPairs' = self.gr, 'SVs' = sv.gr))
 }  
