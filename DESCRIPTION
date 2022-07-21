@@ -13,6 +13,7 @@ Depends:
 biocViews:  
 Imports:
   ggplot2,
+  ggnewscale,
   ggforce,
   gggenes,
   scales,
