@@ -23,12 +23,16 @@ Imports:
   utils,
   GenomicRanges,
   GenomicAlignments,
+  BSgenome,
   IRanges,
   data.table,
   GenomeInfoDb,
   BiocGenerics,
   Rsamtools,
   wesanderson,
+Suggests:
+  BiocStyle,
+  testthat
 License: `use_mit_license()`
 Encoding: UTF-8
 LazyData: true
