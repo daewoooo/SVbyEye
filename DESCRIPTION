@@ -10,6 +10,7 @@ Authors@R:
 Description: This R package is currently under development.
 Depends:
   R (>= 3.6)
+biocViews:  
 Imports:
   ggplot2,
   ggforce,
@@ -21,6 +22,7 @@ Imports:
   magrittr,
   utils,
   GenomicRanges,
+  GenomicAlignments,
   IRanges,
   data.table,
   GenomeInfoDb,
