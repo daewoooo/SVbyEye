@@ -14,7 +14,8 @@ breakPafAlignment(
 )
 }
 \arguments{
-\item{paf.aln}{A \code{data.frame} or \code{tibble} containing a single PAF record with 12 mandatory columns.}
+\item{paf.aln}{A \code{data.frame} or \code{tibble} containing a single PAF record with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
 
 \item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
 

@@ -14,7 +14,8 @@ breakPaf(
 )
 }
 \arguments{
-\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single PAF record with 12 mandatory columns.}
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
 
 \item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
 
@@ -25,7 +26,7 @@ breakPaf(
 \item{report.sv}{Set to \code{TRUE} if to report also ranges of deleted and inserted bases.}
 }
 \value{
-A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally vairable ('SV') bases if 'report.sv' is TRUE.
+A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 }
 \description{
 A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments

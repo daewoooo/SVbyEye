@@ -33,3 +33,32 @@ q2t <- function(x, q.range, t.range) {
     return(t.range[1] + (x - q.range[1]) * coord.factor)
   }
 } 
+
+#' Mirror/reflect genomic ranges given the sequence length.
+#'
+#' This function flips set of ranges in a mirrored fashion.
+#'
+#' @param gr A \code{\link{GRanges-class}} object with one or more ranges to be mirrored/reflected given the sequence length.
+#' @param seqlength  A \code{numeric} value containing the sequence length from where the submitted ranges originate from.
+#' @return A \code{\link{GRanges-class}} object with mirrored coordinates.
+#' @author David Porubsky
+#' @export
+mirrorRanges <- function(gr, seqlength=NULL) {
+  if (!is.null(seqlength)) {
+    gr.len <- seqlength
+  } else if (!is.na(seqlengths(gr))) {
+    gr.len <- seqlengths(gr)
+  } else {
+    stop('No seglength provided!!!')
+  }
+  if (!all(end(gr) <= gr.len)) {
+    stop("One or all submitted ranges are outside of defined seqlength!!!")
+  }
+  starts <- gr.len - end(gr)
+  ends <- (gr.len - start(gr)) 
+  #starts <- gr.len - cumsum(width(gr))
+  #ends <- starts + width(gr)
+  new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr), ranges = IRanges(start=starts, end=ends), strand = strand(gr))
+  suppressWarnings( seqlengths(new.gr) <- gr.len )
+  return(new.gr)
+}
