@@ -1,7 +1,8 @@
 #' Function to break PAF alignment into matching bases between query and target sequence.
 #' In addition, locations of inserted bases in query and target sequence can be reported as well.
 #'
-#' @param paf.aln A \code{data.frame} or \code{tibble} containing a single PAF record with 12 mandatory columns.
+#' @param paf.aln A \code{data.frame} or \code{tibble} containing a single PAF record with 12 mandatory columns
+#' along with CIGAR string defined in 'cg' column.
 #' @param report.sv Set to \code{TRUE} if to report also ranges of deleted and inserted bases.
 #' @inheritParams cigar2ranges
 #' @importFrom GenomicRanges GRanges shift reduce
@@ -13,28 +14,6 @@
 #' @export
 #'
 breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
-  ## Helper function ##
-  ## This function flips set of ranges in a mirrored fashion
-  mirrorRanges <- function(gr, seqlength=NULL) {
-    if (!is.null(seqlength)) {
-      gr.len <- seqlength
-    } else if (!is.na(seqlengths(gr))) {
-      gr.len <- seqlengths(gr)
-    } else {
-      stop('No seglength provided!!!')
-    }
-    if (!all(end(gr) <= gr.len)) {
-      stop("One or all submitted ranges are outside of defined seqlength!!!")
-    }
-    starts <- gr.len - end(gr)
-    ends <- (gr.len - start(gr)) 
-    #starts <- gr.len - cumsum(width(gr))
-    #ends <- starts + width(gr)
-    new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr), ranges = IRanges(start=starts, end=ends), strand = strand(gr))
-    suppressWarnings( seqlengths(new.gr) <- gr.len )
-    return(new.gr)
-  }
-  
   ## Parse CIGAR string ##
   t.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'reference')
   q.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'query')
@@ -118,7 +97,6 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   
   ## Convert to target coordinates
   target.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$t.start)
-  
   ## Convert to query coordinates
   if (paf.aln$strand == '-') {
     query.match.gr <- mirrorRanges(gr = query.match.gr)
@@ -248,16 +226,15 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   }  
 }
 
-
-
 #' A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments 
 #' into a set of matching bases between query and target sequence.
 #'
-#' @param paf.table A \code{data.frame} or \code{tibble} containing a single PAF record with 12 mandatory columns.
+#' @param paf.table A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+#' along with CIGAR string defined in 'cg' column.
 #' @inheritParams cigar2ranges
 #' @inheritParams breakPafAlignment
 #' @importFrom dplyr bind_rows
-#' @return A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally vairable ('SV') bases if 'report.sv' is TRUE.
+#' @return A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 #' @author David Porubsky
 #' @export
 #'
