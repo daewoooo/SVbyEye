@@ -6,7 +6,7 @@
 #'
 #' @param aln.coords A path to a file containing self-alignment coordinates.
 #' @param format Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', [default: 'nucmer']
-#' @param min.align.len 
+#' @param min.align.len ...
 #' @param min.align.dist Keep alignment pairs with this or larger distance from each other.
 #' @param collapse.overlaps Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.
 #' @param break.paf.aln Set to \code{TRUE} in order to split CIGAR string at insertions and deletions.
@@ -44,7 +44,7 @@ readSelfAlignments <- function(aln.coords=NULL, format='nucmer', min.align.len=1
     paf.data <- readPaf(paf.file = aln.coords, restrict.paf.tags = 'cg')
     ## Get sequence length
     seq.len <- unique(paf.data$q.len)
-    ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than target start
+    ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than the target start
     paf.data <- paf.data[paf.data$q.start < paf.data$t.start,]
     ## Break paf alignments
     if (break.paf.aln) {
@@ -202,15 +202,15 @@ readSelfAlignments <- function(aln.coords=NULL, format='nucmer', min.align.len=1
     }
   }  
   ## Remove remaining self-overlapping ranges
-  if (min.align.dist > 0) {
-    s2.copy.gr <- s2.gr
-    seqlevels(s2.copy.gr) <- 's1'
-    mask <- which(IRanges::distance(s1.gr, s2.copy.gr) == 0)
-    if (length(mask) > 0) {
-      s1.gr <- s1.gr[-mask]
-      s2.gr <- s2.gr[-mask]
-    }    
-  }
+  # if (min.align.dist > 0) {
+  #   s2.copy.gr <- s2.gr
+  #   seqlevels(s2.copy.gr) <- 's1'
+  #   mask <- which(IRanges::distance(s1.gr, s2.copy.gr) == 0)
+  #   if (length(mask) > 0) {
+  #     s1.gr <- s1.gr[-mask]
+  #     s2.gr <- s2.gr[-mask]
+  #   }    
+  # }
   
   ## Prepare object of self-alignments for export
   if (length(s1.gr) > 0 & length(s2.gr) > 0) {

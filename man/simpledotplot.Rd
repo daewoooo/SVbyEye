@@ -17,8 +17,6 @@ simpledotplot(
 )
 }
 \arguments{
-\item{aln.coords}{A path to a file containing self-alignment coordinates.}
-
 \item{shape}{A shape used to plot aligned sequences: Either 'segm' or 'point'.}
 
 \item{keep.longest.aln}{Set to \code{TRUE} if a target sequence with a single longest alignment should be kept.}

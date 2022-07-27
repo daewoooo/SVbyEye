@@ -20,7 +20,7 @@ readSelfAlignments(
 
 \item{format}{Define format of the input alignment coordinates as either 'nucmer' or minimap2 'mm2', \link{default: 'nucmer'}}
 
-\item{min.align.len}{}
+\item{min.align.len}{...}
 
 \item{min.align.dist}{Keep alignment pairs with this or larger distance from each other.}
 

@@ -5,23 +5,26 @@
 \title{Make a horizontal self-alignment dot plot.}
 \usage{
 selfdotplot(
-  selfaln.gr = NULL,
+  paf.table = NULL,
   shape = "segment",
+  color.by = "direction",
   highlight.pos = NULL,
   highlight.region = NULL,
   title = NULL
 )
 }
 \arguments{
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns.}
+
 \item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'arc'.}
+
+\item{color.by}{Color Paf alignments by relative orientation ('direction') or by their sequence identity ('identidy').}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 
 \item{highlight.region}{A pair of positions to be highlighted as vertical range.}
 
 \item{title}{A title to be added to the final dotplot.}
-
-\item{aln.coords}{A path to a file containing self-alignment coordinates.}
 }
 \value{
 A \code{ggplot} object.

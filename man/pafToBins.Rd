@@ -14,7 +14,7 @@ along with CIGAR string defined in 'cg' column.}
 \item{binsize}{A size of a bin in base pairs to split a PAF alignment into.}
 }
 \value{
-A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally vairable ('SV') bases if 'report.sv' is TRUE.
+A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 }
 \description{
 A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments

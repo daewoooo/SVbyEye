@@ -74,7 +74,7 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
 #' @importFrom dplyr bind_rows
-#' @return A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally vairable ('SV') bases if 'report.sv' is TRUE.
+#' @return A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 #' @author David Porubsky
 #' @export
 #'
