@@ -44,19 +44,22 @@ crunchPaf <- function(paf.file=NULL, min.align.len=1000, min.selfaln.dist=10000,
   
   ## Data post-processing ##
   ## Make sure cigar string ('cg') column is present
-  if ('cg' %in% colnames(paf.data)) {
+  if (nrow(paf.data) > 0 & 'cg' %in% colnames(paf.data)) {
     ## Break paf alignments
     if (break.paf.aln) {
       paf.data <- breakPaf(paf.table = paf.data, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, report.sv = TRUE)
       paf.data.sv <- paf.data$SVs
       paf.data <- paf.data$M
     } else {
-      paf.data.sv <- NULL
+      paf.data.sv <- dplyr::tibble()
     }
     ## Bin paf alignments
     if (bin.paf.aln) {
       paf.data <- pafToBins(paf.table = paf.data, binsize = binsize)
     }  
+  } else {
+    paf.data <- dplyr::tibble()
+    paf.data.sv <- dplyr::tibble()
   }  
   
   ## Return paf alignments

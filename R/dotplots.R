@@ -19,209 +19,226 @@
 #' @export
 
 selfdotplot <- function(paf.table=NULL, shape='segment', sort.by='position', color.by='direction', highlight.pos=NULL, highlight.region=NULL, title=NULL) {
-## Get self-alignments
-paf.data <- paf.table$M
-## Define alignment id if not defined
-if (!'aln.id' %in% colnames(paf.data)) {
-  paf.data$aln.id <- 1:nrow(paf.data)
-}
-## Get relative orientation
-direction <- ifelse(paf.data$strand == '+', 'forw', 'rev')
-## Prepare data for plotting
-coords.df <- data.frame(s1.start=paf.data$q.start,
-                        s1.end=paf.data$q.end,
-                        s2.start=paf.data$t.start,
-                        s2.end=paf.data$t.end,
-                        s1.width=(paf.data$q.end - paf.data$q.start) + 1,
-                        s2.width=(paf.data$t.end - paf.data$t.start) + 1,
-                        s1.id=paf.data$q.name,
-                        s2.id=paf.data$t.name,
-                        aln.len=paf.data$aln.len,
-                        dir=direction,
-                        identity=(paf.data$n.match / paf.data$aln.len) * 100,
-                        aln.id = paf.data$aln.id,
-                        stringsAsFactors = FALSE)
-
-## Get max position (for x-axis plotting)
-max.pos <- unique(paf.data$q.len)
-## Flip start and end for reverse oriented alignments
-coords.df[coords.df$dir == 'rev',] <- transform(coords.df[coords.df$dir == 'rev',], 's2.start' = s2.end, 's2.end' = s2.start)
-if (sort.by == 'position') {
-  ## Order alignments by query position
-  coords.df <- coords.df %>% dplyr::group_by(aln.id) %>% dplyr::mutate(start.id = min(s1.start) - aln.id) %>% dplyr::arrange(start.id, s1.start)
-} else if (sort.by == 'length') {
-  ## Order alignments by alignment length
-  coords.df <- coords.df %>% dplyr::group_by(aln.id) %>% dplyr::mutate(length.id = sum(aln.len)) %>% dplyr::arrange(desc(length.id), s1.start)
-} else {
-  ## Order by alignment id
-  coords.df <- coords.df %>% dplyr::arrange(aln.id, s1.start)
-}
-
-## Make dotplot ##
-##################
-plt.df <- coords.df
-## Color by
-if (color.by == 'direction') {
-  col.by <- 'direction'
-  colors <- c('forw'='chartreuse4', 'rev'='darkgoldenrod2')
-} else if (color.by == 'identity') {
-  col.by <- 'identity'
-  identity.breaks <- c(80, 85, 90, 95, 96, 97, 98, 99)
-  identity.levels <- c('<80','80:85', '85:90', '90:95', '95:96', '96:97', '97:98', '98:99', '>99')
-  ids <- findInterval(plt.df$identity, vec = identity.breaks) + 1
-  plt.df$identity <- identity.levels[ids]
-  colors <- wesanderson::wes_palette(name = "Zissou1", n = length(identity.levels), type = 'continuous')
-  colors <- setNames(as.list(colors), identity.levels)
-} else {
-  col.by <- 'direction'
-}  
-
-if (shape == 'segment') {
-  plt.df$y1 <- 0
-  plt.df$y1end <- 0
-  plt.df$y2 <- 0
-  plt.df$y2end <- 0
-  for (i in 1:nrow(plt.df)) {
-    row.df <- plt.df[i,]
-    if (i == 1) {
-      row.df$y1 <- 1
-      row.df$y2 <- 1
-      row.df$y1end <- row.df$s1.width
-      row.df$y2end <- row.df$s2.width
-      offset <- max(row.df$y1end, row.df$y2end)
-    } else {
-      row.df$y1 <- offset
-      row.df$y2 <- offset
-      row.df$y1end <- offset + row.df$s1.width
-      row.df$y2end <- offset + row.df$s2.width
-      offset <- max(row.df$y1end, row.df$y2end)
+  if (nrow(paf.table$M) > 0) {
+    ## Get self-alignments
+    paf.data <- paf.table$M
+    ## Define alignment id if not defined
+    if (!'aln.id' %in% colnames(paf.data)) {
+      paf.data$aln.id <- 1:nrow(paf.data)
     }
-    plt.df[i,] <- row.df
-  }
-  
-  ## Get polygon coordinates
-  plt.dir.df <- plt.df[plt.df$dir == 'forw',]
-  plt.rev.df <- plt.df[plt.df$dir == 'rev',]
-  if (nrow(plt.dir.df) > 0) {
-    poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
-                              #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
-                              y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
-                              group=rep(1:nrow(plt.dir.df), each=4),
-                              direction=rep(plt.dir.df$dir, each=4),
-                              identity=rep(plt.dir.df$identity, each=4))
+    ## Get relative orientation
+    direction <- ifelse(paf.data$strand == '+', 'forw', 'rev')
+    ## Prepare data for plotting
+    coords.df <- data.frame(s1.start=paf.data$q.start,
+                            s1.end=paf.data$q.end,
+                            s2.start=paf.data$t.start,
+                            s2.end=paf.data$t.end,
+                            s1.width=(paf.data$q.end - paf.data$q.start) + 1,
+                            s2.width=(paf.data$t.end - paf.data$t.start) + 1,
+                            s1.id=paf.data$q.name,
+                            s2.id=paf.data$t.name,
+                            aln.len=paf.data$aln.len,
+                            dir=direction,
+                            identity=(paf.data$n.match / paf.data$aln.len) * 100,
+                            aln.id = paf.data$aln.id,
+                            stringsAsFactors = FALSE)
+    
+    ## Get max position (for x-axis plotting)
+    max.pos <- unique(paf.data$q.len)
+    ## Flip start and end for reverse oriented alignments
+    coords.df[coords.df$dir == 'rev',] <- transform(coords.df[coords.df$dir == 'rev',], 's2.start' = s2.end, 's2.end' = s2.start)
+    if (sort.by == 'position') {
+      ## Order alignments by query position
+      ord.aln.id <- coords.df %>% 
+        dplyr::group_by(aln.id) %>% 
+        dplyr::summarise(start.id = min(s1.start)) %>%
+        arrange(start.id)
+      coords.df$aln.id <- factor(coords.df$aln.id, levels = ord.aln.id$aln.id)  
+      
+      coords.df <- coords.df %>% 
+        dplyr::group_by(aln.id) %>%
+        dplyr::arrange(s1.start, .by_group = TRUE)
+      
+    } else if (sort.by == 'length') {
+      ## Order alignments by alignment length
+      coords.df <- coords.df %>% 
+        dplyr::group_by(aln.id) %>% 
+        dplyr::mutate(length.id = sum(aln.len)) %>% 
+        dplyr::arrange(desc(length.id), s1.start)
+    } else {
+      ## Order by alignment id
+      coords.df <- coords.df %>% dplyr::arrange(aln.id, s1.start)
+    }
+    
+    ## Make dotplot ##
+    ##################
+    plt.df <- coords.df
+    ## Color by
+    if (color.by == 'direction') {
+      col.by <- 'direction'
+      colors <- c('forw'='chartreuse4', 'rev'='darkgoldenrod2')
+    } else if (color.by == 'identity') {
+      col.by <- 'identity'
+      identity.breaks <- c(80, 85, 90, 95, 96, 97, 98, 99)
+      identity.levels <- c('<80','80:85', '85:90', '90:95', '95:96', '96:97', '97:98', '98:99', '>99')
+      ids <- findInterval(plt.df$identity, vec = identity.breaks) + 1
+      plt.df$identity <- identity.levels[ids]
+      colors <- wesanderson::wes_palette(name = "Zissou1", n = length(identity.levels), type = 'continuous')
+      colors <- setNames(as.list(colors), identity.levels)
+    } else {
+      col.by <- 'direction'
+    }  
+    
+    if (shape == 'segment') {
+      plt.df$y1 <- 0
+      plt.df$y1end <- 0
+      plt.df$y2 <- 0
+      plt.df$y2end <- 0
+      for (i in 1:nrow(plt.df)) {
+        row.df <- plt.df[i,]
+        if (i == 1) {
+          row.df$y1 <- 1
+          row.df$y2 <- 1
+          row.df$y1end <- row.df$s1.width
+          row.df$y2end <- row.df$s2.width
+          offset <- max(row.df$y1end, row.df$y2end)
+        } else {
+          row.df$y1 <- offset
+          row.df$y2 <- offset
+          row.df$y1end <- offset + row.df$s1.width
+          row.df$y2end <- offset + row.df$s2.width
+          offset <- max(row.df$y1end, row.df$y2end)
+        }
+        plt.df[i,] <- row.df
+      }
+      
+      ## Get polygon coordinates
+      plt.dir.df <- plt.df[plt.df$dir == 'forw',]
+      plt.rev.df <- plt.df[plt.df$dir == 'rev',]
+      if (nrow(plt.dir.df) > 0) {
+        poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
+                                  #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
+                                  y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
+                                  group=rep(1:nrow(plt.dir.df), each=4),
+                                  direction=rep(plt.dir.df$dir, each=4),
+                                  identity=rep(plt.dir.df$identity, each=4))
+      } else {
+        poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
+                                  y=c(rbind(NaN, NaN, NaN, NaN)),
+                                  group=rep(1, each=4),
+                                  direction=rep('forw', each=4),
+                                  identity=rep('<80', each=4))
+      }  
+      
+      if (nrow(plt.rev.df) > 0) {
+        poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
+                                  y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
+                                  group=rep(1:nrow(plt.rev.df), each=4),
+                                  direction=rep(plt.rev.df$dir, each=4),
+                                  identity=rep(plt.rev.df$identity, each=4))
+      } else {
+        poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
+                                  y=c(rbind(NaN, NaN, NaN, NaN)),
+                                  group=rep(1, each=4),
+                                  direction=rep('rev', each=4),
+                                  identity=rep('<80', each=4))
+      }  
+      
+      ## Make segment dotplot
+      y.limit <- max(c(plt.df$y1end, plt.df$y2end))
+      ## Plot alignment pairs
+      plt <- ggplot(plt.df) +
+        geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
+        geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
+        geom_polygon(data=poly.dir.df, aes_string(x='x', y='y', group='group', fill=eval(col.by)), alpha=0.5, inherit.aes=FALSE) +
+        geom_polygon(data=poly.rev.df, aes_string(x='x', y='y', group='group', fill=eval(col.by)), alpha=0.5, inherit.aes=FALSE) +
+        scale_x_continuous(labels = comma, expand = c(0, 0)) +
+        scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+        coord_cartesian(xlim = c(0, max.pos)) +
+        ylab('Self-alignments') +
+        xlab('Contig position (bp)') +
+        scale_fill_manual(values = colors, drop=FALSE) +
+        #coord_fixed(ratio = 1) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+    } else if (shape == 'arc') {
+      ## Make Arc plot
+      x <- c(rbind(plt.df$s1.start, plt.df$s2.start, plt.df$s1.end, plt.df$s2.end))
+      group <- rep(1:nrow(plt.df), each=4)
+      seq.id <- c(rbind('s1', 's2', 's1', 's2'))
+      direction <- rep(plt.df$dir, each=4)
+      identity <- rep(plt.df$identity, each=4)
+      
+      plt.df <- data.frame(x=x,
+                           y=0,
+                           group=group,
+                           seq.id=seq.id,
+                           direction=direction,
+                           identity=identity)
+      
+      plt <- ggplot(plt.df) +
+        geom_wide_arc(aes_string(x='x', y='y', group='group', fill=eval(col.by)), color='gray', size=0.1, alpha=0.5) +
+        scale_x_continuous(labels = comma, expand = c(0, 0)) +
+        coord_cartesian(xlim = c(0, max.pos)) +
+        ylab('Self-alignments') +
+        xlab('Contig position (bp)') +
+        scale_fill_manual(values = colors, drop=FALSE) +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+    } else {
+      warning("Paremeter shape can only take values 'segment' or 'arc' !!!")
+      plt <- ggplot() +
+        scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
+        ylab('Self-alignments') +
+        xlab('Contig position (bp)') +
+        theme_minimal() +
+        theme(axis.text.y = element_blank(),
+              axis.ticks.y = element_blank())
+    }
+    
+    ## Add alignment arrows
+    # arrow.df <- data.frame('xmin' = c(rbind(coords.df$s1.start, coords.df$s2.start)),
+    #                        'xmax' = c(rbind(coords.df$s1.end, coords.df$s2.end)),
+    #                        'dir' = c(rbind('forw', coords.df$dir))) # to make sure s1 is always forward
+    # arrow.df$direction <- ifelse(arrow.df$dir == 'forw', 1, -1)         
+    # ## Make sure start is always smaller than end of the alignment
+    # arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
+    # 
+    # plt <- plt + geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir))
+    
+    ## Highlight user defined positions 
+    if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
+      highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
+      
+      if (length(highlight.pos) > 0) {
+        plt <- plt + geom_vline(xintercept = highlight.pos)
+      }  
+    }
+    
+    ## Highlight user defined region
+    if (!is.null(highlight.region)) {
+      highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
+      
+      if (nrow(highlight.region) > 0) {
+        plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
+      }  
+    }
+    
+    ## Add title if defined
+    if (!is.null(title)) {
+      if (nchar(title) > 0) {
+        plt <- plt + ggtitle(title)
+      }
+    }
   } else {
-    poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                              y=c(rbind(NaN, NaN, NaN, NaN)),
-                              group=rep(1, each=4),
-                              direction=rep('forw', each=4),
-                              identity=rep('<80', each=4))
+    message("No alignments in submitted 'paf.table', returning empty plot!!!")
+    plt <- ggplot()
   }  
-  
-  if (nrow(plt.rev.df) > 0) {
-    poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
-                              y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
-                              group=rep(1:nrow(plt.rev.df), each=4),
-                              direction=rep(plt.rev.df$dir, each=4),
-                              identity=rep(plt.rev.df$identity, each=4))
-  } else {
-    poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                              y=c(rbind(NaN, NaN, NaN, NaN)),
-                              group=rep(1, each=4),
-                              direction=rep('rev', each=4),
-                              identity=rep('<80', each=4))
-  }  
-  
-  ## Make segment dotplot
-  y.limit <- max(c(plt.df$y1end, plt.df$y2end))
-  ## Plot alignment pairs
-  plt <- ggplot(plt.df) +
-    geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
-    geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
-    geom_polygon(data=poly.dir.df, aes_string(x='x', y='y', group='group', fill=eval(col.by)), alpha=0.5, inherit.aes=FALSE) +
-    geom_polygon(data=poly.rev.df, aes_string(x='x', y='y', group='group', fill=eval(col.by)), alpha=0.5, inherit.aes=FALSE) +
-    scale_x_continuous(labels = comma, expand = c(0, 0)) +
-    scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
-    coord_cartesian(xlim = c(0, max.pos)) +
-    ylab('Self-alignments') +
-    xlab('Contig position (bp)') +
-    scale_fill_manual(values = colors, drop=FALSE) +
-    #coord_fixed(ratio = 1) +
-    theme_minimal() +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank())
-} else if (shape == 'arc') {
-  ## Make Arc plot
-  x <- c(rbind(plt.df$s1.start, plt.df$s2.start, plt.df$s1.end, plt.df$s2.end))
-  group <- rep(1:nrow(plt.df), each=4)
-  seq.id <- c(rbind('s1', 's2', 's1', 's2'))
-  direction <- rep(plt.df$dir, each=4)
-  identity <- rep(plt.df$identity, each=4)
-  
-  plt.df <- data.frame(x=x,
-                       y=0,
-                       group=group,
-                       seq.id=seq.id,
-                       direction=direction,
-                       identity=identity)
-  
-  plt <- ggplot(plt.df) +
-    geom_wide_arc(aes_string(x='x', y='y', group='group', fill=eval(col.by)), color='gray', size=0.1, alpha=0.5) +
-    scale_x_continuous(labels = comma, expand = c(0, 0)) +
-    coord_cartesian(xlim = c(0, max.pos)) +
-    ylab('Self-alignments') +
-    xlab('Contig position (bp)') +
-    scale_fill_manual(values = colors, drop=FALSE) +
-    theme_minimal() +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank())
-} else {
-  warning("Paremeter shape can only take values 'segment' or 'arc' !!!")
-  plt <- ggplot() +
-    scale_fill_manual(values = c('forw'='chartreuse4', 'rev'='darkgoldenrod2')) +
-    ylab('Self-alignments') +
-    xlab('Contig position (bp)') +
-    theme_minimal() +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank())
-}
 
-## Add alignment arrows
-# arrow.df <- data.frame('xmin' = c(rbind(coords.df$s1.start, coords.df$s2.start)),
-#                        'xmax' = c(rbind(coords.df$s1.end, coords.df$s2.end)),
-#                        'dir' = c(rbind('forw', coords.df$dir))) # to make sure s1 is always forward
-# arrow.df$direction <- ifelse(arrow.df$dir == 'forw', 1, -1)         
-# ## Make sure start is always smaller than end of the alignment
-# arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
-# 
-# plt <- plt + geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir))
-
-## Highlight user defined positions 
-if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
-  highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
-  
-  if (length(highlight.pos) > 0) {
-    plt <- plt + geom_vline(xintercept = highlight.pos)
-  }  
-}
-
-## Highlight user defined region
-if (!is.null(highlight.region)) {
-  highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
-  
-  if (nrow(highlight.region) > 0) {
-    plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
-  }  
-}
-
-## Add title if defined
-if (!is.null(title)) {
-  if (nchar(title) > 0) {
-    plt <- plt + ggtitle(title)
-  }
-}
-
-## Return final plot
-return(plt)
+  ## Return final plot
+  return(plt)
 }
 
 ## DEPRACATED

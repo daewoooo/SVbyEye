@@ -7,6 +7,7 @@
 selfdotplot(
   paf.table = NULL,
   shape = "segment",
+  sort.by = "position",
   color.by = "direction",
   highlight.pos = NULL,
   highlight.region = NULL,
@@ -18,7 +19,9 @@ selfdotplot(
 
 \item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'arc'.}
 
-\item{color.by}{Color Paf alignments by relative orientation ('direction') or by their sequence identity ('identidy').}
+\item{sort.by}{Order PAF alignments by relative left-most coordinates ('position') or by the alignment length ('length').}
+
+\item{color.by}{Color PAF alignments by relative orientation ('direction') or by their sequence identity ('identity').}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 
