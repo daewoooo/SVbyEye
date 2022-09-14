@@ -30,7 +30,7 @@ parseCigarString <- function(cigar.str=NULL, coordinate.space = 'reference') {
 }
 
 
-#' Function to load PAF alignments into a set of genomic ranges.
+#' Function to load CIGAR string reported in PAF alignments into a set of genomic ranges.
 #'
 #' @param paf.file A character string containing alignment represented as a CIGAR string.
 #' @param min.insertion.size A minimum size (in base pairs) of an insertion to be retained.
