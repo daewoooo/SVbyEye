@@ -9,6 +9,8 @@ paf2coords(
   min.mapq = 10,
   min.align.len = 1000,
   min.align.n = 1,
+  min.deletion.size = NULL,
+  min.insertion.size = NULL,
   target.region = NULL,
   seqnames.grep = NULL,
   drop.self.align = TRUE,
@@ -23,6 +25,10 @@ paf2coords(
 \item{min.align.len}{Minimum alignment length to retain.}
 
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
+
+\item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
+
+\item{min.insertion.size}{A minimum size (in base pairs) of an insertion to be retained.}
 
 \item{target.region}{A user defined target region to load in a character string ('chr:start-end') or as
 a \code{\link{GRanges-class}} object containing a single genomic region.}

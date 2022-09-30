@@ -12,9 +12,9 @@
 #' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @author David Porubsky
 #' @export
-plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, sd.annot = NULL, drop.self.align = FALSE) {
+plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, min.deletion.size=NULL, min.insertion.size=NULL, sd.annot = NULL, drop.self.align = FALSE) {
   ## Load PAF file
-  coords.data <- paf2coords(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, drop.self.align = drop.self.align)  
+  coords.data <- paf2coords(paf.file = paf.file, min.mapq = min.mapq, min.align.len = min.align.len, min.align.n = min.align.n, min.deletion.size=min.deletion.size, min.insertion.size=min.insertion.size, drop.self.align = drop.self.align)  
   ## Process data per alignment
   coords.data.l <- split(coords.data, coords.data$align.id)
   plots <- list()
@@ -277,10 +277,12 @@ plotAVA <- function(paf.file = NULL, seqnames.order=NULL, seqnames.grep=NULL, ta
   
   if (outline.miro) {
     plt <- ggplot2::ggplot(coords) +
-      geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.25, color='gray', size=0.5)
+      geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.25, color='gray', size=0.5) +
+      geom_hline(yintercept = y.breaks, size=1)
   } else {
     plt <- ggplot2::ggplot(coords) +
-      geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.25)
+      geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.25) +
+      geom_hline(yintercept = y.breaks, size=1)
   }
   plt <- plt +
     scale_fill_manual(values = c('+' = 'chartreuse4', '-' = 'darkgoldenrod2')) +

@@ -13,14 +13,20 @@
 #' @param drop.self.align Remove alignments of a given sequence to itself.
 #' @inheritParams readPaf
 #' @inheritParams syncRangesDir
+#' @inheritParams breakPafAlignment
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @importFrom dplyr group_by mutate
 #' @importFrom utils read.table
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, seqnames.grep=NULL, drop.self.align=TRUE, majority.strand=NULL) {
+paf2coords <- function(paf.file, min.mapq=10, min.align.len=1000, min.align.n=1, min.deletion.size=NULL, min.insertion.size=NULL, target.region=NULL, seqnames.grep=NULL, drop.self.align=TRUE, majority.strand=NULL) {
+  ## Load PAF file and break the alignment if required
   if (file.exists(paf.file)) {
-    paf <- readPaf(paf.file = paf.file, include.paf.tags = FALSE)
+    paf <- readPaf(paf.file = paf.file, include.paf.tags = TRUE)
+    if ('cg' %in% colnames(paf)) {
+      paf <- breakPaf(paf.table=paf, min.deletion.size=min.deletion.size, min.insertion.size=min.insertion.size, collapse.mismatches=TRUE, report.sv=FALSE)
+      paf <- paf$M
+    }  
   } else {
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
   }  

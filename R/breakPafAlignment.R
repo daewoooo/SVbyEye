@@ -14,6 +14,21 @@
 #' @export
 #'
 breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
+  ## Check user input
+  if (!is.null(min.deletion.size)) {
+    if (!min.deletion.size > 0) {
+      min.deletion.size <- Inf
+    }
+  } else {
+    min.deletion.size <- Inf
+  }
+  if (!is.null(min.insertion.size)) {
+    if (!min.insertion.size > 0) {
+      min.insertion.size <- Inf
+    }
+  } else {
+    min.insertion.size <- Inf
+  }
   ## Parse CIGAR string ##
   t.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'reference')
   q.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = 'query')

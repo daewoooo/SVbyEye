@@ -2,7 +2,7 @@
 % Please edit documentation in R/cigarUtils.R
 \name{cigar2ranges}
 \alias{cigar2ranges}
-\title{Function to load PAF alignments into a set of genomic ranges.}
+\title{Function to load CIGAR string reported in PAF alignments into a set of genomic ranges.}
 \usage{
 cigar2ranges(
   paf.file = NULL,
@@ -27,7 +27,7 @@ cigar2ranges(
 A \code{\link{GRanges}} object.
 }
 \description{
-Function to load PAF alignments into a set of genomic ranges.
+Function to load CIGAR string reported in PAF alignments into a set of genomic ranges.
 }
 \author{
 David Porubsky
