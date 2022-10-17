@@ -7,9 +7,8 @@
 #' @importFrom S4Vectors queryHits subjectHits
 #' @return A \code{\link{GRanges-class}} object with resized original set of ranges. 
 #' @author David Porubsky
-#' @export
 #'
-liftRangesToAlignment <- function(gr=NULL, paf.file=NULL) {
+liftRangesToAlignment_deprecated <- function(gr=NULL, paf.file=NULL) {
   ## Read PAF alignments to reference
   paf.aln <- readPaf(paf.file = paf.file, restrict.paf.tags = 'cg')
   ## Make sure defined ranges are present in the PAF alignment
