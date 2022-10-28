@@ -79,8 +79,8 @@ selfdotplot <- function(paf.table=NULL, shape='segment', sort.by='position', col
       colors <- c('forw'='chartreuse4', 'rev'='darkgoldenrod2')
     } else if (color.by == 'identity') {
       col.by <- 'identity'
-      identity.breaks <- c(80, 85, 90, 95, 96, 97, 98, 99)
-      identity.levels <- c('<80','80:85', '85:90', '90:95', '95:96', '96:97', '97:98', '98:99', '>99')
+      identity.breaks <- c(90, 95, 96, 97, 98, 99, 99.5, 99.9)
+      identity.levels <- c('<90', '90:95', '95:96', '96:97', '97:98', '98:99', '99:99.5', '99.5:99.9', '>99.9')
       ids <- findInterval(plt.df$identity, vec = identity.breaks) + 1
       plt.df$identity <- identity.levels[ids]
       colors <- wesanderson::wes_palette(name = "Zissou1", n = length(identity.levels), type = 'continuous')
