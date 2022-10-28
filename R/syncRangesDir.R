@@ -19,7 +19,7 @@ syncRangesDir <- function(ranges, majority.strand = '+', strand.only = FALSE) {
   if (grepl(class(ranges), pattern = 'GRangesList')) {
     for (i in seq_along(ranges)) {
       gr <- ranges[[i]]
-      ## Flip directionality based to make sure majority strand covers the most bases
+      ## Flip ranges directionality to make sure majority strand covers the most bases
       if (sum(width(gr[strand(gr) == majority.strand])) > sum(width(gr[strand(gr) == minority.strand]))) {
         ranges[[i]] <- gr
       } else {
