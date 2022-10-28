@@ -14,20 +14,30 @@
 #' @return A \code{\link{GRanges-class}} object with resized original set of ranges. 
 #' @author David Porubsky
 #' @export
-makeBins <- function(bsgenome=NULL, fai=NULL, chromosomes, binsize=100000, stepsize=binsize/2) {
+makeBins <- function(bsgenome=NULL, fai=NULL, chromosomes=NULL, binsize=100000, stepsize=binsize/2) {
   
   if (!is.null(bsgenome)) {
-    chr.lengths <- GenomeInfoDb::seqlengths(bsgenome)[chromosomes]
+    chr.lengths <- GenomeInfoDb::seqlengths(bsgenome)
   } else if (!is.null(fai)) {
     ## Get contigs/scaffolds names and sizes from fasta index
     fai.tab <- utils::read.table(fai)
     fai.tab <- fai.tab[order(fai.tab$V2, decreasing = TRUE),]
     chr.lengths <- fai.tab$V2
     names(chr.lengths) <- fai.tab$V1
-    chr.lengths <- chr.lengths[names(chr.lengths) %in% chromosomes]
+    #chr.lengths <- chr.lengths[names(chr.lengths) %in% chromosomes]
   } else {
     warning("Please submit chromosome lengths in a form of BSgenome object or fasta index (.fai)!!!")
   } 
+  
+  ## Keep only chromosomes larger then the binsize
+  chr.lengths <- chr.lengths[chr.lengths > binsize]
+  ## Keep only user defined chromosomes
+  chroms.in.data <- names(chr.lengths)
+  if (!is.null(chromosomes)) {
+    chromosomes <- chromosomes[chromosomes %in% chroms.in.data]
+  } else {
+    chromosomes <- chroms.in.data
+  }  
   
   bins <- GenomicRanges::GRangesList()
   GenomeInfoDb::seqlevels(bins) <- chromosomes
