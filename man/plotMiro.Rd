@@ -16,21 +16,7 @@ plotMiro(
 )
 }
 \arguments{
-\item{paf.file}{A path to a PAF file containing alignments to be loaded.}
-
-\item{min.mapq}{Minimum mapping quality to retain.}
-
-\item{min.align.len}{Minimum alignment length to retain.}
-
-\item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
-
-\item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
-
-\item{min.insertion.size}{A minimum size (in base pairs) of an insertion to be retained.}
-
 \item{sd.annot}{A \code{\link[GenomicRanges]{GRanges}} object containing segmental duplication coordinates.}
-
-\item{drop.self.align}{Remove alignments of a given sequence to itself.}
 }
 \value{
 A \code{list} of miropeat style plots.

@@ -21,6 +21,7 @@ Imports:
   dplyr,
   stringr,
   magrittr,
+  tibble,
   utils,
   GenomicRanges,
   GenomicAlignments,

@@ -7,7 +7,7 @@
 makeBins(
   bsgenome = NULL,
   fai = NULL,
-  chromosomes,
+  chromosomes = NULL,
   binsize = 1e+05,
   stepsize = binsize/2
 )

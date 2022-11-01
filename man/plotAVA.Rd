@@ -22,17 +22,6 @@ plotAVA(
 
 \item{seqnames.order}{A user defined order sequence names to be plotted from top to the bottom.}
 
-\item{target.region}{A user defined target region to load in a character string ('chr:start-end') or as
-a \code{\link{GRanges-class}} object containing a single genomic region.}
-
-\item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
-
-\item{min.mapq}{Minimum mapping quality to retain.}
-
-\item{min.align.len}{Minimum alignment length to retain.}
-
-\item{drop.self.align}{Remove alignments of a given sequence to itself.}
-
 \item{majority.strand}{A desired majority strand directionality to be reported.}
 
 \item{outline.miro}{Set to \code{TRUE} if separate miropeat segments should be outlined.}
