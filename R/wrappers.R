@@ -24,8 +24,13 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
     ## Get y-axis labels
     q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
     t.range <- range(coords$seq.pos[coords$seq.id == 'target'])
+    ## Adjust target ranges given the size difference with respect query ranges
+    range.offset <- diff(q.range) - diff(t.range)
+    t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+    ## Get x-axis labels
     q.labels <- pretty(q.range)
     t.labels <- pretty(t.range)
+    ## Covert query to target coordinates
     q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
     t.breaks <- t.labels
     
