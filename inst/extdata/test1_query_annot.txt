@@ -1,0 +1,2 @@
+seqnames	start	end	label
+query.region	16290819	16397543	inv.segment

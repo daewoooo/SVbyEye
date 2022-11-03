@@ -1,0 +1,2 @@
+seqnames	start	end	label
+target.region	19082149	19188924	inv.segment
