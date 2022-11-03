@@ -1,6 +1,6 @@
 #' Filter PAF alignments
 #' 
-#' This function takes loaded PAF alignments from \function{readPaf} and perform
+#' This function takes loaded PAF alignments using \code{\link{readPaf}} function and perform
 #' user defined filtering of input alignments based on user defined region, mapping quality, and
 #' alignment length (etc.).
 #'

@@ -1,8 +1,8 @@
-#' Read and filter PAF input file
+#' Prepare PAF alignments for plotting.
 #' 
-#' This function takes PAF output file from minimap2 alignments, loads the file and
-#' perform user defined filtering of input alignments based on mapping quality and
-#' alignment length.
+#' This function takes loaded PAF alignments using \code{\link{readPaf}} function. Such alignment could be post-processed
+#' using \code{\link{filterPaf}}, \code{\link{breakPaf}} and \code{\link{flipPaf}} functions. Subsequently such alignments are
+#' expanded in a set of x and y coordinates ready to be plotted by \code{\link{geom_miropeats}} function.
 #'
 #' @inheritParams breakPafAlignment
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.

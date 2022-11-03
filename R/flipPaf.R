@@ -1,9 +1,9 @@
 #' Flip PAF alignments
 #' 
-#' This function takes loaded PAF alignments from \function{readPaf} and flips the alignments given the desired
-#' majority strand orientation (Either '+' or '-').
+#' This function takes loaded PAF alignments using \code{\link{readPaf}} function and flips 
+#' the alignments given the desired majority strand orientation (Either '+' or '-').
 #' 
-#' @param force Set to \code{TRUE} if the PAF alignments should be flipped.
+#' @param force Set to \code{TRUE} if query PAF alignments should be flipped.
 #' @inheritParams breakPafAlignment
 #' @inheritParams syncRangesDir
 #' @return A \code{tibble} of PAF alignments flipped based on desired majority strand orientation.
