@@ -150,13 +150,13 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
 #'target.annot <- system.file("extdata", "test1_target_annot.txt", package="SVbyEye")
 #'target.annot.df <- read.table(target.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 #'target.annot.gr <- makeGRangesFromDataFrame(target.annot.df)
-#'## Add target annotation file
+#'## Add target annotation as arrowhead
 #'plt <- add_annotation(ggplot.obj = plt, annot.gr = target.annot.gr, coordinate.space='target')
 #'## Load query annotation file
 #'query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
 #'query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 #'query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
-#'## Add target annotation file
+#'## Add query annotation as rectangle
 #'add_annotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape='rectangle', coordinate.space='query')
 #'
 add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, coordinate.space='target') {
