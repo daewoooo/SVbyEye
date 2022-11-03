@@ -36,7 +36,7 @@ a \code{\link{GRanges-class}} object containing a single genomic region.}
 A \code{tibble} of filtered PAF alignments.
 }
 \description{
-This function takes loaded PAF alignments from \function{readPaf} and perform
+This function takes loaded PAF alignments using \code{\link{readPaf}} function and perform
 user defined filtering of input alignments based on user defined region, mapping quality, and
 alignment length (etc.).
 }

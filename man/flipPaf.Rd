@@ -9,14 +9,14 @@ flipPaf(paf.table, majority.strand = NULL, force = FALSE)
 \arguments{
 \item{majority.strand}{A desired majority strand directionality to be reported.}
 
-\item{force}{Set to \code{TRUE} if the PAF alignments should be flipped.}
+\item{force}{Set to \code{TRUE} if query PAF alignments should be flipped.}
 }
 \value{
 A \code{tibble} of PAF alignments flipped based on desired majority strand orientation.
 }
 \description{
-This function takes loaded PAF alignments from \function{readPaf} and flips the alignments given the desired
-majority strand orientation (Either '+' or '-').
+This function takes loaded PAF alignments using \code{\link{readPaf}} function and flips
+the alignments given the desired majority strand orientation (Either '+' or '-').
 }
 \author{
 David Porubsky
