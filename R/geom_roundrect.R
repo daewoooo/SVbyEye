@@ -56,6 +56,7 @@ GeomRoundRect <- ggplot2::ggproto("GeomRoundRect", ggplot2::Geom,
                                     
                                     data <- coord$transform(data, panel_scales)
                                     #str(data)
+                                    #print(data)
                                     
                                     gt <- grid::gTree(
                                       data = data,
@@ -106,6 +107,13 @@ makeContent.roundrecttree <- function(x) {
   class(grobs) <- "gList"
   grid::setChildren(x, grobs)
 }
+
+# grid::roundrectGrob(
+#   1, 2,
+#   width = 1,
+#   height = 1 * 2,
+#   r = 1
+# )  
 
 # gr <- GRanges(seqnames=paste0('chr', c(1:3)), ranges = IRanges(start=c(10, 100, 200), end=c(100, 190, 400)))
 # df <- as.data.frame(gr)
