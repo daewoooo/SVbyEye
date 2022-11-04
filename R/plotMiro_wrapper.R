@@ -25,7 +25,7 @@
 #'## Color by fraction of matched bases in each alignment
 #'plotMiro(paf.file = paf.file, color.by = 'fraction.matches')
 #'
-plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, min.deletion.size=NULL, min.insertion.size=NULL, drop.self.align = FALSE, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
+plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, min.deletion.size=NULL, min.insertion.size=NULL, drop.self.align = FALSE, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
   ## Check user input
   ## Make sure submitted files exists
   if (!file.exists(paf.file)) {
@@ -158,6 +158,9 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
 #'query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
 #'## Add query annotation as rectangle
 #'add_annotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape='rectangle', coordinate.space='query')
+#'## Lift target annotation to query and plot
+#'lifted.annot.gr <- liftRangesToAlignment(gr = target.annot.gr, paf.file = paf.file, direction = 'target2query')
+#'add_annotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape='rectangle', coordinate.space='query')
 #'
 add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, coordinate.space='target') {
   ## Get plotted data
@@ -223,11 +226,12 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
       }  
       
       if (shape == 'arrowhead') {
-        plt <- ggplot.obj + new_scale_fill() + new_scale_color() +
+        plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
           geom_arrowhead(data=annot.df, aes(xmin=start, xmax=end, y=y.offset, color=eval(fill.by), fill=eval(fill.by)))
       } else if (shape == 'rectangle') {
-        plt <- ggplot.obj + new_scale_fill() + new_scale_color() +
-          geom_rect(data=annot.df, aes(xmin=start, xmax=end, ymin=y.offset, ymax=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)))
+        plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+          #geom_rect(data=annot.df, aes(xmin=start, xmax=end, ymin=y.offset, ymax=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)))
+          geom_roundrect(data=annot.df, aes(xmin=start, xmax=end, y=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)), radius = grid::unit(0, "mm"))
       }  
       
       if (col.scale == 'gradient') {

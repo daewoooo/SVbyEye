@@ -5,13 +5,20 @@
 #' along with CIGAR string defined in 'cg' column.
 #' @param report.sv Set to \code{TRUE} if to report also ranges of deleted and inserted bases.
 #' @inheritParams cigar2ranges
-#' @importFrom GenomicRanges GRanges shift reduce
+#' @importFrom GenomicRanges GRanges shift reduce width
 #' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
 #' @importFrom dplyr tibble bind_rows
 #' @importFrom S4Vectors sapply
 #' @return  A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 #' @author David Porubsky
 #' @export
+#' @examples
+#'## Get PAF to break
+#'paf.file <- system.file("extdata", "test2.paf", package="SVbyEye")
+#'## Read in PAF alignment
+#'paf.aln <- readPaf(paf.file=paf.file)
+#'## Break PAF alignment at indels of 1 kbp and longer
+#'breakPafAlignment(paf.aln = paf.aln, min.deletion.size=1000, min.insertion.size=1000)
 #'
 breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
   ## Check user input
@@ -53,7 +60,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     ## Get deletion ranges in query space
     query.del.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = q.ranges$del)
     ## Filter deletion by size
-    del.mask <- width(target.del.gr) >= min.deletion.size
+    del.mask <- GenomicRanges::width(target.del.gr) >= min.deletion.size
     del2reduce <- target.del.gr[!del.mask]
     target.del.gr <- target.del.gr[del.mask]
     query.del.gr <- query.del.gr[del.mask]
@@ -76,7 +83,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     ## Get insertion ranges in query space
     query.ins.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = q.ranges$insertion)
     ## Filter insertions by size
-    ins.mask <- width(query.ins.gr) >= min.insertion.size
+    ins.mask <- GenomicRanges::width(query.ins.gr) >= min.insertion.size
     target.ins.gr <- target.ins.gr[ins.mask]
     query.ins.gr <- query.ins.gr[ins.mask]
   } else {

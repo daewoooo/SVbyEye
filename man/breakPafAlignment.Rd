@@ -32,6 +32,15 @@ A \code{list} of \code{tibble} objects storing matched ('M') alignments as well 
 Function to break PAF alignment into matching bases between query and target sequence.
 In addition, locations of inserted bases in query and target sequence can be reported as well.
 }
+\examples{
+## Get PAF to break
+paf.file <- system.file("extdata", "test2.paf", package="SVbyEye")
+## Read in PAF alignment
+paf.aln <- readPaf(paf.file=paf.file)
+## Break PAF alignment at indels of 1 kbp and longer
+breakPafAlignment(paf.aln = paf.aln, min.deletion.size=1000, min.insertion.size=1000)
+
+}
 \author{
 David Porubsky
 }

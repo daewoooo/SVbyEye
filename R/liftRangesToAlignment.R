@@ -9,6 +9,13 @@
 #' @return A \code{\link{GRanges-class}} object with resized original set of ranges. 
 #' @author David Porubsky
 #' @export
+#' @examples 
+#'## Define range(s) to lift
+#'roi.gr <- as('chr17:46645907-46697277', 'GRanges')
+#'## Get PAF alignment to lift to
+#'paf.file <- system.file("extdata", "test_lift1.paf", package="SVbyEye")
+#'## Lift target range to query coordinates
+#'liftRangesToAlignment(gr = roi.gr, paf.file = paf.file, direction = 'target2query')
 #'
 liftRangesToAlignment <- function(gr=NULL, paf.file=NULL, direction='query2target') {
   ## Check user input
