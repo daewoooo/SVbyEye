@@ -60,7 +60,7 @@ filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1,
       message("Parameter 'query.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
     }
     ## Subset PAF by ranges overlaps
-    query.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
+    query.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
     hits <- GenomicRanges::findOverlaps(query.gr, query.region.gr) ## TODO Take only overlaps, regions itself are not shrinked!!!
     if (length(hits) > 0) {
       paf <- paf[S4Vectors::queryHits(hits),]
