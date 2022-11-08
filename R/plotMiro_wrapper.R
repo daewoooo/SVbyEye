@@ -3,7 +3,8 @@
 #' This function takes PAF output file from minimap2 alignments, and visualize the alignments
 #' in miropeat style. 
 #'
-#' @param color.by 
+#' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats. 
+#' @param color.by Color alignments either by directionality ('direction') or fraction of matched base pairs ('fraction.matches').
 #' @param flip.alignment Set to \code{TRUE} if query PAF alignments should be flipped.
 #' @inheritParams readPaf
 #' @inheritParams filterPaf
@@ -24,8 +25,11 @@
 #'plotMiro(paf.file = paf.file, color.by = 'direction')
 #'## Color by fraction of matched bases in each alignment
 #'plotMiro(paf.file = paf.file, color.by = 'fraction.matches')
+#'## Highlight structural variants
+#'paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
+#'plotMiro(paf.file = paf.file, min.deletion.size=50, highlight.sv='outline')
 #'
-plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, min.deletion.size=NULL, min.insertion.size=NULL, drop.self.align = FALSE, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
+plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, drop.self.align = FALSE, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
   ## Check user input
   ## Make sure submitted files exists
   if (!file.exists(paf.file)) {
@@ -39,14 +43,21 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
   ## Break PAF at insertion/deletions defined in cigar string
   paf.l <- breakPaf(paf.table = paf, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
   paf <- paf.l$M
+  paf$ID <- 'M'
+  ## Add SVs to the alignment table
   paf.svs <- paf.l$SVs
+  if (nrow(paf.svs) > 0) {
+    paf.svs$ID <- 'INS'
+    paf.svs$ID[grep(paf.svs$cg, pattern = 'D', ignore.case = TRUE)] <- 'DEL'
+    paf <- dplyr::bind_rows(paf, paf.svs)
+  }  
   ## Flip PAF alignments given the user defined majority orientation
   paf <- flipPaf(paf.table = paf, majority.strand = majority.strand, force=flip.alignment)
   ## Convert PAF alignments to plotting coordinates
   paf <- paf2coords(paf.table = paf)
   
   ## Process data per alignment
-  coords.data.l <- split(paf, paf$align.id)
+  coords.data.l <- split(paf, paf$seq.pair)
   plots <- list()
   for (i in seq_along(coords.data.l)) {
     coords <- coords.data.l[[i]]
@@ -73,24 +84,45 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
     
     ## Color alignments by variable
     if (color.by == 'direction') {
-      plt <- ggplot2::ggplot(coords) +
+      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
         geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.5) +
         scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'))
     } else if (color.by == 'fraction.matches') {
       coords$frac.match <- coords$n.match / coords$aln.len
-      plt <- ggplot2::ggplot(coords) +
+      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
         geom_miropeats(aes(x, y, group = group, fill=frac.match), alpha=0.5) +
         scale_fill_gradient(low = 'gray', high = 'red', name='Fraction\nmatches')
     } else if (color.by == 'mapq') {
-      plt <- ggplot2::ggplot(coords) +
+      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
         geom_miropeats(aes(x, y, group = group, fill=mapq), alpha=0.5) +
         scale_fill_gradient(low = 'gray', high = 'red')
     } else {
-      plt <- ggplot2::ggplot(coords) +
+      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
         geom_miropeats(aes(x, y, group = group), alpha=0.5, fill='gray')
     }
     
+    ## Add indels
+    if (!is.null(highlight.sv)) {
+      if (nrow(coords[coords$ID != 'M',]) > 0) { 
+        ## Add SVs to the plot
+        if (highlight.sv == 'outline') {
+          plt <- plt + ggnewscale::new_scale_color() +
+            geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+            scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'))
+        } else if (highlight.sv == 'fill') {
+          plt <- plt + ggnewscale::new_scale_fill() +
+            geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
+            scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'))
+        } else {
+          warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+        } 
+      } else {
+        warning("There are no SVs to highlight. Make sure parameters 'min.deletion.size' and 'min.insertion.size' are set or decrease their values!!!")
+      }  
+    }
+    
     ## Add x and y scales
+    suppressWarnings(
     plt <- plt +
       scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
       scale_x_continuous(breaks = q.breaks, labels = scales::comma(q.labels),
@@ -98,12 +130,13 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
       xlab('Genomic position (bp)') +
       ylab('') +
       theme_bw()
+    )
     
     ## Add arrows
-    start <- coords$x[c(T, T, F, F)]
-    end <- coords$x[c(F, F, T, T)]
-    y <- coords$y[c(T, T, F, F)]
-    group <- coords$group[c(T, T, F, F)]
+    start <- coords[coords$ID == 'M',]$x[c(T, T, F, F)]
+    end <- coords[coords$ID == 'M',]$x[c(F, F, T, T)]
+    y <- coords[coords$ID == 'M',]$y[c(T, T, F, F)]
+    group <- coords[coords$ID == 'M',]$group[c(T, T, F, F)]
     plt.df <- data.frame(start=start, end=end, y=y, group=group)
     plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
     
