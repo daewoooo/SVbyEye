@@ -20,6 +20,8 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
     ## Flip query coordinates
     paf.flip$q.end <- paf.table$q.len - paf.table$q.start
     paf.flip$q.start <- paf.table$q.len - paf.table$q.end
+    ## Add info if the PAF alignment was flipped
+    paf.flip$direction.flip <- TRUE
     ## Make sure q.start position is always smaller than q.end
     #q.start <- pmin(paf.flip$q.start, paf.flip$q.end)
     #q.end <- pmax(paf.flip$q.start, paf.flip$q.end)
@@ -33,6 +35,7 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
   ## Make sure PAF has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
     paf <- paf.table
+    paf$direction.flip <- FALSE
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
@@ -67,8 +70,9 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
           ## Flip directionality based to make sure majority strand covers the most bases
           majority.bases <- sum(paf.ctg$aln.len[paf.ctg$strand == majority.strand])
           minority.bases <- sum(paf.ctg$aln.len[paf.ctg$strand == minority.strand])
-          if (majority.bases < minority.bases | force) {
+          if (majority.bases < minority.bases) {
             paf.l[[i]] <- flipPafAln(paf.table = paf.ctg)
+            
           } else {
             paf.l[[i]] <- paf.ctg
           }

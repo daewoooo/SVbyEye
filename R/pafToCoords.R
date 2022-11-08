@@ -56,9 +56,12 @@ paf2coords <- function(paf.table) {
   n.match <- rep(paf$n.match, each=4)
   aln.len <- rep(paf$aln.len, each=4)
   mapq <- rep(paf$mapq, each=4)
-  align.id <- rep(paf$seq.pair, each=4)
+  aln.id <- rep(paf$aln.id, each=4)
+  ID <- rep(paf$ID, each=4)
+  seq.pair <- rep(paf$seq.pair, each=4)
   direction <- rep(paf$strand, each=4)
-  
+
+  ## Create final data coordinate data frame
   coords <- data.frame(x=x, 
                        y=y, 
                        group=group, 
@@ -69,7 +72,11 @@ paf2coords <- function(paf.table) {
                        n.match=n.match,
                        aln.len=aln.len,
                        mapq=mapq,
-                       align.id=align.id,
+                       aln.id=aln.id,
+                       ID=ID,
+                       #direction.flip=direction.flip,
+                       seq.pair=seq.pair,
                        stringsAsFactors = FALSE)
+
   return(coords)
 }

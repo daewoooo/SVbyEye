@@ -1,4 +1,4 @@
-#' Plot PAF file as miropeat alignments
+#' Plot PAF file as miropeat alignments 
 #' 
 #' This function takes PAF output file from minimap2 alignments, and visualize the alignments
 #' in miropeat style. 
@@ -11,10 +11,9 @@
 #' @importFrom gggenes geom_gene_arrow
 #' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @author David Porubsky
-#' @export
-plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, min.deletion.size=NULL, min.insertion.size=NULL, sd.annot = NULL, drop.self.align = FALSE) {
+plotMiro_deprecated <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, min.deletion.size=NULL, min.insertion.size=NULL, sd.annot = NULL, drop.self.align = FALSE) {
   ## Load PAF file
-  coords.data <- paf2coords(paf.file = paf.file, min.mapq = min.mapq, min.align.len = min.align.len, min.align.n = min.align.n, min.deletion.size=min.deletion.size, min.insertion.size=min.insertion.size, drop.self.align = drop.self.align)  
+  #coords.data <- paf2coords(paf.file = paf.file, min.mapq = min.mapq, min.align.len = min.align.len, min.align.n = min.align.n, min.deletion.size=min.deletion.size, min.insertion.size=min.insertion.size, drop.self.align = drop.self.align)  
   ## Process data per alignment
   coords.data.l <- split(coords.data, coords.data$align.id)
   plots <- list()
