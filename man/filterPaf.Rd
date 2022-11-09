@@ -2,15 +2,13 @@
 % Please edit documentation in R/filterPaf.R
 \name{filterPaf}
 \alias{filterPaf}
-\title{Filter PAF alignments}
+\title{Filter PAF alignments.}
 \usage{
 filterPaf(
   paf.table,
   min.mapq = 10,
   min.align.len = 1000,
   min.align.n = 1,
-  target.region = NULL,
-  query.region = NULL,
   drop.self.align = TRUE
 )
 }
@@ -24,12 +22,6 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
 
-\item{target.region}{A user defined target region to load in a character string ('chr:start-end') or as
-a \code{\link{GRanges-class}} object containing a single genomic region.}
-
-\item{query.region}{A user defined query region to load in a character string ('chr:start-end') or as
-a \code{\link{GRanges-class}} object containing a single genomic region.}
-
 \item{drop.self.align}{Remove alignments of a given sequence to itself.}
 }
 \value{
@@ -37,8 +29,17 @@ A \code{tibble} of filtered PAF alignments.
 }
 \description{
 This function takes loaded PAF alignments using \code{\link{readPaf}} function and perform
-user defined filtering of input alignments based on user defined region, mapping quality, and
-alignment length (etc.).
+user defined filtering of input alignments based on mapping quality, alignment length, and
+minimum alignments between target and query.
+}
+\examples{
+## Get PAF to plot
+paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+## Filter PAF alignments based on desired target region
+filterPaf(paf.table = paf.table, min.align.len = 50000)
+
 }
 \author{
 David Porubsky
