@@ -1,16 +1,12 @@
-#' Filter PAF alignments
+#' Filter PAF alignments.
 #' 
 #' This function takes loaded PAF alignments using \code{\link{readPaf}} function and perform
-#' user defined filtering of input alignments based on user defined region, mapping quality, and
-#' alignment length (etc.).
+#' user defined filtering of input alignments based on mapping quality, alignment length, and
+#' minimum alignments between target and query.
 #'
 #' @param min.mapq Minimum mapping quality to retain.
 #' @param min.align.len Minimum alignment length to retain.
 #' @param min.align.n Minimum number of alignments between a pair of sequences/regions.
-#' @param target.region A user defined target region to load in a character string ('chr:start-end') or as
-#' a \code{\link{GRanges-class}} object containing a single genomic region.
-#' @param query.region A user defined query region to load in a character string ('chr:start-end') or as
-#' a \code{\link{GRanges-class}} object containing a single genomic region.
 #' @param drop.self.align Remove alignments of a given sequence to itself.
 #' @inheritParams breakPaf
 #' @return A \code{tibble} of filtered PAF alignments.
@@ -21,7 +17,15 @@
 #' @importFrom tibble is_tibble as_tibble 
 #' @author David Porubsky
 #' @export
-filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1, target.region=NULL, query.region=NULL, drop.self.align=TRUE) {
+#' @examples 
+#'## Get PAF to plot
+#'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'## Filter PAF alignments based on desired target region
+#'filterPaf(paf.table = paf.table, min.align.len = 50000)
+#'
+filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1, drop.self.align=TRUE) {
   ## Check user input ##
   ## Make sure PAF has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -30,45 +34,49 @@ filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1,
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
   
-  ## Filer alignments by target region
-  if (!is.null(target.region)) {
-    if (is.character(target.region)) {
-      target.region.gr <- as(target.region, 'GRanges')
-    } else if (class(target.region.gr) == 'GRanges') {
-      target.region.gr <- target.region
-    } else {
-      message("Parameter 'target.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
-    }
-    ## Subset PAF by ranges overlaps
-    target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
-    hits <- GenomicRanges::findOverlaps(target.gr, target.region.gr) ## TODO Take only overlaps, regions itself are not shrinked!!!
-    if (length(hits) > 0) {
-      paf <- paf[S4Vectors::queryHits(hits),]
-      #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
-    } else {
-      warning("None of the PAF ranges overlap user defined 'target.region', skipping ...")
-    }  
-  }
-  
-  ## Filer alignments by query region
-  if (!is.null(query.region)) {
-    if (is.character(query.region)) {
-      query.region.gr <- as(query.region, 'GRanges')
-    } else if (class(query.region.gr) == 'GRanges') {
-      query.region.gr <- query.region
-    } else {
-      message("Parameter 'query.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
-    }
-    ## Subset PAF by ranges overlaps
-    query.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
-    hits <- GenomicRanges::findOverlaps(query.gr, query.region.gr) ## TODO Take only overlaps, regions itself are not shrinked!!!
-    if (length(hits) > 0) {
-      paf <- paf[S4Vectors::queryHits(hits),]
-      #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
-    } else {
-      warning("None of the PAF ranges overlap user defined 'query.region', skipping ...")
-    }  
-  }
+  # ## Filer alignments by target region
+  # if (!is.null(target.region)) {
+  #   if (is.character(target.region)) {
+  #     target.region.gr <- as(target.region, 'GRanges')
+  #   } else if (class(target.region.gr) == 'GRanges') {
+  #     target.region.gr <- target.region
+  #   } else {
+  #     message("Parameter 'target.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
+  #   }
+  #   ## Subset PAF by ranges overlaps
+  #   target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
+  #   hits <- GenomicRanges::findOverlaps(target.gr, target.region.gr) ## TODO Take only overlaps, regions itself are not shrinked!!!
+  #   if (length(hits) > 0) {
+  #     paf <- paf[S4Vectors::queryHits(hits),]
+  #     ## Narrow down target aligments to desired target region
+  #     #paf$t.start[paf$t.start < GenomicRanges::start(target.region.gr)] <- GenomicRanges::start(target.region.gr)
+  #     #paf$t.end[paf$t.end > GenomicRanges::end(target.region.gr)] <- GenomicRanges::end(target.region.gr)
+  #     
+  #     #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
+  #   } else {
+  #     warning("None of the PAF ranges overlap user defined 'target.region', skipping ...")
+  #   }  
+  # }
+  # 
+  # ## Filer alignments by query region
+  # if (!is.null(query.region)) {
+  #   if (is.character(query.region)) {
+  #     query.region.gr <- as(query.region, 'GRanges')
+  #   } else if (class(query.region.gr) == 'GRanges') {
+  #     query.region.gr <- query.region
+  #   } else {
+  #     message("Parameter 'query.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
+  #   }
+  #   ## Subset PAF by ranges overlaps
+  #   query.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
+  #   hits <- GenomicRanges::findOverlaps(query.gr, query.region.gr) ## TODO Take only overlaps, regions itself are not shrinked!!!
+  #   if (length(hits) > 0) {
+  #     paf <- paf[S4Vectors::queryHits(hits),]
+  #     #paf <- paf[paf$t.name %in% as.character(seqnames(target.region.gr)) & paf$t.start >= start(target.region.gr) & paf$t.end <= end(target.region.gr),]
+  #   } else {
+  #     warning("None of the PAF ranges overlap user defined 'query.region', skipping ...")
+  #   }  
+  # }
   
   ## Filter by the number of alignments per sequence alignment pair
   ## Get unique alignment ID
@@ -95,7 +103,7 @@ filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1,
   }  
   
   ## Filter by alignment length
-  if (all(is.na(paf$aln.len))) {
+  if (all(!is.na(paf$aln.len))) {
     paf$aln.len[is.na(paf$aln.len)] <- min.align.len
     if (min.align.len > 0 & is.numeric(paf$aln.len)) {
       paf <- paf[paf$aln.len >= min.align.len,]
