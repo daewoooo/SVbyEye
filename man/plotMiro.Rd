@@ -9,6 +9,7 @@ plotMiro(
   min.deletion.size = NULL,
   min.insertion.size = NULL,
   highlight.sv = NULL,
+  binsize = NULL,
   color.by = "direction"
 )
 }
@@ -22,10 +23,12 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{highlight.sv}{Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats.}
 
-\item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('fraction.matches').}
+\item{binsize}{A size of a bin in base pairs to split a PAF alignment into.}
+
+\item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
 }
 \value{
-A \code{ggplot2} object or \code{list} of  \code{ggplot2} objects.
+A \code{ggplot2} object.
 }
 \description{
 This function takes PAF output file from minimap2 alignments, and visualize the alignments
@@ -41,11 +44,13 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 ## Color by alignment directionality
 plotMiro(paf.table = paf.table, color.by = 'direction')
 ## Color by fraction of matched bases in each alignment
-plotMiro(paf.table = paf.table, color.by = 'fraction.matches')
+plotMiro(paf.table = paf.table, color.by = 'identity')
 ## Highlight structural variants
 paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 plotMiro(paf.table = paf.table, min.deletion.size=50, highlight.sv='outline')
+## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
+plotMiro(paf.table = paf.table, binsize=10000)
 
 }
 \author{

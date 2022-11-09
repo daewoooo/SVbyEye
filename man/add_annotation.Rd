@@ -24,7 +24,7 @@ add_annotation(
 \item{coordinate.space}{A coordinate space ranges in 'annot.gr' are reported, either 'target' or 'query'.}
 }
 \value{
-A \code{list} of miropeat style plots.
+A \code{ggplot2} object.
 }
 \description{
 This function takes a \code{ggplot2} object generated using \code{\link{plotMiro}} function and adds extra annotation on top of query
