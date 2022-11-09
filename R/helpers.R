@@ -62,3 +62,47 @@ mirrorRanges <- function(gr, seqlength=NULL) {
   suppressWarnings( seqlengths(new.gr) <- gr.len )
   return(new.gr)
 }
+
+
+#' Add color scheme based on certain values and defined breaks.
+#'
+#' This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into 
+#' chunks based on defined breaks. Each chunk has assigned unique color on a gradient scale.
+#'
+#' @param data.table A \code{data.frame} or \code{tibble} object to be processed.
+#' @param value.field Either a column index or a column name present in submitted 'data.table'  
+#' @param breaks User defined breaks in defined 'value.field' in order to split these values into chunks.
+#' @return A \code{\link{list}} containing original 'data.table' with extra column adding 'col.levels' based on defined 'breaks'.
+#' List also contains element 'color' with a gradient color assigned to each 'col.level'.
+#' @importFrom wesanderson wes_palette
+#' @author David Porubsky
+#' @export
+getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=c(90, 95, 96, 97, 98, 99, 99.5, 99.9)) {
+  ## Check user input
+  if (is.null(data.table)) {
+    stop("No data submitted, please define 'data.table' parameter !!!")
+  }
+  if (is.numeric(value.field)) {
+    if (ncol(data.table) < value.field) {
+      stop("Defined value field index is larger than number of columns in submitted 'data.table' !!!")
+    }
+  } else if (is.character(value.field)) {
+    if (!value.field %in% colnames(data.table)) {
+      stop("Defined field name does not match any column name in submitted 'data.table' !!!")
+    }
+  } else {
+    stop("No 'value.field' defined, please define 'value.field' either as column index or column name !!!")
+  }
+  
+  ## Define break ranges
+  levels <- c(paste0('<', breaks[1]), 
+              paste(breaks[-length(breaks)], breaks[-1], sep = ':'), 
+              paste0('>', breaks[length(breaks)]))
+  ## Get break intervals
+  ids <- findInterval(data.table[,eval(value.field)], vec = breaks) + 1
+  data.table$col.levels <- levels[ids]
+  colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = 'continuous')
+  colors <- setNames(as.list(colors), levels)
+  ## Return color scheme
+  return(list(data=data.table, colors=colors))
+}
