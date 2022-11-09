@@ -5,11 +5,8 @@
 #'
 #' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats. 
 #' @param color.by Color alignments either by directionality ('direction') or fraction of matched base pairs ('fraction.matches').
-#' @param flip.alignment Set to \code{TRUE} if query PAF alignments should be flipped.
-#' @inheritParams readPaf
-#' @inheritParams filterPaf
+# @param flip.alignment Set to \code{TRUE} if query PAF alignments should be flipped.
 #' @inheritParams breakPaf
-#' @inheritParams flipPaf
 #' @return A \code{ggplot2} object or \code{list} of  \code{ggplot2} objects.
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
@@ -20,28 +17,40 @@
 #' @examples
 #'## Get PAF to plot
 #'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+#'## Read in PAF 
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'## Optional steps include PAF filtering and flipping query coordinates (see filterPaf and flipPaf function documentation)
 #'## Make a plot
 #'## Color by alignment directionality
-#'plotMiro(paf.file = paf.file, color.by = 'direction')
+#'plotMiro(paf.table = paf.table, color.by = 'direction')
 #'## Color by fraction of matched bases in each alignment
-#'plotMiro(paf.file = paf.file, color.by = 'fraction.matches')
+#'plotMiro(paf.table = paf.table, color.by = 'fraction.matches')
 #'## Highlight structural variants
 #'paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
-#'plotMiro(paf.file = paf.file, min.deletion.size=50, highlight.sv='outline')
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'plotMiro(paf.table = paf.table, min.deletion.size=50, highlight.sv='outline')
 #'
-plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, drop.self.align = FALSE, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
+#plotMiro <- function(paf.table, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, drop.self.align = FALSE, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
+plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, color.by = 'direction') {
   ## Check user input
-  ## Make sure submitted files exists
-  if (!file.exists(paf.file)) {
-    stop(paste0("Submitted 'paf.file' ", paf.file, " does not exists !!!"))
+  ## Make sure submitted paf.table has at least 12 mandatory fields
+  if (ncol(paf.table) >= 12) {
+    paf <- paf.table
+    paf$direction.flip <- FALSE
+  } else {
+    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
+  ## Make sure submitted files exists
+  # if (!file.exists(paf.file)) {
+  #   stop(paste0("Submitted 'paf.file' ", paf.file, " does not exists !!!"))
+  # }
   
   ## Load PAF file
-  paf <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg') 
+  #paf <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg') 
   ## Filter PAF file
-  paf <- filterPaf(paf.table = paf, min.mapq = min.mapq, min.align.len = min.align.len, min.align.n = min.align.n, target.region = target.region, query.region = query.region, drop.self.align = drop.self.align)
+  #paf <- filterPaf(paf.table = paf, min.mapq = min.mapq, min.align.len = min.align.len, min.align.n = min.align.n, target.region = target.region, query.region = query.region, drop.self.align = drop.self.align)
   ## Break PAF at insertion/deletions defined in cigar string
-  paf.l <- breakPaf(paf.table = paf, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+  paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
   paf <- paf.l$M
   paf$ID <- 'M'
   ## Add SVs to the alignment table
@@ -52,7 +61,7 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
     paf <- dplyr::bind_rows(paf, paf.svs)
   }  
   ## Flip PAF alignments given the user defined majority orientation
-  paf <- flipPaf(paf.table = paf, majority.strand = majority.strand, force=flip.alignment)
+  #paf <- flipPaf(paf.table = paf, majority.strand = majority.strand, force=flip.alignment)
   ## Convert PAF alignments to plotting coordinates
   paf <- paf2coords(paf.table = paf)
   
@@ -177,8 +186,10 @@ plotMiro <- function(paf.file = paf.file, min.mapq = 10, min.align.len = 100, mi
 #' @examples
 #'## Get PAF to plot
 #'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 #'## Make a plot
-#'plt <- plotMiro(paf.file = paf.file)
+#'plt <- plotMiro(paf.table = paf.table)
 #'## Load target annotation file
 #'target.annot <- system.file("extdata", "test1_target_annot.txt", package="SVbyEye")
 #'target.annot.df <- read.table(target.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
@@ -285,3 +296,67 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
   }
 }
 
+
+#' Flip query annotation ranges 
+#' 
+#' This function takes loaded PAF alignments using \code{\link{readPaf}} function and postprocessed using 
+#' \code{\link{flipPaf}} function. In case the PAF alignments were flipped ranges defined in 'query.annot.gr'
+#' will be flipped accordingly to match query coordinates defined in 'paf.table'.
+#' 
+#' @param query.annot.gr A \code{\link{GRanges-class}} object with a set of ranges in query coordinates. See function
+#' \code{\link{liftRangesToAlignment}} if coordinates need to be lifted from target space.
+#' @inheritParams breakPafAlignment
+#' @return A \code{\link{GRanges-class}} object.
+#' @author David Porubsky
+#' @export
+#' @examples 
+#'## Get PAF to process
+#'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'## Flip PAF alignments
+#'paf.table <- flipPaf(paf.table = paf.table, force=TRUE)
+#'## Load query annotation file
+#'query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
+#'query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
+#'query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
+#'## Synchronize orientation of query annotation file with flipped PAF alignments
+#'flipQueryAnnotation(paf.table = paf.table, query.annot.gr=query.annot.gr)
+#'
+flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
+  ## Check user input ##
+  ## Check if submitted query annotation is GRanges object
+  if (!is.null(query.annot.gr)) {
+    if (class(query.annot.gr) != 'GRanges') {
+      stop("Parameter 'query.annot.gr' has to be of 'GenomicRanges' object !!!")
+    }
+  }
+  ## Make sure submitted paf.table has at least 12 mandatory fields
+  if (ncol(paf.table) >= 12) {
+    paf <- paf.table
+    paf$direction.flip <- FALSE
+  } else {
+    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
+  }
+  
+  ## Process per query name
+  paf.table.l <- split(paf.table, paf.table$q.name)
+  query.annot.grl <- split(query.annot.gr, seqnames(query.annot.gr)) 
+  
+  flipped.annot <- list()
+  for (q.name in names(query.annot.grl)) {
+    annot.gr <- query.annot.grl[[q.name]]
+    paf.subtable <- paf.table.l[[q.name]]
+    if (nrow(paf.subtable) > 0) {
+      ## Flip query annotation if query.flip is TRUE
+      if (unique(paf.subtable$query.flip)) {
+        annot.gr.flipped <- mirrorRanges(gr = annot.gr, seqlength = unique(paf.subtable$q.len))
+        flipped.annot[[length(flipped.annot) + 1]] <- annot.gr.flipped 
+      } else {
+        flipped.annot[[length(flipped.annot) + 1]] <- annot.gr 
+      }
+    }
+  } 
+  flipped.annot.gr <- do.call(c, flipped.annot)
+  return(flipped.annot.gr)
+}
