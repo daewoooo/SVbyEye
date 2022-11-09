@@ -5,37 +5,16 @@
 \title{Visualize PAF alignments.}
 \usage{
 plotMiro(
-  paf.file = paf.file,
-  min.mapq = 10,
-  min.align.len = 100,
-  min.align.n = 1,
-  target.region = NULL,
-  query.region = NULL,
-  drop.self.align = FALSE,
+  paf.table,
   min.deletion.size = NULL,
   min.insertion.size = NULL,
   highlight.sv = NULL,
-  majority.strand = "+",
-  color.by = "direction",
-  flip.alignment = FALSE
+  color.by = "direction"
 )
 }
 \arguments{
-\item{paf.file}{A path to a PAF file containing alignments to be loaded.}
-
-\item{min.mapq}{Minimum mapping quality to retain.}
-
-\item{min.align.len}{Minimum alignment length to retain.}
-
-\item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
-
-\item{target.region}{A user defined target region to load in a character string ('chr:start-end') or as
-a \code{\link{GRanges-class}} object containing a single genomic region.}
-
-\item{query.region}{A user defined query region to load in a character string ('chr:start-end') or as
-a \code{\link{GRanges-class}} object containing a single genomic region.}
-
-\item{drop.self.align}{Remove alignments of a given sequence to itself.}
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
 
 \item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
 
@@ -43,11 +22,7 @@ a \code{\link{GRanges-class}} object containing a single genomic region.}
 
 \item{highlight.sv}{Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats.}
 
-\item{majority.strand}{A desired majority strand directionality to be reported.}
-
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('fraction.matches').}
-
-\item{flip.alignment}{Set to \code{TRUE} if query PAF alignments should be flipped.}
 }
 \value{
 A \code{ggplot2} object or \code{list} of  \code{ggplot2} objects.
@@ -59,14 +34,18 @@ in miropeat style.
 \examples{
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+## Read in PAF 
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+## Optional steps include PAF filtering and flipping query coordinates (see filterPaf and flipPaf function documentation)
 ## Make a plot
 ## Color by alignment directionality
-plotMiro(paf.file = paf.file, color.by = 'direction')
+plotMiro(paf.table = paf.table, color.by = 'direction')
 ## Color by fraction of matched bases in each alignment
-plotMiro(paf.file = paf.file, color.by = 'fraction.matches')
+plotMiro(paf.table = paf.table, color.by = 'fraction.matches')
 ## Highlight structural variants
 paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
-plotMiro(paf.file = paf.file, min.deletion.size=50, highlight.sv='outline')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+plotMiro(paf.table = paf.table, min.deletion.size=50, highlight.sv='outline')
 
 }
 \author{

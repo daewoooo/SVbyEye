@@ -33,8 +33,10 @@ or target coordinates. These ranges are specified in 'annot.gr' object and are v
 \examples{
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 ## Make a plot
-plt <- plotMiro(paf.file = paf.file)
+plt <- plotMiro(paf.table = paf.table)
 ## Load target annotation file
 target.annot <- system.file("extdata", "test1_target_annot.txt", package="SVbyEye")
 target.annot.df <- read.table(target.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
