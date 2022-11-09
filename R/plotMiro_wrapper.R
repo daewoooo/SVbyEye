@@ -4,10 +4,11 @@
 #' in miropeat style. 
 #'
 #' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats. 
-#' @param color.by Color alignments either by directionality ('direction') or fraction of matched base pairs ('fraction.matches').
+#' @param color.by Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').
 # @param flip.alignment Set to \code{TRUE} if query PAF alignments should be flipped.
 #' @inheritParams breakPaf
-#' @return A \code{ggplot2} object or \code{list} of  \code{ggplot2} objects.
+#' @inheritParams pafAlignmentToBins
+#' @return A \code{ggplot2} object.
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom gggenes geom_gene_arrow
@@ -24,14 +25,16 @@
 #'## Color by alignment directionality
 #'plotMiro(paf.table = paf.table, color.by = 'direction')
 #'## Color by fraction of matched bases in each alignment
-#'plotMiro(paf.table = paf.table, color.by = 'fraction.matches')
+#'plotMiro(paf.table = paf.table, color.by = 'identity')
 #'## Highlight structural variants
 #'paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
 #'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 #'plotMiro(paf.table = paf.table, min.deletion.size=50, highlight.sv='outline')
+#'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
+#'plotMiro(paf.table = paf.table, binsize=10000)
 #'
 #plotMiro <- function(paf.table, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, drop.self.align = FALSE, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
-plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, color.by = 'direction') {
+plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by = 'direction') {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -49,89 +52,121 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   #paf <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg') 
   ## Filter PAF file
   #paf <- filterPaf(paf.table = paf, min.mapq = min.mapq, min.align.len = min.align.len, min.align.n = min.align.n, target.region = target.region, query.region = query.region, drop.self.align = drop.self.align)
+  
   ## Break PAF at insertion/deletions defined in cigar string
-  paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
-  paf <- paf.l$M
+  if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
+    if (min.deletion.size > 0 | min.insertion.size > 0) {
+      paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+      paf <- paf.l$M
+      paf.svs <- paf.l$SVs
+    }  
+  } else {
+    paf$aln.id <- 1:nrow(paf)
+    paf.svs <- NULL
+  }
+  ## Store PAF alignments for later addition of 'geom_gene_arrow' 
+  paf.copy <- paf
+  paf.copy$ID <- 'M'
+  
+  ## Bin PAF alignments 
+  if (!is.null(binsize)) {
+    if (binsize > 0) {
+      if (binsize < 10) {
+        binsize <- 10
+        warning('Minimum allowed bin size is 10, forced binsize=10!!!')
+      }  
+      paf <- pafToBins(paf.table = paf, binsize = binsize)
+      ## If the PAF alignments are binned only color.by = 'fraction.matches' is allowed
+      color.by <- 'identity'
+    } 
+  }
+  ## Mark alignments ranges by 'M' (matches)
   paf$ID <- 'M'
+  
   ## Add SVs to the alignment table
-  paf.svs <- paf.l$SVs
-  if (nrow(paf.svs) > 0) {
-    paf.svs$ID <- 'INS'
-    paf.svs$ID[grep(paf.svs$cg, pattern = 'D', ignore.case = TRUE)] <- 'DEL'
-    paf <- dplyr::bind_rows(paf, paf.svs)
+  if (!is.null(paf.svs)) {
+    if (nrow(paf.svs) > 0) {
+      paf.svs$ID <- 'INS'
+      paf.svs$ID[grep(paf.svs$cg, pattern = 'D', ignore.case = TRUE)] <- 'DEL'
+      paf <- dplyr::bind_rows(paf, paf.svs)
+    }  
   }  
+  
   ## Flip PAF alignments given the user defined majority orientation
   #paf <- flipPaf(paf.table = paf, majority.strand = majority.strand, force=flip.alignment)
-  ## Convert PAF alignments to plotting coordinates
-  paf <- paf2coords(paf.table = paf)
   
-  ## Process data per alignment
-  coords.data.l <- split(paf, paf$seq.pair)
-  plots <- list()
-  for (i in seq_along(coords.data.l)) {
-    coords <- coords.data.l[[i]]
-    target.seqname <- unique(coords$seq.name[coords$seq.id == 'target'])
-    ## Get y-axis labels
-    q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
-    t.range <- range(coords$seq.pos[coords$seq.id == 'target'])
-    ## Adjust target ranges given the size difference with respect query ranges
-    range.offset <- diff(q.range) - diff(t.range)
-    t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
-    ## Get x-axis labels
-    q.labels <- pretty(q.range)
-    t.labels <- pretty(t.range)
-    ## Covert query to target coordinates
-    q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
-    t.breaks <- t.labels
-    ## Make sure axis labels are always positive numbers
-    q.labels <- abs(q.labels)
-    t.labels <- abs(t.labels)
+  ## Convert PAF alignments to plotting coordinates
+  coords <- paf2coords(paf.table = paf)
+  
+  ## Prepare data for plotting
+  target.seqname <- unique(coords$seq.name[coords$seq.id == 'target'])
+  ## Get y-axis labels
+  q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
+  t.range <- range(coords$seq.pos[coords$seq.id == 'target'])
+  ## Adjust target ranges given the size difference with respect query ranges
+  range.offset <- diff(q.range) - diff(t.range)
+  t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+  ## Get x-axis labels
+  q.labels <- pretty(q.range)
+  t.labels <- pretty(t.range)
+  ## Covert query to target coordinates
+  q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
+  t.breaks <- t.labels
+  ## Make sure axis labels are always positive numbers
+  q.labels <- abs(q.labels)
+  t.labels <- abs(t.labels)
+  
+  ## Get x-axis labels
+  seq.labels <- c(unique(coords$seq.name[coords$seq.id == 'query']), 
+                  unique(coords$seq.name[coords$seq.id == 'target']))
+  
+  ## Color alignments by variable
+  if (color.by == 'direction') {
+    plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
+      geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.5) +
+      scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection')
+  } else if (color.by == 'identity') {
+    coords$identity <- (coords$n.match / coords$aln.len) * 100
+    coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
+    ## Define color scheme
+    coords.l <- getColorScheme(data.table = coords, value.field = 'identity', breaks=c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9))
+    coords <- coords.l$data
+    colors <- coords.l$colors
     
-    ## Get x-axis labels
-    seq.labels <- c(unique(coords$seq.name[coords$seq.id == 'query']), 
-                    unique(coords$seq.name[coords$seq.id == 'target']))
-    
-    ## Color alignments by variable
-    if (color.by == 'direction') {
-      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-        geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.5) +
-        scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'))
-    } else if (color.by == 'fraction.matches') {
-      coords$frac.match <- coords$n.match / coords$aln.len
-      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-        geom_miropeats(aes(x, y, group = group, fill=frac.match), alpha=0.5) +
-        scale_fill_gradient(low = 'gray', high = 'red', name='Fraction\nmatches')
-    } else if (color.by == 'mapq') {
-      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-        geom_miropeats(aes(x, y, group = group, fill=mapq), alpha=0.5) +
-        scale_fill_gradient(low = 'gray', high = 'red')
-    } else {
-      plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-        geom_miropeats(aes(x, y, group = group), alpha=0.5, fill='gray')
-    }
-    
-    ## Add indels
-    if (!is.null(highlight.sv)) {
-      if (nrow(coords[coords$ID != 'M',]) > 0) { 
-        ## Add SVs to the plot
-        if (highlight.sv == 'outline') {
-          plt <- plt + ggnewscale::new_scale_color() +
-            geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
-            scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'))
-        } else if (highlight.sv == 'fill') {
-          plt <- plt + ggnewscale::new_scale_fill() +
-            geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
-            scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'))
-        } else {
-          warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
-        } 
+    plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
+      geom_miropeats(aes(x, y, group = group, fill=col.levels), alpha=0.5) +
+      scale_fill_manual(values = colors, drop=FALSE, name='Identity')
+  } else if (color.by == 'mapq') {
+    plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
+      geom_miropeats(aes(x, y, group = group, fill=mapq), alpha=0.5) +
+      scale_fill_gradient(low = 'gray', high = 'red')
+  } else {
+    plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
+      geom_miropeats(aes(x, y, group = group), alpha=0.5, fill='gray')
+  }
+  
+  ## Add indels
+  if (!is.null(highlight.sv)) {
+    if (nrow(coords[coords$ID != 'M',]) > 0) { 
+      ## Add SVs to the plot
+      if (highlight.sv == 'outline') {
+        plt <- plt + ggnewscale::new_scale_color() +
+          geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+          scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+      } else if (highlight.sv == 'fill') {
+        plt <- plt + ggnewscale::new_scale_fill() +
+          geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
+          scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else {
-        warning("There are no SVs to highlight. Make sure parameters 'min.deletion.size' and 'min.insertion.size' are set or decrease their values!!!")
-      }  
-    }
-    
-    ## Add x and y scales
-    suppressWarnings(
+        warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+      } 
+    } else {
+      warning("There are no SVs to highlight. Make sure parameters 'min.deletion.size' and 'min.insertion.size' are set or decrease their values!!!")
+    }  
+  }
+  
+  ## Add x and y scales
+  suppressWarnings(
     plt <- plt +
       scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
       scale_x_continuous(breaks = q.breaks, labels = scales::comma(q.labels),
@@ -139,30 +174,26 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
       xlab('Genomic position (bp)') +
       ylab('') +
       theme_bw()
-    )
-    
-    ## Add arrows
-    start <- coords[coords$ID == 'M',]$x[c(T, T, F, F)]
-    end <- coords[coords$ID == 'M',]$x[c(F, F, T, T)]
-    y <- coords[coords$ID == 'M',]$y[c(T, T, F, F)]
-    group <- coords[coords$ID == 'M',]$group[c(T, T, F, F)]
-    plt.df <- data.frame(start=start, end=end, y=y, group=group)
-    plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
-    
-    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-      gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = unit(3, 'mm')) +
-      scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen')) +
-      scale_color_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen')) +
-      theme_bw()
-    
-    ## Store plot
-    plots[[i]] <- plt
-  }
-  if (length(plots) == 1) {
-    return(plots[[1]])
-  } else {
-    return(plots)
-  }  
+  )
+  
+  ## Add arrows to mark start and end of each alignment
+  ## Always used unbinned version of PAF alignments
+  coords.arrow <- paf2coords(paf.table = paf.copy)
+  start <- coords.arrow$x[c(T, T, F, F)]
+  end <- coords.arrow$x[c(F, F, T, T)]
+  y <- coords.arrow$y[c(T, T, F, F)]
+  group <- coords.arrow$group[c(T, T, F, F)]
+  plt.df <- data.frame(start=start, end=end, y=y, group=group)
+  plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
+  
+  plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+    gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = unit(3, 'mm')) +
+    scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection') +
+    scale_color_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection') +
+    theme_bw()
+  
+  ## Return final plot
+  return(plt)
 }
 
 
@@ -176,7 +207,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
 #' @param shape A user defined shape ranges in 'annot.gr' are visualized, either 'arrowhead' or 'rectangle'.
 #' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.   
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target' or 'query'.
-#' @return A \code{list} of miropeat style plots.
+#' @return A \code{ggplot2} object.
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom gggenes geom_gene_arrow
@@ -255,7 +286,7 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
             col.scale <- 'gradient'
           } else {
             n.uniq <- length(unique(annot.df[,eval(fill.by)]))
-            if (length(n.uniq) <= 20) {
+            if (n.uniq <= 20) {
               pal <- wesanderson::wes_palette("Zissou1", n.uniq, type = "continuous")
               col.scale <- 'discrete'
             } else {
@@ -360,3 +391,4 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
   flipped.annot.gr <- do.call(c, flipped.annot)
   return(flipped.annot.gr)
 }
+
