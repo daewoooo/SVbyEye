@@ -21,7 +21,7 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
     paf.flip$q.end <- paf.table$q.len - paf.table$q.start
     paf.flip$q.start <- paf.table$q.len - paf.table$q.end
     ## Add info if the PAF alignment was flipped
-    paf.flip$direction.flip <- TRUE
+    paf.flip$query.flip <- TRUE
     ## Make sure q.start position is always smaller than q.end
     #q.start <- pmin(paf.flip$q.start, paf.flip$q.end)
     #q.end <- pmax(paf.flip$q.start, paf.flip$q.end)
@@ -32,10 +32,10 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
   }
   
   ## Check user input ##
-  ## Make sure PAF has at least 12 mandatory fields
+  ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
     paf <- paf.table
-    paf$direction.flip <- FALSE
+    paf$query.flip <- FALSE
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
