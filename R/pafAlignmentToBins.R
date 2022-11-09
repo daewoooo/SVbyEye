@@ -3,7 +3,7 @@
 #'
 #' @param binsize A size of a bin in base pairs to split a PAF alignment into.
 #' @inheritParams breakPafAlignment
-#' @importFrom GenomicRanges GRanges shift
+#' @importFrom GenomicRanges GRanges shift width
 #' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
 #' @importFrom dplyr tibble
 #' @importFrom S4Vectors sapply
@@ -20,9 +20,11 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
   ## Check if the alignments size is at least twice the size of desired bin size
   if ((GenomicAlignments::qwidth(alignment) / binsize) >= 2) {
     ## Get bins in target coordinates
-    target.len <- width(target.gr)
-    names(target.len) <- paf.aln$t.name
-    bins.gr <- unlist(GenomicRanges::tileGenome(seqlengths = target.len, tilewidth = binsize))
+    #target.len <- GenomicRanges::width(target.gr)
+    #names(target.len) <- paf.aln$t.name
+    aln.len <- GenomicAlignments::cigarWidthAlongReferenceSpace(cigar = paf.aln$cg)
+    names(aln.len) <- paf.aln$t.name
+    bins.gr <- GenomicRanges::tileGenome(seqlengths = aln.len, tilewidth = binsize, cut.last.tile.in.chrom = TRUE)
     ## Get bins in query coordinates
     query.bins.gr <- GenomicAlignments::mapToAlignments(bins.gr, alignments = alignment)
     seqlengths(query.bins.gr) <- GenomicAlignments::qwidth(alignment)
