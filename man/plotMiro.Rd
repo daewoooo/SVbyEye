@@ -11,7 +11,8 @@ plotMiro(
   highlight.sv = NULL,
   binsize = NULL,
   color.by = "direction",
-  outline.alignments = FALSE
+  outline.alignments = FALSE,
+  offset.alignments = FALSE
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ along with CIGAR string defined in 'cg' column.}
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
 
 \item{outline.alignments}{Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.}
+
+\item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above midline.}
 }
 \value{
 A \code{ggplot2} object.
@@ -48,8 +51,10 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 plotMiro(paf.table = paf.table, color.by = 'direction')
 ## Color by fraction of matched bases in each alignment
 plotMiro(paf.table = paf.table, color.by = 'identity')
-## Outline alignments
+## Outline PAF alignments
 plotMiro(paf.table = paf.table, outline.alignments = TRUE)
+## Offset target PAF alignments
+plotMiro(paf.table = paf.table, offset.alignments = TRUE)
 ## Highlight structural variants
 paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')

@@ -4,7 +4,10 @@
 \alias{paf2coords}
 \title{Prepare PAF alignments for plotting.}
 \usage{
-paf2coords(paf.table)
+paf2coords(paf.table, offset.alignments = FALSE)
+}
+\arguments{
+\item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above midline.}
 }
 \value{
 A \code{data.frame} of PAF alignments reported as x and y coordinate values.
