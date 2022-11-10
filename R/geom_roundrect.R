@@ -1,3 +1,10 @@
+#' A 'ggplot2' geom to draw genomic annotations as round rectangles
+#'
+#' `geom_roundrect()` draws genomic ranges as round rectangles, allowing to draw for instance ...
+#'
+#' This geom draws ...
+#'
+#' @export
 geom_roundrect <- function(
   mapping = NULL,
   data = NULL,
