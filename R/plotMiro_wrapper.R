@@ -208,6 +208,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
 #' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.   
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target' or 'query'.
 #' @return A \code{ggplot2} object.
+#' @import ggplot2
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom gggenes geom_gene_arrow
@@ -226,18 +227,31 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
 #'target.annot.df <- read.table(target.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 #'target.annot.gr <- makeGRangesFromDataFrame(target.annot.df)
 #'## Add target annotation as arrowhead
-#'plt <- add_annotation(ggplot.obj = plt, annot.gr = target.annot.gr, coordinate.space='target')
+#'plt <- add_annotation(ggplot.obj = plt, annot.gr = target.annot.gr, coordinate.space = 'target')
 #'## Load query annotation file
 #'query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
 #'query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 #'query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
 #'## Add query annotation as rectangle
-#'add_annotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape='rectangle', coordinate.space='query')
+#'add_annotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle', coordinate.space = 'query')
 #'## Lift target annotation to query and plot
 #'lifted.annot.gr <- liftRangesToAlignment(gr = target.annot.gr, paf.file = paf.file, direction = 'target2query')
-#'add_annotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape='rectangle', coordinate.space='query')
+#'add_annotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = 'rectangle', coordinate.space = 'query')
+#'## Add segmental duplication annotation
+#'plt <- plotMiro(paf.table = paf.table)
+#'sd.annot <- system.file("extdata", "test1.sd.annot.RData", package="SVbyEye")
+#'sd.annot.gr <- get(load(sd.annot))
+#'## Create a custom discrete levels
+#'sd.categ <- findInterval(sd.annot.gr$fracMatch, vec = c(0.95, 0.98, 0.99))
+#'sd.categ <- dplyr::recode(sd.categ, '0' = '<95%', '1' = '95-98%', '2' = '98-99%', '3'='>=99%')
+#'sd.categ <- factor(sd.categ, levels=c('<95%', '95-98%', '98-99%', '>=99%'))
+#'sd.annot.gr$sd.categ <- sd.categ
+## Create a custom color palette
+#'color.palette <- c('<95%' = 'gray72', '95-98%' = 'gray47', '98-99%' = '#cccc00', '>=99%' = '#ff6700')
+#'## Add annotation to the plot
+#'add_annotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target')
 #'
-add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, coordinate.space='target') {
+add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, color.palette=NULL, coordinate.space='target') {
   ## Get plotted data
   gg.data <- ggplot.obj$data
   target.id <- unique(gg.data$seq.name[gg.data$seq.id == 'target'])
@@ -259,8 +273,8 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
   }  
     
   ## Get x and y-axis limits
-  xlim <- layer_scales(ggplot.obj)$x$range$range
-  ylim <- layer_scales(ggplot.obj)$y$range$range
+  xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
+  ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
   
   ## Get annotation track offset
   if (coordinate.space == 'target') {
@@ -280,33 +294,49 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
       annot.df <- as.data.frame(annot.gr)
       if (!is.null(fill.by)) {
         if (fill.by %in% colnames(annot.df)) {
-          ## Get color scales
+          ## Get color scales ##
+          ## Define continuous color scale
           if (is.numeric(annot.df[,eval(fill.by)])) {
             pal <- wesanderson::wes_palette("Zissou1", 100, type = "continuous")
             col.scale <- 'gradient'
+          ## Define discrete color scale
           } else {
-            n.uniq <- length(unique(annot.df[,eval(fill.by)]))
-            if (n.uniq <= 20) {
-              pal <- wesanderson::wes_palette("Zissou1", n.uniq, type = "continuous")
+            dicrete.levels <- unique(annot.df[,eval(fill.by)])
+            n.uniq <- length(dicrete.levels)
+            ## Get user define discrete color palette
+            if (all(dicrete.levels %in% names(color.palette))) {
+              pal <- color.palette
               col.scale <- 'discrete'
+            ## Create default discrete color palette  
             } else {
-              warning("More than 20 color levels, legend won't be reported!!!")
-              col.scale <- 'discreteNoLegend'
-            }  
+              if (n.uniq <= 20) {
+                pal <- wesanderson::wes_palette("Zissou1", n.uniq, type = "continuous")
+                col.scale <- 'discrete'
+              } else {
+                warning("More than 20 color levels, legend won't be reported!!!")
+                col.scale <- 'discreteNoLegend'
+              }  
+            } 
           }
-        }  
+        } else {
+          stop("User defined 'fill.by' value is not a valid field in 'annot.gr' !!!")
+        } 
       } else {
         pal <- 'black'
         col.scale <- 'discreteNoLegend'
       }  
       
       if (shape == 'arrowhead') {
+        ## Make sure field 'strand' is defined
+        if (!'strand' %in% colnames(annot.df)) {
+          annot.df$strand <- '*'
+        }
         plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-          geom_arrowhead(data=annot.df, aes(xmin=start, xmax=end, y=y.offset, color=eval(fill.by), fill=eval(fill.by)))
+          geom_arrowhead(data=annot.df, aes_string(xmin='start', xmax='end', y='y.offset', color=eval(fill.by), fill=eval(fill.by), strand='strand'))
       } else if (shape == 'rectangle') {
         plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
           #geom_rect(data=annot.df, aes(xmin=start, xmax=end, ymin=y.offset, ymax=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)))
-          geom_roundrect(data=annot.df, aes(xmin=start, xmax=end, y=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)), radius = grid::unit(0, "mm"))
+          geom_roundrect(data=annot.df, aes_string(xmin='start', xmax='end', y=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)), radius = grid::unit(0, "mm"))
       }  
       
       if (col.scale == 'gradient') {
