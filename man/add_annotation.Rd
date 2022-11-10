@@ -22,6 +22,8 @@ add_annotation(
 
 \item{fill.by}{A name of an extra field present in 'annot.gr' to be used to define color scheme.}
 
+\item{color.palette}{User defined discrete color palette as named character vector (elements = colors, names = discrete levels).}
+
 \item{coordinate.space}{A coordinate space ranges in 'annot.gr' are reported, either 'target' or 'query'.}
 }
 \value{
