@@ -5,7 +5,7 @@
 #'
 #' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats. 
 #' @param color.by Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').
-# @param flip.alignment Set to \code{TRUE} if query PAF alignments should be flipped.
+#' @param outline.alignments Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
 #' @return A \code{ggplot2} object.
@@ -26,6 +26,8 @@
 #'plotMiro(paf.table = paf.table, color.by = 'direction')
 #'## Color by fraction of matched bases in each alignment
 #'plotMiro(paf.table = paf.table, color.by = 'identity')
+#'## Outline alignments
+#'plotMiro(paf.table = paf.table, outline.alignments = TRUE)
 #'## Highlight structural variants
 #'paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
 #'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
@@ -34,7 +36,7 @@
 #'plotMiro(paf.table = paf.table, binsize=10000)
 #'
 #plotMiro <- function(paf.table, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, drop.self.align = FALSE, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
-plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by = 'direction') {
+plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', outline.alignments=FALSE) {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -145,6 +147,11 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
       geom_miropeats(aes(x, y, group = group), alpha=0.5, fill='gray')
   }
   
+  ## Add alignment outlines 
+  if (outline.alignments) {
+    plt <- plt + geom_miropeats(data=coords[coords$ID == 'M',], aes(x, y, group = group),  fill=NA, color='gray', size=0.25)
+  }  
+  
   ## Add indels
   if (!is.null(highlight.sv)) {
     if (nrow(coords[coords$ID != 'M',]) > 0) { 
@@ -172,8 +179,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
       scale_x_continuous(breaks = q.breaks, labels = scales::comma(q.labels),
                          sec.axis = sec_axis(trans = y ~ ., breaks = t.breaks, labels = scales::comma(t.labels)), expand = c(0,0)) +
       xlab('Genomic position (bp)') +
-      ylab('') +
-      theme_bw()
+      ylab('')
   )
   
   ## Add arrows to mark start and end of each alignment
@@ -189,8 +195,16 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
     gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = unit(3, 'mm')) +
     scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection') +
-    scale_color_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection') +
-    theme_bw()
+    scale_color_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection')
+  
+  ## Set the theme
+  theme_miro <- theme(panel.grid.major = element_blank(), 
+                      panel.grid.minor = element_blank(),
+                      panel.background = element_blank(), 
+                      axis.line.x = element_line(size = 1),
+                      axis.ticks.x = element_line(size=1),
+                      axis.ticks.length.x = unit(2, 'mm'))
+  plt <- plt + theme_miro
   
   ## Return final plot
   return(plt)
@@ -205,7 +219,8 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
 #' @param ggplot.obj A \code{ggplot2} object generated using \code{\link{plotMiro}} function.
 #' @param annot.gr A \code{\link{GRanges-class}} object with a set of ranges to be added as extra annotation.
 #' @param shape A user defined shape ranges in 'annot.gr' are visualized, either 'arrowhead' or 'rectangle'.
-#' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.   
+#' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.
+#' @param color.palette User defined discrete color palette as named character vector (elements = colors, names = discrete levels).  
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target' or 'query'.
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
