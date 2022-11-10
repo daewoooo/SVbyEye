@@ -8,6 +8,7 @@
 #' @param outline.alignments Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
+#' @inheritParams paf2coords
 #' @return A \code{ggplot2} object.
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
@@ -26,8 +27,10 @@
 #'plotMiro(paf.table = paf.table, color.by = 'direction')
 #'## Color by fraction of matched bases in each alignment
 #'plotMiro(paf.table = paf.table, color.by = 'identity')
-#'## Outline alignments
+#'## Outline PAF alignments
 #'plotMiro(paf.table = paf.table, outline.alignments = TRUE)
+#'## Offset target PAF alignments
+#'plotMiro(paf.table = paf.table, offset.alignments = TRUE)
 #'## Highlight structural variants
 #'paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
 #'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
@@ -36,7 +39,7 @@
 #'plotMiro(paf.table = paf.table, binsize=10000)
 #'
 #plotMiro <- function(paf.table, min.mapq = 10, min.align.len = 100, min.align.n = 1, target.region = NULL, query.region = NULL, drop.self.align = FALSE, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, majority.strand = '+', color.by = 'direction', flip.alignment = FALSE) {
-plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', outline.alignments=FALSE) {
+plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', outline.alignments=FALSE, offset.alignments=FALSE) {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -98,7 +101,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   #paf <- flipPaf(paf.table = paf, majority.strand = majority.strand, force=flip.alignment)
   
   ## Convert PAF alignments to plotting coordinates
-  coords <- paf2coords(paf.table = paf)
+  coords <- paf2coords(paf.table = paf, offset.alignments = offset.alignments)
   
   ## Prepare data for plotting
   target.seqname <- unique(coords$seq.name[coords$seq.id == 'target'])
@@ -184,7 +187,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   
   ## Add arrows to mark start and end of each alignment
   ## Always used unbinned version of PAF alignments
-  coords.arrow <- paf2coords(paf.table = paf.copy)
+  coords.arrow <- paf2coords(paf.table = paf.copy, offset.alignments = offset.alignments)
   start <- coords.arrow$x[c(T, T, F, F)]
   end <- coords.arrow$x[c(F, F, T, T)]
   y <- coords.arrow$y[c(T, T, F, F)]

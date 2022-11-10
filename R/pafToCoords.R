@@ -4,11 +4,12 @@
 #' using \code{\link{filterPaf}}, \code{\link{breakPaf}} and \code{\link{flipPaf}} functions. Subsequently such alignments are
 #' expanded in a set of x and y coordinates ready to be plotted by \code{\link{geom_miropeats}} function.
 #'
+#' @param offset.alignments Set to \code{TRUE} if subsequent target alignments should be offsetted below and above midline.
 #' @inheritParams breakPafAlignment
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @author David Porubsky
 #' @export
-paf2coords <- function(paf.table) {
+paf2coords <- function(paf.table, offset.alignments=FALSE) {
   ## Check user input ##
   ## Make sure PAF has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -49,6 +50,11 @@ paf2coords <- function(paf.table) {
   ## Vectorize data transformation ##
   x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
   y <- rep(c(1,2,1,2), times=nrow(paf))
+  ## Offset target alignments
+  if (offset.alignments) {
+    offset <- rep(c(0,0,0,0,0,0.05,0,0.05), times=ceiling(nrow(paf) / 2))[1:length(y)]
+    y <- y + offset
+  }  
   group <- rep(1:nrow(paf), each=4)
   seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
   seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
