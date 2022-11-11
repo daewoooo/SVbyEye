@@ -109,7 +109,7 @@ plotMiro_deprecated <- function(paf.file = paf.file, min.mapq = 10, min.align.le
 #' @importFrom scales comma
 #' @author David Porubsky
 #' @export
-plotAVA <- function(paf.file = NULL, seqnames.order=NULL, seqnames.grep=NULL, target.region=NULL, min.align.n=1, min.mapq=0, min.align.len=1000, drop.self.align=TRUE, majority.strand=NULL, outline.miro=FALSE) {
+plotAVA_deprecated <- function(paf.file = NULL, seqnames.order=NULL, seqnames.grep=NULL, target.region=NULL, min.align.n=1, min.mapq=0, min.align.len=1000, drop.self.align=TRUE, majority.strand=NULL, outline.miro=FALSE) {
   ## Check user input
   if (!file.exists(paf.file)) {
     stop("Submitted file ", basename(paf.file), " doesn't exists !!!")
