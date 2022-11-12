@@ -22,6 +22,7 @@ seqnames.order <- c(1:2)
 names(seqnames.order) <- c('HG00438_2', 'HG01358_2')
 seqnames.order <- c('HG00438_2', 'HG01358_2')
 seqnames.order <- c('HG00438_2', 'HG01358_2', 'HG03453_2', 'HG02630_2')
+seqnames.order <- c('HG01358_2', 'HG03453_2', 'HG02630_2', 'HG00438_2')
 
 plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', outline.alignments=FALSE) {
   ## Check user input
@@ -74,92 +75,95 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   
   ## Rename sequences if named vector defined by a user
   # if (!is.null(seqnames.order)) {
-  #   if (any(seqnames.order %in% paf$q.name)) {
+  #   ## Make sure at least two seqnames in user defined list are present in PAF alignments
+  #   if (length(seqnames.order[seqnames.order %in% paf$q.name]) > 1) {
   #     ## Keep only alignments involving user defined sequence order
   #     paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order,]
-  #     seqnames.order.named <- 1:length(seqnames.order)
-  #     names(seqnames.order.named) <- seqnames.order
-  #     paf$q.name <- dplyr::recode(paf$q.name, !!!(seqnames.order.named))
-  #     paf$t.name <- dplyr::recode(paf$t.name, !!!(seqnames.order.named))
+  #     #seqnames.order.named <- 1:length(seqnames.order)
+  #     #names(seqnames.order.named) <- seqnames.order
+  #     #paf$q.name <- dplyr::recode(paf$q.name, !!!(seqnames.order.named))
+  #     #paf$t.name <- dplyr::recode(paf$t.name, !!!(seqnames.order.named))
   #   }
   # }
   ## Desired sequence order
-  # seq.ids <- unique(paf$q.name)
-  # if (is.character(seqnames.order)) {
-  #   if (all(seq.ids %in% seqnames.order)) {
-  #     seq.ord <- seqnames.order
-  #   } else {
-  #     seq.ord <- c(seqnames.order.named, setdiff(seq.ids, seqnames.order.named))
-  #   }
-  # } else {
-  #   seq.ord <- NULL
-  # } 
+  seq.ids <- unique(paf$q.name)
+  if (is.character(seqnames.order)) {
+    if (all(seq.ids %in% seqnames.order)) {
+      seq.ord <- seqnames.order
+    } else {
+      seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
+    }
+  } else {
+    seq.ord <- NULL
+  }
   
-  # ## Get unique alignment ID
-  # paf$seq.pair <- paste0(paf$q.name, '___', paf$t.name)
-  # ## Flip start-end if strand == '-'
-  # paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
-  # 
-  # if (is.null(seq.ord)) {
-  #   ## Order alignments based on number of mismatches
-  #   paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(n.nm = sum(NM)) %>% dplyr::arrange(n.nm)
-  #   paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, '___'))
-  #   ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
-  #   seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
-  # } else {
-  #   ## Assign user defined assembly order
-  #   seq.names <- names(seq.ord)
-  # }
+  ## Get unique alignment ID
+  paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
+
+  if (is.null(seq.ord)) {
+    ## Order alignments based on the number of mismatches
+    paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(n.nm = sum(NM)) %>% dplyr::arrange(n.nm)
+    paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, '__'))
+    ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
+    seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
+  } else {
+    ## Assign user defined assembly order
+    seq.names <- seq.ord
+  }
 
   ## Order PAF
-  paf <- paf[match(paf$q.name, seqnames.order),]
+  paf %>% arrange(match(paf$q.name, seq.names)) -> paf
+  #paf <- paf[match(paf$q.name, seqnames.order),]
+  
+  ## Flip start-end if strand == '-'
+  paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
   
   ## Assign level to seq.names
-  # seq.ids <- length(seq.names):1
-  # names(seq.ids) <- seq.names
-  # paf$y1 <- seq.ids[match(paf$q.name, names(seq.ids))]
-  # paf$y2 <- seq.ids[match(paf$t.name, names(seq.ids))]
-  # ## Keep subsequent comparisons only
-  # paf <- paf[abs(paf$y2 - paf$y1) == 1,]
-  # 
-  # ## Flip query and target for alignments where query comes first
-  # flipQT <- which(paf$y1 > paf$y2)
-  # paf[flipQT,] <- transform(paf[flipQT,],
-  #                           q.name = t.name, q.start = t.start, q.end = t.end,
-  #                           t.name = q.name, t.start = q.start, t.end = q.end,
-  #                           y1 = y2, y2 = y1)
-  # paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], '___', paf$t.name[flipQT])
-  # 
-  # ## Translate paf alignments to plotting coordinates ##
-  # x <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
-  # y <- c(rbind(paf$y1, paf$y2, paf$y1, paf$y2))
-  # group <- rep(1:nrow(paf), each=4)
-  # seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
-  # seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
-  # seq.id <- c(rbind('query', 'target', 'query', 'target'))
-  # n.match <- rep(paf$n.match, each=4)
-  # aln.len <- rep(paf$aln.len, each=4)
-  # mapq <- rep(paf$mapq, each=4)
-  # aln.id <- rep(paf$aln.id, each=4)
-  # ID <- rep(paf$ID, each=4)
-  # seq.pair <- rep(paf$seq.pair, each=4)
-  # direction <- rep(paf$strand, each=4)
-  # 
-  # coords <- data.frame(x=x, 
-  #                      y=y, 
-  #                      group=group, 
-  #                      seq.pos=seq.pos,
-  #                      direction=direction,
-  #                      seq.name=seq.name, 
-  #                      seq.id=seq.id,
-  #                      n.match=n.match,
-  #                      aln.len=aln.len,
-  #                      mapq=mapq,
-  #                      aln.id=aln.id,
-  #                      ID=ID,
-  #                      #direction.flip=direction.flip,
-  #                      seq.pair=seq.pair,
-  #                      stringsAsFactors = FALSE)
+  seq.ids <- length(seq.names):1
+  names(seq.ids) <- seq.names
+  paf$y1 <- seq.ids[match(paf$q.name, names(seq.ids))]
+  paf$y2 <- seq.ids[match(paf$t.name, names(seq.ids))]
+  ## Keep subsequent comparisons only
+  paf <- paf[abs(paf$y2 - paf$y1) == 1,]
+
+  ## Flip query and target for alignments where query comes first
+  flipQT <- which(paf$y1 > paf$y2)
+  paf[flipQT,] <- transform(paf[flipQT,],
+                            q.name = t.name, q.start = t.start, q.end = t.end,
+                            t.name = q.name, t.start = q.start, t.end = q.end,
+                            y1 = y2, y2 = y1)
+  paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], '___', paf$t.name[flipQT])
+
+  ## Translate paf alignments to plotting coordinates ##
+  x <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
+  y <- c(rbind(paf$y1, paf$y2, paf$y1, paf$y2))
+  group <- rep(1:nrow(paf), each=4)
+  seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
+  seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
+  seq.id <- c(rbind('query', 'target', 'query', 'target'))
+  n.match <- rep(paf$n.match, each=4)
+  aln.len <- rep(paf$aln.len, each=4)
+  mapq <- rep(paf$mapq, each=4)
+  aln.id <- rep(paf$aln.id, each=4)
+  ID <- rep(paf$ID, each=4)
+  seq.pair <- rep(paf$seq.pair, each=4)
+  direction <- rep(paf$strand, each=4)
+
+  coords <- data.frame(x=x,
+                       y=y,
+                       group=group,
+                       seq.pos=seq.pos,
+                       direction=direction,
+                       seq.name=seq.name,
+                       seq.id=seq.id,
+                       n.match=n.match,
+                       aln.len=aln.len,
+                       mapq=mapq,
+                       aln.id=aln.id,
+                       ID=ID,
+                       #direction.flip=direction.flip,
+                       seq.pair=seq.pair,
+                       stringsAsFactors = FALSE)
   
   ## Convert PAF alignments to plotting coordinates
   coords <- paf2coords(paf.table = paf, offset.alignments = FALSE)
@@ -278,7 +282,8 @@ paf2coords <- function(paf.table, offset.alignments=FALSE) {
   paf <- do.call(rbind, paf.l)
   
   ## Assign level to seq.names
-  seq.names <- unique(c(paf$q.name, paf$t.name))
+  #seq.names <- unique(c(paf$q.name, paf$t.name))
+  seq.names <- unique(c(rbind(paf$q.name, paf$t.name)))
   seq.ids <- length(seq.names):1
   names(seq.ids) <- seq.names
   paf$y1 <- seq.ids[match(paf$q.name, names(seq.ids))]
