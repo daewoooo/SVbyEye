@@ -17,7 +17,7 @@
 #' @importFrom dplyr group_by mutate arrange
 #' @author David Porubsky
 #' @export
-
+#'
 selfdotplot <- function(paf.table=NULL, shape='segment', sort.by='position', color.by='direction', highlight.pos=NULL, highlight.region=NULL, title=NULL) {
   if (nrow(paf.table$M) > 0) {
     ## Get self-alignments

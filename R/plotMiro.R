@@ -176,7 +176,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   }
   
   ## Add x and y scales
-  suppressWarnings(
+  suppressMessages(
     plt <- plt +
       scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
       scale_x_continuous(breaks = q.breaks, labels = scales::comma(q.labels),
