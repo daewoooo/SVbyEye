@@ -3,8 +3,9 @@
 #'
 #' @param binsize A size of a bin in base pairs to split a PAF alignment into.
 #' @inheritParams breakPafAlignment
-#' @importFrom GenomicRanges GRanges shift width
+#' @importFrom GenomicRanges GRanges shift width start end
 #' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
+#' @importFrom GenomeInfoDb seqlengths seqlevels seqnames
 #' @importFrom dplyr tibble
 #' @importFrom S4Vectors sapply
 #' @return  A \code{tibble} object storing binned PAF alignments.
@@ -27,8 +28,8 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
     bins.gr <- GenomicRanges::tileGenome(seqlengths = aln.len, tilewidth = binsize, cut.last.tile.in.chrom = TRUE)
     ## Get bins in query coordinates
     query.bins.gr <- GenomicAlignments::mapToAlignments(bins.gr, alignments = alignment)
-    seqlengths(query.bins.gr) <- GenomicAlignments::qwidth(alignment)
-    seqlevels(query.bins.gr) <- paf.aln$q.name
+    GenomeInfoDb::seqlengths(query.bins.gr) <- GenomicAlignments::qwidth(alignment)
+    GenomeInfoDb::seqlevels(query.bins.gr) <- paf.aln$q.name
     
     ## Convert to target coordinates
     target.bins.gr <- suppressWarnings( GenomicRanges::shift(bins.gr, shift = paf.aln$t.start - 1) )
@@ -41,27 +42,34 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
     }  
     
     ## Subset the cigar string per target region
-    starts <- as.numeric(start(bins.gr))
-    ends <- as.numeric(end(bins.gr))
-    cigars.region <- S4Vectors::sapply(1:length(starts), function(i) GenomicAlignments::cigarNarrow(cigar = paf.aln$cg, start = starts[i], end = ends[i])[1])
+    starts <- as.numeric(GenomicRanges::start(bins.gr))
+    ends <- as.numeric(GenomicRanges::end(bins.gr))
+    #cigars.region <- S4Vectors::sapply(1:length(starts), function(i) GenomicAlignments::cigarNarrow(cigar = paf.aln$cg, start = starts[i], end = ends[i])[1])
+    cigars.region <- S4Vectors::sapply(1:length(starts), function(i) tryCatch(
+      {GenomicAlignments::cigarNarrow(cigar = paf.aln$cg, start = starts[i], end = ends[i])[1]}
+      , error = function(e) {return('1=')}
+        )
+      )
     ## Get alignment length from regional cigars
     aln.len <- S4Vectors::sapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg)[[1]]), USE.NAMES = FALSE)
     ## Get matched bases from regional cigars
     n.match <- S4Vectors::sapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('=','M'))[[1]]), USE.NAMES = FALSE)
     ## Create binned paf alignment
-    binned.paf.aln <- dplyr::tibble(q.name=as.character(seqnames(query.bins.gr)),
+    binned.paf.aln <- dplyr::tibble(q.name=as.character(GenomeInfoDb::seqnames(query.bins.gr)),
                                     q.len=paf.aln$q.len,
-                                    q.start=as.numeric(start(query.bins.gr)),
-                                    q.end=as.numeric(end(query.bins.gr)),
+                                    q.start=as.numeric(GenomicRanges::start(query.bins.gr)),
+                                    q.end=as.numeric(GenomicRanges::end(query.bins.gr)),
                                     strand=paf.aln$strand,
-                                    t.name=as.character(seqnames(target.bins.gr)),
+                                    t.name=as.character(GenomeInfoDb::seqnames(target.bins.gr)),
                                     t.len=paf.aln$t.len,
-                                    t.start=as.numeric(start(target.bins.gr)),
-                                    t.end=as.numeric(end(target.bins.gr)),
+                                    t.start=as.numeric(GenomicRanges::start(target.bins.gr)),
+                                    t.end=as.numeric(GenomicRanges::end(target.bins.gr)),
                                     n.match=n.match,
                                     aln.len=aln.len,
                                     mapq=paf.aln$mapq,
                                     cg=cigars.region)
+    ## Remove alignments set to size 1 due to 'CIGAR is empty after narrowing' error message
+    binned.paf.aln <- binned.paf.aln[binned.paf.aln$aln.len > 1,]
     ## Return binned paf alignments
     return(binned.paf.aln)
   } else {
@@ -84,6 +92,7 @@ pafToBins <- function(paf.table=NULL, binsize=10000) {
   ## Split each PAF record into user defined bins
   binned <- list()
   for (i in 1:nrow(paf.table)) {
+    print(i)
     paf.aln <- paf.table[i,]
     paf.aln.binned <- pafAlignmentToBins(paf.aln = paf.aln, binsize = binsize)
     paf.aln.binned$aln.id <- i
@@ -92,3 +101,4 @@ pafToBins <- function(paf.table=NULL, binsize=10000) {
   ## Return binned paf alignments
   return(dplyr::bind_rows(binned))
 }
+
