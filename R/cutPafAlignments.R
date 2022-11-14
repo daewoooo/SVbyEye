@@ -11,6 +11,7 @@
 #' @importFrom dplyr group_by mutate n
 #' @importFrom utils read.table
 #' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps resize start end
+#' @importFrom IRanges subsetByOverlaps
 #' @author David Porubsky
 #' @export
 #' @examples 
@@ -50,7 +51,7 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
   }
   
   ## Check if any paf alignment overlap user defined target region
-  if (all(target.gr != subsetByOverlaps(target.gr, target.region.gr, type='within'))) {
+  if (!all(target.gr == IRanges::subsetByOverlaps(target.gr, target.region.gr, type='within'))) {
     if (nrow(paf) > 1) {
       ## Narrow alignment at desired start position ##
       cut.start.idx <- which(paf$t.start < GenomicRanges::start(target.region.gr))
