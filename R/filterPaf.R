@@ -34,6 +34,8 @@ filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1,
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
   
+  ptm <- startTimedMessage("[filterPaf] Filtering PAF alignments")
+  
   # ## Filer alignments by target region
   # if (!is.null(target.region)) {
   #   if (is.character(target.region)) {
@@ -115,6 +117,7 @@ filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1,
     paf <- paf[!(paf$q.name == paf$t.name),]
   }
   
+  stopTimedMessage(ptm)
   ## Export data object
   if (tibble::is_tibble(paf)) {
     return(paf)

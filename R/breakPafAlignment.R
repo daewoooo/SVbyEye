@@ -261,6 +261,8 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
 #' @export
 #'
 breakPaf <- function(paf.table=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
+  
+  ptm <- startTimedMessage("[breakPaf] Breaking PAF alignments at indels")
   ## Extract matching bases for each PAF record
   matches <- list()
   svs <- list()
@@ -278,6 +280,8 @@ breakPaf <- function(paf.table=NULL, min.deletion.size=50, min.insertion.size=50
       svs[[length(svs) + 1]] <- paf.aln.exp$SVs
     }  
   }
+  
+  stopTimedMessage(ptm)
   ## Return broken paf alignments
   if (report.sv) {
     return(list('M' = dplyr::bind_rows(matches), 'SVs' = dplyr::bind_rows(svs)))

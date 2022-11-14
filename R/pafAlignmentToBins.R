@@ -89,6 +89,8 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
 #' @export
 #'
 pafToBins <- function(paf.table=NULL, binsize=10000) {
+  
+  ptm <- startTimedMessage(paste0("[pafToBins] Binning PAF alignments, binsize=", binsize, "bp"))
   ## Split each PAF record into user defined bins
   binned <- list()
   for (i in 1:nrow(paf.table)) {
@@ -97,6 +99,8 @@ pafToBins <- function(paf.table=NULL, binsize=10000) {
     paf.aln.binned$aln.id <- i
     binned[[i]] <- paf.aln.binned
   }
+  
+  stopTimedMessage(ptm)
   ## Return binned paf alignments
   return(dplyr::bind_rows(binned))
 }

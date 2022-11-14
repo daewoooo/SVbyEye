@@ -32,7 +32,7 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
   
   ## Load PAF file ##
   if (file.exists(paf.file)) {
-    message("Loading PAF file: ", paf.file)
+    ptm <- startTimedMessage(paste0("[readPaf] Loading PAF file: ", paf.file))
     ## Read PAF lines
     paf.lines <- readLines(paf.file)
     if (include.paf.tags) {
@@ -56,6 +56,7 @@ readPaf <- function(paf.file=NULL, include.paf.tags=TRUE, restrict.paf.tags=c('N
         paf <- dplyr::bind_cols(paf, processPafTags(paf.tags = paf.tags, restrict.paf.tags = restrict.paf.tags))
       }
     }
+    stopTimedMessage(ptm)
     return(paf)
   } else {
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))

@@ -40,6 +40,8 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
   
+  ptm <- startTimedMessage("[flipPaf] Flipping orientation of PAF alignments")
+  
   ## Force alignment flip
   if (force) {
     paf.l <- split(paf, paf$q.name)
@@ -82,6 +84,7 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
     }  
   }
   
+  stopTimedMessage(ptm)
   ## Export data object
   if (tibble::is_tibble(paf)) {
     return(paf)

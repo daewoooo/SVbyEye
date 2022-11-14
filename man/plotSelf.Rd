@@ -69,6 +69,7 @@ plotSelf(paf.table = paf.table, min.deletion.size=50, min.insertion.size=50, hig
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
 plotSelf(paf.table = paf.table, binsize=1000)
 plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
+## Add duplicon annotation [TODO]
 
 }
 \author{
