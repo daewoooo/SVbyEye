@@ -255,13 +255,13 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   plt <- plt + geom_segment(data = seq.lines, aes(x=1, xend=seq.len, y=y.breaks, yend=y.breaks), size=1)
   
   ## Set the theme and scales
-  theme_miro <- theme(panel.grid.major = element_blank(), 
+  theme_ava <- theme(panel.grid.major = element_blank(), 
                       panel.grid.minor = element_blank(),
                       panel.background = element_blank(), 
                       axis.line.x = element_line(size = 1),
                       axis.ticks.x = element_line(size=1),
                       axis.ticks.length.x = unit(2, 'mm'))
-  plt <- plt + theme_miro
+  plt <- plt + theme_ava
   
   ## Return final plot
   return(plt)
