@@ -16,7 +16,7 @@
 #' @import ggplot2
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
-#' @importFrom dplyr group_by mutate arrange
+#' @importFrom dplyr group_by mutate arrange bind_rows
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -36,6 +36,7 @@
 #'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #'plotSelf(paf.table = paf.table, binsize=1000)
 #'plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
+#'## Add duplicon annotation [TODO]
 #'
 plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, shape='segment', sort.by='position', color.by='direction', add.alignment.arrows=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL) {
   ## Check user input
@@ -57,6 +58,10 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   } else {
     paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
+    if (!is.null(highlight.sv)) {
+      highlight.sv <- NULL
+      warning("Please specify 'min.deletion.size' and 'min.insertion.size' in order to make parameter 'highlight.sv' to work !!!")
+    }
   }
   ## Store PAF alignments for later addition of 'geom_gene_arrow' 
   paf.copy <- paf
@@ -245,7 +250,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
           warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
         }
       } else {
-        warning("There are no SVs to highlight. Make sure parameters 'min.deletion.size' and 'min.insertion.size' are set or decrease their values!!!")
+        warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
       }
     }
     
@@ -303,7 +308,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
           warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
         }
       } else {
-        warning("There are no SVs to highlight. Make sure parameters 'min.deletion.size' and 'min.insertion.size' are set or decrease their values!!!")
+        warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
       }
     }
     

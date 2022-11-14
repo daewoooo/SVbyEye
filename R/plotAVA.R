@@ -50,6 +50,10 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   } else {
     paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
+    if (!is.null(highlight.sv)) {
+      highlight.sv <- NULL
+      warning("Please specify 'min.deletion.size' and 'min.insertion.size' in order to make parameter 'highlight.sv' to work !!!")
+    }
   }
   ## Store PAF alignments for later addition of 'geom_gene_arrow' 
   paf.copy <- paf
@@ -223,7 +227,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
         warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
       } 
     } else {
-      warning("There are no SVs to highlight. Make sure parameters 'min.deletion.size' and 'min.insertion.size' are set or decrease their values!!!")
+      warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
     }  
   }
   
