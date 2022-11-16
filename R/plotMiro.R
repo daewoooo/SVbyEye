@@ -331,7 +331,11 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
             ## Get user define discrete color palette
             if (all(dicrete.levels %in% names(color.palette))) {
               pal <- color.palette
-              col.scale <- 'discrete'
+              if (length(pal) >= 20) {
+                col.scale <- 'discreteNoLegend'
+              } else {
+                col.scale <- 'discrete'
+              }  
             ## Create default discrete color palette  
             } else {
               if (n.uniq <= 20) {
