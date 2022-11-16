@@ -17,6 +17,9 @@ flipPaf <- function(paf.table, majority.strand=NULL, force=FALSE) {
     ## Flip alignment orientation
     paf.flip$strand[paf.table$strand == '+'] <- '-'
     paf.flip$strand[paf.table$strand == '-'] <- '+'
+    ## Keep info on original query coordinates [To test]
+    #paf.flip$q.end <- paf.table$q.start
+    #paf.flip$q.start <- paf.table$q.end
     ## Flip query coordinates
     paf.flip$q.end <- paf.table$q.len - paf.table$q.start
     paf.flip$q.start <- paf.table$q.len - paf.table$q.end

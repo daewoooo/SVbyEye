@@ -112,7 +112,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Get y-axis labels
   q.range <- range(coords$seq.pos[coords$seq.id == 'query'])
   t.range <- range(coords$seq.pos[coords$seq.id == 'target'])
-  ## Adjust target ranges given the size difference with respect query ranges
+  ## Adjust target ranges given the size difference with respect to query ranges
   range.offset <- diff(q.range) - diff(t.range)
   t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
   ## Get x-axis labels
@@ -281,6 +281,9 @@ add_annotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fi
   ## Get query and target coordinate ranges
   t.range <- range(gg.data$seq.pos[gg.data$seq.id == 'target'])
   q.range <- range(gg.data$seq.pos[gg.data$seq.id == 'query'])
+  ## Adjust target ranges given the size difference with respect to query ranges
+  range.offset <- diff(q.range) - diff(t.range)
+  t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
   
   if (coordinate.space == 'query') {
     ## Restrict to plotted query ranges
@@ -424,7 +427,9 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
   
   ## Process per query name
   paf.table.l <- split(paf.table, paf.table$q.name)
-  query.annot.grl <- split(query.annot.gr, seqnames(query.annot.gr)) 
+  query.annot.grl <- split(query.annot.gr, GenomeInfoDb::seqnames(query.annot.gr)) 
+  ## Keep only non-empty list elements
+  query.annot.grl <- query.annot.grl[lengths(query.annot.grl) > 0]
   
   flipped.annot <- list()
   for (q.name in names(query.annot.grl)) {
@@ -433,7 +438,11 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
     if (nrow(paf.subtable) > 0) {
       ## Flip query annotation if query.flip is TRUE
       if (unique(paf.subtable$query.flip)) {
-        annot.gr.flipped <- mirrorRanges(gr = annot.gr, seqlength = unique(paf.subtable$q.len))
+        #annot.gr.flipped <- mirrorRanges(gr = annot.gr, seqlength = unique(paf.subtable$q.len))
+        annot.gr.flipped <- annot.gr
+        ranges(annot.gr.flipped) <- IRanges::reflect(x = ranges(annot.gr), bounds = IRanges::IRanges(start = 1L, end = unique(paf.subtable$q.len)))
+        ## Flip ranges strand orientation
+        strand(annot.gr.flipped) <- dplyr::recode(as.character(strand(annot.gr.flipped)), '+' = '-', '-' = '+')
         flipped.annot[[length(flipped.annot) + 1]] <- annot.gr.flipped 
       } else {
         flipped.annot[[length(flipped.annot) + 1]] <- annot.gr 

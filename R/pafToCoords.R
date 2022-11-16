@@ -33,7 +33,7 @@ paf2coords <- function(paf.table, offset.alignments=FALSE) {
     paf.sub <- paf.l[[i]]
     q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
     t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
-    ## Adjust target ranges given the size difference with respect query ranges
+    ## Adjust target ranges given the size difference with respect to query ranges
     range.offset <- diff(q.range) - diff(t.range)
     t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
     ## Covert query to target coordinates
