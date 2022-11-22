@@ -1,0 +1,76 @@
+---
+title: 'SVbyEye: A visual approach to study genomic structural variantion.'
+author: "David Porubsky"
+date: "`r Sys.Date()`"
+output:
+  pdf_document
+package: SVbyEye
+abstract: >
+  To be filled in.
+vignette: >
+  %\\VignetteIndexEntry{Vignette Title} 
+  %\\VignetteEngine{knitr::rmarkdown}
+  %\\VignetteEncoding{UTF-8}\n"
+  
+bibliography: /home/porubsky/SVbyEye/vignettes/SVbyEyeBib.bib
+---
+
+# Introduction
+
+SVbyEye relies on assembly to reference alignments produced by tools such as minimap2 [@Li2016-ha] or other tools able to report alignments in a PAF format.
+
+
+\newpage
+
+# Functionalities
+Here are the minimal parameters required to successfully run genome scaffolding using SaaRclust.
+
+\textbf{Low-level functions:} List of function... \hfill \break
+\textbf{High-level functions:} List of function... \hfill \break
+
+For more details on available functions and their parameters, please run.
+```
+library(SVbyEye)
+help(package="SVbyEye")
+```
+For more details on function specific parameters, please run.
+```
+library(SVbyEye)
+?<function_name> (e.g. ?filterPaf)
+```
+
+# Quick Start
+
+To demonstrate the functionality of SVbyEye ...
+
+```{r, message=FALSE}
+## Load the SVbyEye package
+library(SVbyEye)
+```
+
+Run the code below in order to create simple plot.
+```{r, echo=TRUE, message=FALSE, fig.width=10, fig.height=3, fig.align="left"}
+## Get PAF to plot
+paf.file <- system.file("extdata", "test1.paf", 
+                        package="SVbyEye")
+## Read in PAF 
+paf.table <- readPaf(paf.file = paf.file, 
+                     include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+## Make a plot
+## Color by alignment directionality
+plotMiro(paf.table = paf.table, color.by = 'direction')
+```
+
+\newpage
+
+# Session Info
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```
+
+Report any issues
+[here](https://github.com/daewoooo/SVbyEye/issues):
+
+\newpage
+
+# References
