@@ -23,6 +23,8 @@
 #'cutPafAlignments(paf.table = paf.table, target.region = 'target.region:19050000-19200000')
 #'
 cutPafAlignments <- function(paf.table, target.region=NULL) {
+  
+  ptm <- startTimedMessage("[cutPafAlignments] Subsetting&cutting PAF alignments")
   ## Check user input ##
   ## Make sure PAF has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -146,5 +148,6 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
       paf$cg <- new.cigar
     }
   }  
+  stopTimedMessage(ptm)
   return(paf)
 }
