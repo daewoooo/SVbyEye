@@ -11,8 +11,11 @@ plotMiro(
   highlight.sv = NULL,
   binsize = NULL,
   color.by = "direction",
+  color.palette = NULL,
   outline.alignments = FALSE,
-  offset.alignments = FALSE
+  offset.alignments = FALSE,
+  target.region = NULL,
+  genomic.scale = "bp"
 )
 }
 \arguments{
@@ -29,9 +32,18 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
 
+\item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
+to color alignment directionality, \link{default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')}.}
+
 \item{outline.alignments}{Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.}
 
-\item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above midline.}
+\item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.}
+
+\item{target.region}{A user defined target region either as character string ('chr:start-end') or as
+a \code{\link{GRanges-class}} object containing a single genomic region to which PAF alignments will be
+narrowed down.}
+
+\item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') \link{default: 'bp'}}
 }
 \value{
 A \code{ggplot2} object.
@@ -51,6 +63,10 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 plotMiro(paf.table = paf.table, color.by = 'direction')
 ## Color by fraction of matched bases in each alignment
 plotMiro(paf.table = paf.table, color.by = 'identity')
+## Use custom color palette to color alignment directionality
+plotMiro(paf.table = paf.table, color.palette = c('+' = 'azure3', '-' = 'yellow3'))
+## Change genomic scale to megabase pairs
+plotMiro(paf.table = paf.table, genomic.scale='Mbp')
 ## Outline PAF alignments
 plotMiro(paf.table = paf.table, outline.alignments = TRUE)
 ## Offset target PAF alignments

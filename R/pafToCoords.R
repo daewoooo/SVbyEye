@@ -4,7 +4,7 @@
 #' using \code{\link{filterPaf}}, \code{\link{breakPaf}} and \code{\link{flipPaf}} functions. Subsequently such alignments are
 #' expanded in a set of x and y coordinates ready to be plotted by \code{\link{geom_miropeats}} function.
 #'
-#' @param offset.alignments Set to \code{TRUE} if subsequent target alignments should be offsetted below and above midline.
+#' @param offset.alignments Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.
 #' @inheritParams breakPafAlignment
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @author David Porubsky
@@ -50,7 +50,7 @@ paf2coords <- function(paf.table, offset.alignments=FALSE) {
   ## Vectorize data transformation ##
   x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
   y <- rep(c(1,2,1,2), times=nrow(paf))
-  ## Offset target alignments
+  ## Offset overlapping target alignments up&down based on start position
   if (offset.alignments) {
     offset <- rep(c(0,0,0,0,0,0.05,0,0.05), times=ceiling(nrow(paf) / 2))[1:length(y)]
     y <- y + offset
