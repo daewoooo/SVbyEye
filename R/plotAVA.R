@@ -7,14 +7,17 @@
 #' @inheritParams readPaf
 #' @inheritParams plotMiro
 #' @return A \code{list} of miropeat style plots.
+#' @import ggplot2
+#' @importFrom grid unit
 #' @importFrom scales comma
+#' @importFrom dplyr bind_rows
 #' @author David Porubsky
 #' @export
 #' @examples
 #'## Get PAF to plot
 #'paf.file <- system.file("extdata", "test_ava.paf", package="SVbyEye")
 #'## Read in PAF 
-#'paf.table <-readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 #'## Make a plot
 #'## Color by alignment directionality
 #'plotAVA(paf.table = paf.table, color.by = 'direction')
@@ -29,7 +32,12 @@
 #'plotAVA(paf.table = paf.table, min.deletion.size=1000, min.insertion.size=1000, highlight.sv='outline')
 #'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #'plotAVA(paf.table = paf.table, binsize=10000)
-#'
+## Add annotation to self-alignments ##
+# plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
+# annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
+# annot.gr <- get(load(annot.file))
+# addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
+
 plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', outline.alignments=FALSE) {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
@@ -184,8 +192,8 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   ## Color alignments by variable
   if (color.by == 'direction') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group, fill=direction), alpha=0.5) +
-      scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection')
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill=direction), alpha=0.5) +
+      ggplot2::scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection')
   } else if (color.by == 'identity') {
     coords$identity <- (coords$n.match / coords$aln.len) * 100
     coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
@@ -195,20 +203,20 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
     colors <- coords.l$colors
     
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group, fill=col.levels), alpha=0.5) +
-      scale_fill_manual(values = colors, drop=FALSE, name='Identity')
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill=col.levels), alpha=0.5) +
+      ggplot2::scale_fill_manual(values = colors, drop=FALSE, name='Identity')
   } else if (color.by == 'mapq') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group, fill=mapq), alpha=0.5) +
-      scale_fill_gradient(low = 'gray', high = 'red')
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill=mapq), alpha=0.5) +
+      ggplot2::scale_fill_gradient(low = 'gray', high = 'red')
   } else {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group), alpha=0.5, fill='gray')
+      geom_miropeats(ggplot2::aes(x, y, group = group), alpha=0.5, fill='gray')
   }
   
   ## Add alignment outlines 
   if (outline.alignments) {
-    plt <- plt + geom_miropeats(data=coords[coords$ID == 'M',], aes(x, y, group = group),  fill=NA, color='gray', size=0.25)
+    plt <- plt + geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x, y, group = group), fill=NA, color='gray', size=0.25)
   } 
   
   ## Add indels
@@ -217,12 +225,12 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
       ## Add SVs to the plot
       if (highlight.sv == 'outline') {
         plt <- plt + ggnewscale::new_scale_color() +
-          geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
-          scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+          ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else if (highlight.sv == 'fill') {
         plt <- plt + ggnewscale::new_scale_fill() +
-          geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
-          scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
+          ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else {
         warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
       } 
@@ -234,10 +242,10 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   ## Add x and y scales
   suppressMessages(
     plt <- plt +
-      scale_x_continuous(expand = c(0,0), labels=scales::comma) +
-      scale_y_continuous(breaks = y.breaks, labels = y.labels) +
-      xlab('Genomic position (bp)') +
-      ylab('')
+      ggplot2::scale_x_continuous(expand = c(0,0), labels=scales::comma) +
+      ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels) +
+      ggplot2::xlab('Genomic position (bp)') +
+      ggplot2::ylab('')
   )
   
   ## Add arrows to mark start and end of each alignment
@@ -256,15 +264,15 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   ## Add sequence length lines
   seq.lines <- data.frame(y.breaks=y.breaks, y.labels=y.labels)
   seq.lines$seq.len <- paf.copy$q.len[match(seq.lines$y.labels, paf.copy$q.name)]
-  plt <- plt + geom_segment(data = seq.lines, aes(x=1, xend=seq.len, y=y.breaks, yend=y.breaks), size=1)
+  plt <- plt + ggplot2::geom_segment(data = seq.lines, ggplot2::aes(x=1, xend=seq.len, y=y.breaks, yend=y.breaks), size=1)
   
   ## Set the theme and scales
-  theme_ava <- theme(panel.grid.major = element_blank(), 
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank(), 
-                      axis.line.x = element_line(size = 1),
-                      axis.ticks.x = element_line(size=1),
-                      axis.ticks.length.x = unit(2, 'mm'))
+  theme_ava <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 
+                              panel.grid.minor = ggplot2::element_blank(),
+                              panel.background = ggplot2::element_blank(), 
+                              axis.line.x = ggplot2::element_line(linewidth = 1),
+                              axis.ticks.x = ggplot2::element_line(linewidth = 1),
+                              axis.ticks.length.x = grid::unit(2, 'mm'))
   plt <- plt + theme_ava
   
   ## Return final plot

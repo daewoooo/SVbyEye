@@ -1,4 +1,4 @@
-#' Add annotation ranges to miropeat style plot.
+#' Add annotation ranges to a SVbyEye plot.
 #'
 #' This function takes a \code{ggplot2} object generated using \code{\link{plotMiro}} function and adds extra annotation on top of query 
 #' or target coordinates. These ranges are specified in 'annot.gr' object and are visualized either as arrowheads or rectangles.
@@ -9,14 +9,21 @@
 #' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels).  
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.
+#' @param new.annotation.level Set to \code{TRUE} if the annotation ranges should be plotted at a separate level 
+#' defined by 5% of the y-axis range. 
 #' @param offset.annotation Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.
 #' @param annotation.label A \code{character} string to be used as a label to added annotation track.
+#' @param y.label.id A user defined metadata column id within `annot.gr` that for each annotation range contains 
+#' corresponding y-axis label.
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
+#' @importFrom grid unit
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom gggenes geom_gene_arrow
 #' @importFrom ggnewscale new_scale_fill new_scale_color
+#' @importFrom IRanges IRanges ranges
+#' @importFrom GenomicRanges start end sort
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -29,13 +36,13 @@
 #'## Load target annotation file
 #'target.annot <- system.file("extdata", "test1_target_annot.txt", package="SVbyEye")
 #'target.annot.df <- read.table(target.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
-#'target.annot.gr <- makeGRangesFromDataFrame(target.annot.df)
+#'target.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(target.annot.df)
 #'## Add target annotation as arrowhead
 #'plt <- addAnnotation(ggplot.obj = plt, annot.gr = target.annot.gr, coordinate.space = 'target')
 #'## Load query annotation file
 #'query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
 #'query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
-#'query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
+#'query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 #'## Add query annotation as rectangle
 #'addAnnotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle', coordinate.space = 'query')
 #'## Lift target annotation to query and plot
@@ -59,7 +66,7 @@
 #'## Add label to the added annotation
 #'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target', annotation.label = 'SD')
 #'
-addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, color.palette=NULL, coordinate.space='target', new.annotation.level=TRUE, offset.annotation=FALSE, annotation.label=NULL) {
+addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, color.palette=NULL, coordinate.space='target', new.annotation.level=TRUE, offset.annotation=FALSE, annotation.label=NULL, y.label.id=NULL) {
   ## Get plotted data
   gg.data <- ggplot.obj$data
   target.id <- unique(gg.data$seq.name[gg.data$seq.id == 'target'])
@@ -95,7 +102,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
       new.start <- SVbyEye::q2t(x = start(annot.gr), q.range = q.range, t.range = t.range)
       new.end <- SVbyEye::q2t(x = end(annot.gr), q.range = q.range, t.range = t.range)
       new.ranges <- IRanges::IRanges(start = new.start, end = new.end)
-      suppressWarnings( ranges(annot.gr) <- new.ranges )
+      suppressWarnings( IRanges::ranges(annot.gr) <- new.ranges )
     }  
   }  
   
@@ -111,8 +118,8 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
   }
   
   if (!is.null(annot.gr) & class(annot.gr) == 'GRanges') {
-    ## Restrict to plot x-limits
-    annot.gr <- annot.gr[start(annot.gr) >= xlim[1] & end(annot.gr) <= xlim[2]]
+    ## Restrict annotation ranges to x-limits
+    annot.gr <- annot.gr[GenomicRanges::start(annot.gr) >= xlim[1] &  GenomicRanges::end(annot.gr) <= xlim[2]]
     if (length(annot.gr) > 0) {
       ## Offset overlapping annotation ranges up&down based on start position
       if (offset.annotation) {
@@ -121,12 +128,30 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
           y.offset <- rep(y.offset + c(0, offset), times=ceiling(length(annot.gr) / 2))[1:length(annot.gr)]
         } else if (coordinate.space == 'query') {
           y.offset <- rep(y.offset - c(0, offset), times=ceiling(length(annot.gr) / 2))[1:length(annot.gr)]
-        }  
+        } else if (coordinate.space == 'self') {
+          y.offset <- rep(y.offset - c(0, offset), times=ceiling(length(annot.gr) / 2))[1:length(annot.gr)]
+        } 
       }
+      
+      ## Prepare data for plotting ##
       ## Convert to data frame object
       annot.df <- as.data.frame(annot.gr)
-      ## Add offset column
-      annot.df$y.offset <- y.offset
+      ## Add y-axis coordinates
+      ## Match y-axis labels if to user defined ID column via 'y.label.id' parameter
+      if (!is.null(y.label.id)) {
+        if (y.label.id %in% colnames(annot.df)) {
+          if (all(ylabels %in% annot.df[,eval(y.label.id)])) {
+            annot.df$y.offset <- match(annot.df[,eval(y.label.id)], ylabels)
+          } else {
+            annot.df$y.offset <- y.offset
+          }
+        } else {
+          warning("User defined 'y.label.id' is not a valid metadata column in 'annot.gr', skipping !!!")
+          annot.df$y.offset <- y.offset
+        } 
+      } else {
+        annot.df$y.offset <- y.offset
+      }  
       
       ## Define color scale ##
       if (!is.null(fill.by)) {
@@ -173,12 +198,21 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
         if (!'strand' %in% colnames(annot.df)) {
           annot.df$strand <- '*'
         }
-        plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-          geom_arrowhead(data=annot.df, aes_string(xmin='start', xmax='end', y='y.offset', color=eval(fill.by), fill=eval(fill.by), strand='strand'))
+        if (!is.null(fill.by)) {
+          plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+            geom_arrowhead(data=annot.df, ggplot2::aes(xmin=start, xmax=end, y=y.offset, color=.data[[fill.by]], fill=.data[[fill.by]], strand=strand))
+        } else {
+          plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+            geom_arrowhead(data=annot.df, ggplot2::aes(xmin=start, xmax=end, y=y.offset, color=NULL, fill=NULL, strand=strand))
+        }  
       } else if (shape == 'rectangle') {
-        plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-          #geom_rect(data=annot.df, aes(xmin=start, xmax=end, ymin=y.offset, ymax=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)))
-          geom_roundrect(data=annot.df, aes_string(xmin='start', xmax='end', y=y.offset + 0.01, color=eval(fill.by), fill=eval(fill.by)), radius = grid::unit(0, "mm"))
+        if (!is.null(fill.by)) {
+          plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+            geom_roundrect(data=annot.df, ggplot2::aes(xmin=start, xmax=end, y=y.offset + 0.01, color=.data[[fill.by]], fill=.data[[fill.by]]), radius=grid::unit(0, "mm"))
+        } else {
+          plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+            geom_roundrect(data=annot.df, ggplot2::aes(xmin=start, xmax=end, y=y.offset + 0.01, color=NULL, fill=NULL), radius=grid::unit(0, "mm"))
+        }  
       }
       
       ## Add y-label to annotation track if defined
@@ -189,17 +223,17 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
           y.breaks <- c(ylim, annot.break)
           y.labels <- c(ylabels, annotation.label)
           suppressMessages(
-            plt <- plt + scale_y_continuous(breaks = y.breaks, labels = y.labels)
+            plt <- plt + ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels)
           )  
         }
       }
       
       if (col.scale == 'gradient') {
-        plt <- plt + scale_fill_gradientn(colours = pal) + scale_color_gradientn(colours = pal)
+        plt <- plt + ggplot2::scale_fill_gradientn(colours = pal) + ggplot2::scale_color_gradientn(colours = pal)
       } else if (col.scale == 'discrete') {
-        plt <- plt + scale_fill_manual(values = pal) + scale_color_manual(values = pal)
+        plt <- plt + ggplot2::scale_fill_manual(values = pal) + ggplot2::scale_color_manual(values = pal)
       } else if (col.scale == 'discreteNoLegend') {
-        plt <- plt + scale_fill_manual(values = pal, guide='none') + scale_color_manual(values = pal, guide='none')
+        plt <- plt + ggplot2::scale_fill_manual(values = pal, guide='none') + ggplot2::scale_color_manual(values = pal, guide='none')
       }
       return(plt)
     } else {
