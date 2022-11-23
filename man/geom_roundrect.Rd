@@ -2,7 +2,7 @@
 % Please edit documentation in R/geom_roundrect.R
 \name{geom_roundrect}
 \alias{geom_roundrect}
-\title{A 'ggplot2' geom to draw genomic annotations as round rectangles}
+\title{A 'ggplot2' geom to draw genomic ranges as round rectangles.}
 \usage{
 geom_roundrect(
   mapping = NULL,
@@ -17,9 +17,51 @@ geom_roundrect(
   ...
 )
 }
+\arguments{
+\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, }{etc... As standard for ggplot2.}
+
+\item{rect_height}{A \code{grid::unit()} object providing the height of the rectangle.  \link{Default: 3 mm}.}
+
+\item{radius}{A \code{grid::unit()} object providing required curvature of rectangle edges. \link{Default: 1 mm}.}
+}
 \description{
-\code{geom_roundrect()} draws genomic ranges as round rectangles, allowing to draw for instance ...
+\code{geom_roundrect()} draws ranges defined by \code{xmin} and \code{xmax} coordinates with rounded edges.
 }
 \details{
-This geom draws ...
+This geom draws rectangle with round or sharp edges between defined start and end coordinates.
+Intended application of this geom is to visualize genomic coordinates defined by start and end
+position. Rounded edges will help to observe boundaries between closely positioned genomic ranges.
+}
+\section{Aesthetics}{
+
+\code{geom_roundrect()} require or can take the following aesthetics
+(required aesthetics are in bold):
+\itemize{
+\item \strong{xmin}
+\item \strong{xmax}
+\item \strong{y}
+\item color
+\item linewidth
+\item linetype
+\item alpha
+\item fill
+\item size
+}
+}
+
+\examples{
+## Create example data.frame to plot
+plt.df <- data.frame(xmin=c(10, 100, 200),
+                    xmax=c(100, 190, 400)
+                    )
+## Plot rectangles with rounded edges
+ggplot2::ggplot(plt.df) + 
+ geom_roundrect(ggplot2::aes(xmin=xmin, xmax=xmax, y=1))
+## Plot rectangles without rounded edges
+ggplot2::ggplot(plt.df) + 
+ geom_roundrect(ggplot2::aes(xmin=xmin, xmax=xmax, y=1), radius=grid::unit(0, "mm"))
+
+}
+\author{
+David Porubsky
 }

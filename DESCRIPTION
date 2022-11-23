@@ -9,10 +9,10 @@ Authors@R:
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: This R package is currently under development.
 Depends:
-  R (>= 3.6)
+  R (>= 4.0)
 biocViews: 
 Imports:
-  ggplot2,
+  ggplot2 (>= 3.0.0),
   ggnewscale,
   ggforce,
   gggenes,
@@ -24,7 +24,7 @@ Imports:
   tibble,
   utils,
   GenomicRanges,
-  GenomicAlignments,
+  GenomicAlignments (>= 1.33.1),
   BSgenome,
   IRanges,
   data.table,

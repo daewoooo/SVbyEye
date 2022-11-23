@@ -33,7 +33,7 @@ along with CIGAR string defined in 'cg' column.}
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
-to color alignment directionality, \link{default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')}.}
+to color alignment directionality, \verb{[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]}.}
 
 \item{outline.alignments}{Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.}
 
@@ -43,7 +43,7 @@ to color alignment directionality, \link{default: color.palette <- c('-' = 'corn
 a \code{\link{GRanges-class}} object containing a single genomic region to which PAF alignments will be
 narrowed down.}
 
-\item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') \link{default: 'bp'}}
+\item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') \verb{[default: 'bp']}.}
 }
 \value{
 A \code{ggplot2} object.
@@ -71,12 +71,12 @@ plotMiro(paf.table = paf.table, genomic.scale='Mbp')
 plotMiro(paf.table = paf.table, outline.alignments = TRUE)
 ## Offset target PAF alignments
 plotMiro(paf.table = paf.table, offset.alignments = TRUE)
+## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
+plotMiro(paf.table = paf.table, binsize=10000)
 ## Highlight structural variants
 paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 plotMiro(paf.table = paf.table, min.deletion.size=50, highlight.sv='outline')
-## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
-plotMiro(paf.table = paf.table, binsize=10000)
 
 }
 \author{

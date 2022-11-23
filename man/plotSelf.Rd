@@ -69,8 +69,11 @@ plotSelf(paf.table = paf.table, min.deletion.size=50, min.insertion.size=50, hig
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
 plotSelf(paf.table = paf.table, binsize=1000)
 plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
-## Add duplicon annotation [TODO]
-
+## Add duplicon annotation
+annot.file <- system.file("extdata", "test2.sd.annot.RData", package="SVbyEye")
+annot.gr <- get(load(annot.file))
+plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc')
+addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
 }
 \author{
 David Porubsky
