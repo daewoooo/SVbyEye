@@ -8,7 +8,6 @@
 #' @param add.alignment.arrows Set to \code{TRUE} if alignment arrows should be added to the plot.
 #' @param highlight.pos A single or a set of positions to be highlighted as vertical solid lines.
 #' @param highlight.region A pair of positions to be highlighted as vertical range.
-#' @param title A title to be added to the final plot.
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
 #' @inheritParams plotMiro
@@ -36,9 +35,13 @@
 #'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #'plotSelf(paf.table = paf.table, binsize=1000)
 #'plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
-#'## Add duplicon annotation [TODO]
+#'## Add duplicon annotation
+#'annot.file <- system.file("extdata", "test2.sd.annot.RData", package="SVbyEye")
+#'annot.gr <- get(load(annot.file))
+#'plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc')
+#'addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
 #'
-plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, shape='segment', sort.by='position', color.by='direction', add.alignment.arrows=TRUE, highlight.pos=NULL, highlight.region=NULL, title=NULL) {
+plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, shape='segment', sort.by='position', color.by='direction', add.alignment.arrows=TRUE, highlight.pos=NULL, highlight.region=NULL) {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -47,9 +50,17 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
+  ## Keep only self-alignments (query and target names have to be the same)
+  paf <- paf[paf$q.name == paf$t.name,]
+  if (nrow(paf) == 0) {
+    stop("No self-alignments present in submitted 'paf.table', self-alignments are expected to have the same value in 'q.name' and 't.name' field !!!")
+  }
   
   ## Break PAF at insertion/deletions defined in cigar string
   if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
+    ## Check user input
+    if (is.null(min.deletion.size)) {min.deletion.size <- 0}
+    if (is.null(min.insertion.size)) {min.insertion.size <- 0}
     if (min.deletion.size > 0 | min.insertion.size > 0) {
       paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
       paf <- paf.l$M
@@ -353,13 +364,6 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     if (nrow(highlight.region) > 0) {
       plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
     }  
-  }
-  
-  ## Add title if defined
-  if (!is.null(title)) {
-    if (nchar(title) > 0) {
-      plt <- plt + ggtitle(title)
-    }
   }
   
   ## Set the theme
