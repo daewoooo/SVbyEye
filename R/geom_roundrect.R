@@ -1,10 +1,42 @@
-#' A 'ggplot2' geom to draw genomic annotations as round rectangles
+#' A 'ggplot2' geom to draw genomic ranges as round rectangles.
 #'
-#' `geom_roundrect()` draws genomic ranges as round rectangles, allowing to draw for instance ...
+#' `geom_roundrect()` draws ranges defined by `xmin` and `xmax` coordinates with rounded edges.
 #'
-#' This geom draws ...
+#' This geom draws rectangle with round or sharp edges between defined start and end coordinates. 
+#' Intended application of this geom is to visualize genomic coordinates defined by start and end
+#' position. Rounded edges will help to observe boundaries between closely positioned genomic ranges.
+#' 
+#' @section Aesthetics:
+#' `geom_roundrect()` require or can take the following aesthetics
+#' (required aesthetics are in bold):
 #'
+#' - **xmin**
+#' - **xmax**
+#' - **y**
+#' - color
+#' - linewidth
+#' - linetype
+#' - alpha
+#' - fill
+#' - size
+#' 
+#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes, etc... As standard for ggplot2.
+#' @param rect_height A `grid::unit()` object providing the height of the rectangle.  [Default: 3 mm].
+#' @param radius A `grid::unit()` object providing required curvature of rectangle edges. [Default: 1 mm].
+#' @author David Porubsky
 #' @export
+#' @examples 
+#'## Create example data.frame to plot
+#'plt.df <- data.frame(xmin=c(10, 100, 200),
+#'                     xmax=c(100, 190, 400)
+#'                     )
+#'## Plot rectangles with rounded edges
+#'ggplot2::ggplot(plt.df) + 
+#'  geom_roundrect(ggplot2::aes(xmin=xmin, xmax=xmax, y=1))
+#'## Plot rectangles without rounded edges
+#'ggplot2::ggplot(plt.df) + 
+#'  geom_roundrect(ggplot2::aes(xmin=xmin, xmax=xmax, y=1), radius=grid::unit(0, "mm"))
+#'
 geom_roundrect <- function(
   mapping = NULL,
   data = NULL,
@@ -114,23 +146,3 @@ makeContent.roundrecttree <- function(x) {
   class(grobs) <- "gList"
   grid::setChildren(x, grobs)
 }
-
-# grid::roundrectGrob(
-#   1, 2,
-#   width = 1,
-#   height = 1 * 2,
-#   r = 1
-# )  
-
-# gr <- GRanges(seqnames=paste0('chr', c(1:3)), ranges = IRanges(start=c(10, 100, 200), end=c(100, 190, 400)))
-# df <- as.data.frame(gr)
-# 
-# ggplot(df) +
-#   geom_roundrect(aes(xmin=start, xmax=end, y=1, fill=seqnames)) +
-#   facet_grid(seqnames ~ .)
-# 
-# ggplot(df) +
-#   geom_roundrect(aes(xmin=start, xmax=end, y=1, fill=seqnames), rect_height = unit(5, 'mm'), radius = unit(2, 'mm'))
-# 
-# ggplot(df) +
-#   geom_roundrect(aes(xmin=start, xmax=end, y=seqnames, fill=seqnames))

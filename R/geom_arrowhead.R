@@ -1,51 +1,40 @@
-#' A 'ggplot2' geom to draw genomic annotations as arrowheads
+#' A 'ggplot2' geom to draw genomic ranges as arrowheads.
 #'
-#' `geom_arrowhead()` draws genomic ranges as arrowheads, allowing to draw for instance segmental
+#' `geom_arrowhead()` draws ranges defined by `xmin` and `xmax` as triangular polygon.
+#' draws genomic ranges as arrowheads, allowing to draw for instance segmental
 #' duplication maps.
 #'
-#' This geom draws genes as arrows along a horizontal line representing the
-#' molecule. The start and end locations of the gene are expressed with the
-#' `xmin` and `xmax` aesthetics, while the molecule can be specified with the
-#' `y` aesthetic. Optionally, an additional `forward` aesthetic can be used to
-#' reverse the orientation of some or all genes from that implied by `xmin` and
-#' `xmax`.
-#'
-#' Unless the plot is faceted with a free x scale, all the molecules will share
-#' a common x axis. This means that if the locations are very different across
-#' different molecules, the genes might appear very small and squished together
-#' with a lot of unnecessary empty space. To get around this, either facet the
-#' plot with `scales = "free_x"`, or normalise the gene locations if their
-#' exact locations are not important.
-#'
-#' See `make_alignment_dummies()` for a method to align genes between molecules.
-#'
+#' This geom draws triangular polygons as arrowheads between defined start and end coordinates. 
+#' Intended application of this geom is to visualize genomic coordinates defined by start and end
+#' position.
+#' 
 #' @section Aesthetics:
+#' `geom_roundrect()` require or can take the following aesthetics
+#' (required aesthetics are in bold):
 #'
-#' - xmin,xmax (start and end of the gene; will be used to determine gene
-#' orientation)
-#' - y (molecule)
-#' - forward (if any value that is not TRUE, or coercible to TRUE, the gene
-#' arrow will be drawn in the opposite direction to that determined by `xmin`
-#' and `xmax`)
-#' - alpha
-#' - colour
-#' - fill
+#' - **xmin**
+#' - **xmax**
+#' - **y**
+#' - color
+#' - linewidth
 #' - linetype
+#' - alpha
+#' - fill
 #' - size
-#'
-#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes,... As
-#' standard for ggplot2.
-#' @param arrowhead_height `grid::unit()` object giving the height of the
-#' arrowhead.  Defaults to 3 mm.
-#'
-#' @examples
-#'
-#' ggplot2::ggplot(example_genes, ggplot2::aes(xmin = start, xmax = end,
-#'                                             y = molecule, fill = gene)) +
-#' geom_arrowhead() +
-#' ggplot2::facet_wrap(~ molecule, scales = "free")
-#'
+#' 
+#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes, etc... As standard for ggplot2.
+#' @param arrowhead_height A `grid::unit()` object providing the height of the arrowhead.  [Default: 3 mm].
+#' @author David Porubsky
 #' @export
+#' @examples 
+#'## Create example data.frame to plot
+#'plt.df <- data.frame(xmin=c(10, 100, 200),
+#'                     xmax=c(100, 190, 400)
+#'                     )
+#'## Plot rectangles with rounded edges
+#'ggplot2::ggplot(plt.df) + 
+#'  geom_arrowhead(ggplot2::aes(xmin=xmin, xmax=xmax, y=1))
+#'
 geom_arrowhead <- function(
   mapping = NULL,
   data = NULL,
