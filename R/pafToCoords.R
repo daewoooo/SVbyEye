@@ -17,6 +17,13 @@ paf2coords <- function(paf.table, offset.alignments=FALSE) {
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
+  ## Set required fields with default values if not defined
+  if (!'aln.id' %in% colnames(paf)) {
+    paf$aln.id <- 1:nrow(paf)
+  }
+  if (!'ID' %in% colnames(paf)) {
+    paf$ID <- 'M'
+  }
   
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])

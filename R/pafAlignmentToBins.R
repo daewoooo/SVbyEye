@@ -3,7 +3,7 @@
 #'
 #' @param binsize A size of a bin in base pairs to split a PAF alignment into.
 #' @inheritParams breakPafAlignment
-#' @importFrom GenomicRanges GRanges shift width start end
+#' @importFrom GenomicRanges GRanges shift width start end strand
 #' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
 #' @importFrom GenomeInfoDb seqlengths seqlevels seqnames
 #' @importFrom dplyr tibble
