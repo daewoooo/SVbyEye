@@ -13,6 +13,7 @@
 #' @inheritParams plotMiro
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
+#' @importFrom grid unit
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom dplyr group_by mutate arrange bind_rows
@@ -35,13 +36,17 @@
 #'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #'plotSelf(paf.table = paf.table, binsize=1000)
 #'plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
-#'## Add duplicon annotation
+#'## Add annotation to self-alignments ##
 #'annot.file <- system.file("extdata", "test2.sd.annot.RData", package="SVbyEye")
 #'annot.gr <- get(load(annot.file))
 #'plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc')
+#'## Add annotation to a new level
 #'addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
+#'## Add annotation to the alignment level
+#'plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc', add.alignment.arrows=FALSE)
+#'addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', new.annotation.level=FALSE)
 #'
-plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, shape='segment', sort.by='position', color.by='direction', add.alignment.arrows=TRUE, highlight.pos=NULL, highlight.region=NULL) {
+plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, shape='segment', sort.by='position', color.by='direction', color.palette=NULL, add.alignment.arrows=TRUE, highlight.pos=NULL, highlight.region=NULL) {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -146,14 +151,22 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     ## Order by alignment id
     coords <- coords %>% dplyr::arrange(aln.id, s1.start)
   }
-  
+
   
   ## Make self-dotplot ##
   #######################
-  ## Color by
+  ## Define color palette
   if (color.by == 'direction') {
-    #colors <- c('forw'='chartreuse4', 'rev'='darkgoldenrod2')
-    colors <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+    if (!is.null(color.palette)) {
+      if (all(c('+', '-') %in% names(color.palette))) {
+        colors <- color.palette
+      } else {
+        colors <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+        warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
+      }
+    } else {
+      colors <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+    } 
   } else if (color.by == 'identity') {
     coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
     ## Define color scheme
@@ -202,7 +215,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
       poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
                                 y=c(rbind(NaN, NaN, NaN, NaN)),
                                 group=rep(1, each=4),
-                                direction=rep('forw', each=4),
+                                direction=rep('+', each=4),
                                 identity=rep(NA, each=4))
     }  
     
@@ -216,24 +229,24 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
       poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
                                 y=c(rbind(NaN, NaN, NaN, NaN)),
                                 group=rep(1, each=4),
-                                direction=rep('rev', each=4),
+                                direction=rep('-', each=4),
                                 identity=rep(NA, each=4))
     }  
     
     ## Make segment dotplot
     y.limit <- max(c(coords$y1end, coords$y2end))
     ## Plot alignment pairs
-    plt <- ggplot(coords) +
-      geom_segment(aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
-      geom_segment(aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
-      geom_polygon(data=poly.dir.df, aes_string(x='x', y='y', group='group', fill=eval(color.by)), alpha=0.5, inherit.aes=FALSE) +
-      geom_polygon(data=poly.rev.df, aes_string(x='x', y='y', group='group', fill=eval(color.by)), alpha=0.5, inherit.aes=FALSE) +
-      scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
-      scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
-      coord_cartesian(xlim = c(0, max.pos)) +
-      ylab('Self-alignments') +
-      xlab('Contig position (bp)') +
-      scale_fill_manual(values = colors, drop=FALSE)
+    plt <- ggplot2::ggplot(coords) +
+      ggplot2::geom_segment(ggplot2::aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
+      ggplot2::geom_segment(ggplot2::aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
+      ggplot2::geom_polygon(data=poly.dir.df, ggplot2::aes(x=x, y=y, group=group, fill=.data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
+      ggplot2::geom_polygon(data=poly.rev.df, ggplot2::aes(x=x, y=y, group=group, fill=.data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
+      ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+      ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+      ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+      ggplot2::ylab('Self-alignments') +
+      ggplot2::xlab('Contig position (bp)') +
+      ggplot2::scale_fill_manual(values = colors, drop=FALSE)
       #coord_fixed(ratio = 1) +
     
     ## Add indels
@@ -250,13 +263,13 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
         ## Add SVs to the plot
         if (highlight.sv == 'outline') {
           plt <- plt + ggnewscale::new_scale_color() +
-            geom_rect(data=coords.svs, aes(xmin=start, xmax=end, ymin = -Inf, ymax=Inf, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
-            scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin=start, xmax=end, ymin = -Inf, ymax=Inf, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else if (highlight.sv == 'fill') {
           plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-            geom_rect(data=coords.svs, aes(xmin=start, xmax=end, ymin = -Inf, ymax=Inf, fill=ID, color=ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
-            scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
-            scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin=start, xmax=end, ymin = -Inf, ymax=Inf, fill=ID, color=ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
+            ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
+            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else {
           warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
         }
@@ -280,13 +293,13 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
                          direction=direction,
                          identity=identity)
     
-    plt <- ggplot(plt.df) +
-      geom_wide_arc(aes_string(x='x', y='y', group='group', fill=eval(color.by)), alpha=0.5) +
-      scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
-      coord_cartesian(xlim = c(0, max.pos)) +
-      ylab('Self-alignments') +
-      xlab('Contig position (bp)') +
-      scale_fill_manual(values = colors, drop=FALSE)
+    plt <- ggplot2::ggplot(plt.df) +
+      geom_wide_arc(ggplot2::aes(x=x, y=y, group=group, fill=.data[[color.by]]), alpha=0.5) +
+      ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+      ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+      ggplot2::ylab('Self-alignments') +
+      ggplot2::xlab('Contig position (bp)') +
+      ggplot2::scale_fill_manual(values = colors, drop=FALSE)
     
     ## Add indels
     if (!is.null(highlight.sv)) {
@@ -308,13 +321,13 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
         ## Add SVs to the plot
         if (highlight.sv == 'outline') {
           plt <- plt + ggnewscale::new_scale_color() +
-            geom_wide_arc(data=svs.df, aes_string(x='x', y='y', group='group', color='ID'), fill=NA, alpha=0.5, inherit.aes = FALSE) +
-            scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+            geom_wide_arc(data=svs.df, ggplot2::aes(x=x, y=y, group=group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else if (highlight.sv == 'fill') {
           plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-            geom_wide_arc(data=svs.df, aes_string(x='x', y='y', group='group', fill='ID', color='ID'), size=0.2, alpha=0.5, inherit.aes = FALSE) +
-            scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
-            scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+            geom_wide_arc(data=svs.df, ggplot2::aes(x=x, y=y, group=group, fill=ID, color=ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
+            ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
+            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else {
           warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
         }
@@ -345,7 +358,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     ## Plot arrows
     plt <- plt + ggnewscale::new_scale_fill() +
       gggenes::geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir), arrowhead_height = unit(3, 'mm'), inherit.aes = FALSE) +
-      scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'))
+      ggplot2::scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'))
   }
   
   ## Highlight user defined positions 
@@ -353,7 +366,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
     
     if (length(highlight.pos) > 0) {
-      plt <- plt + geom_vline(xintercept = highlight.pos)
+      plt <- plt + ggplot2::geom_vline(xintercept = highlight.pos)
     }  
   }
   
@@ -362,19 +375,19 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
     
     if (nrow(highlight.region) > 0) {
-      plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
+      plt <- plt + ggplot2::geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
     }  
   }
   
   ## Set the theme
-  theme_self <- theme(panel.grid.major = element_blank(), 
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank(), 
-                      axis.line.x = element_line(size = 1),
-                      axis.ticks.x = element_line(size=1),
-                      axis.ticks.length.x = unit(2, 'mm'),
-                      axis.text.y = element_blank(),
-                      axis.ticks.y = element_blank())
+  theme_self <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 
+                      panel.grid.minor = ggplot2::element_blank(),
+                      panel.background = ggplot2::element_blank(), 
+                      axis.line.x = ggplot2::element_line(linewidth = 1),
+                      axis.ticks.x = ggplot2::element_line(linewidth = 1),
+                      axis.ticks.length.x = grid::unit(2, 'mm'),
+                      axis.text.y = ggplot2::element_blank(),
+                      axis.ticks.y = ggplot2::element_blank())
   plt <- plt + theme_self
   
   ## Return final plot

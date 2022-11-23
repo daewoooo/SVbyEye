@@ -15,6 +15,7 @@
 #' @inheritParams cutPafAlignments
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
+#' @importFrom grid unit
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom gggenes geom_gene_arrow
@@ -159,8 +160,8 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Plot alignments and color by direction or identity
   if (color.by == 'direction') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group, fill = direction), alpha = 0.5) +
-      scale_fill_manual(values = pal, name = 'Alignment\ndirection')
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill = direction), alpha = 0.5) +
+      ggplot2::scale_fill_manual(values = pal, name = 'Alignment\ndirection')
   } else if (color.by == 'identity') {
     coords$identity <- (coords$n.match / coords$aln.len) * 100
     coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
@@ -170,20 +171,21 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
     colors <- coords.l$colors
     
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group, fill=col.levels), alpha=0.5) +
-      scale_fill_manual(values = colors, drop=FALSE, name='Identity')
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill=col.levels), alpha=0.5) +
+      ggplot2::scale_fill_manual(values = colors, drop=FALSE, name='Identity')
   } else if (color.by == 'mapq') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group, fill=mapq), alpha=0.5) +
-      scale_fill_gradient(low = 'gray', high = 'red')
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill=mapq), alpha=0.5) +
+      ggplot2::scale_fill_gradient(low = 'gray', high = 'red')
   } else {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(aes(x, y, group = group), alpha=0.5, fill='gray')
+      geom_miropeats(ggplot2::aes(x, y, group = group), alpha=0.5, fill='gray')
   }
   
   ## Add alignment outlines 
   if (outline.alignments) {
-    plt <- plt + geom_miropeats(data=coords[coords$ID == 'M',], aes(x, y, group = group),  fill=NA, color='gray', size=0.25)
+    plt <- plt + 
+      geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x, y, group = group),  fill=NA, color='gray', size=0.25)
   }  
   
   ## Add indels
@@ -192,12 +194,12 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
       ## Add SVs to the plot
       if (highlight.sv == 'outline') {
         plt <- plt + ggnewscale::new_scale_color() +
-          geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
-          scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+          ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else if (highlight.sv == 'fill') {
         plt <- plt + ggnewscale::new_scale_fill() +
-          geom_miropeats(data=coords[coords$ID != 'M',], aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
-          scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
+          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
+          ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else {
         warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
       } 
@@ -209,22 +211,22 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Add custom x and y scales
   suppressMessages(
     plt <- plt +
-      scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
-      scale_x_continuous(breaks = q.breaks, labels = scales::comma(q.labels),
-                         sec.axis = sec_axis(trans = y ~ ., breaks = t.breaks, labels = scales::comma(t.labels)), expand = c(0,0)) +
+      ggplot2::scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
+      ggplot2::scale_x_continuous(breaks = q.breaks, labels = scales::comma(q.labels),
+                         sec.axis = ggplot2::sec_axis(trans = y ~ ., breaks = t.breaks, labels = scales::comma(t.labels)), expand = c(0,0)) +
       #xlab('Genomic position (bp)') +
-      xlab(paste0('Genomic position (', genomic.scale,')')) +
-      ylab('')
+      ggplot2::xlab(paste0('Genomic position (', genomic.scale,')')) +
+      ggplot2::ylab('')
   )
   
   ## Set plot boundaries based on user defined target region
   if (!is.null(target.region)) {
     if (is.character(target.region)) {
       target.region.gr <- as(target.region, 'GRanges')
-      plt <- plt + coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
+      plt <- plt + ggplot2::coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
     } else if (class(target.region.gr) == 'GRanges') {
       target.region.gr <- target.region
-      plt <- plt + coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
+      plt <- plt + ggplot2::coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
     } else {
       warning("User defined 'target.region' has be either character string 'chr:start-end' or GenomicRanges object, skipping!!!")
     }
@@ -241,17 +243,17 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
   
   plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-    gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = unit(3, 'mm')) +
-    scale_fill_manual(values = pal, name='Alignment\ndirection') +
-    scale_color_manual(values = pal, name='Alignment\ndirection')
+    gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = grid::unit(3, 'mm')) +
+    ggplot2::scale_fill_manual(values = pal, name='Alignment\ndirection') +
+    ggplot2::scale_color_manual(values = pal, name='Alignment\ndirection')
   
   ## Set the theme
-  theme_miro <- theme(panel.grid.major = element_blank(), 
-                      panel.grid.minor = element_blank(),
-                      panel.background = element_blank(), 
-                      axis.line.x = element_line(linewidth = 1),
-                      axis.ticks.x = element_line(linewidth = 1),
-                      axis.ticks.length.x = unit(2, 'mm'))
+  theme_miro <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 
+                      panel.grid.minor = ggplot2::element_blank(),
+                      panel.background = ggplot2::element_blank(), 
+                      axis.line.x = ggplot2::element_line(linewidth = 1),
+                      axis.ticks.x = ggplot2::element_line(linewidth = 1),
+                      axis.ticks.length.x = grid::unit(2, 'mm'))
   plt <- plt + theme_miro
   
   ## Return final plot
