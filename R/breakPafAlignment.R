@@ -5,10 +5,11 @@
 #' along with CIGAR string defined in 'cg' column.
 #' @param report.sv Set to \code{TRUE} if to report also ranges of deleted and inserted bases.
 #' @inheritParams cigar2ranges
-#' @importFrom GenomicRanges GRanges shift reduce width
+#' @importFrom GenomicRanges GRanges shift reduce width disjoin findOverlaps
 #' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
+#' @importFrom GenomeInfoDb seqlengths seqlevels
 #' @importFrom dplyr tibble bind_rows
-#' @importFrom S4Vectors sapply
+#' @importFrom S4Vectors sapply queryHits
 #' @return  A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 #' @author David Porubsky
 #' @export
@@ -104,17 +105,17 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   
   ## Break alignment [matched bases]
   query.match.gr <- GenomicAlignments::mapToAlignments(match.gr, alignments = alignment)
-  seqlengths(query.match.gr) <- GenomicAlignments::qwidth(alignment)
-  seqlevels(query.match.gr) <- paf.aln$q.name
+  GenomeInfoDb::seqlengths(query.match.gr) <- GenomicAlignments::qwidth(alignment)
+  GenomeInfoDb::seqlevels(query.match.gr) <- paf.aln$q.name
   ## Break alignment [insertion bases]
   if (length(query.ins.gr) > 0) {
       ## Break target at insertion sites [should be a 0-bp break in target coords]
-      match.gr <- disjoin(c(match.gr, target.ins.gr))
+      match.gr <- GenomicRanges::disjoin(c(match.gr, target.ins.gr))
       ## Break query at insertion sites [should be a range in query coords]
-      query.match.gr <- disjoin(c(query.match.gr, query.ins.gr))
+      query.match.gr <- GenomicRanges::disjoin(c(query.match.gr, query.ins.gr))
       ## Get inserted range(s) to be removed from query
-      hits <- findOverlaps(query.match.gr, query.ins.gr)
-      remove.ins <- queryHits(hits)
+      hits <- GenomicRanges::findOverlaps(query.match.gr, query.ins.gr)
+      remove.ins <- S4Vectors::queryHits(hits)
   }
   
   ## Convert to target coordinates
@@ -186,7 +187,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
       target.ins.gr <- GenomicRanges::shift(target.ins.gr, shift = paf.aln$t.start)
       #query.ins.gr <- GenomicRanges::shift(query.ins.gr[,0], shift = paf.aln$q.start)
       ## Create insertion ID
-      ins.cg <- paste0(width(query.ins.gr), 'I')
+      ins.cg <- paste0(GenomicRanges::width(query.ins.gr), 'I')
       ## Create paf alignment
       ins.paf.aln <- dplyr::tibble( q.name=as.character(seqnames(query.ins.gr)),
                                     q.len=paf.aln$q.len,

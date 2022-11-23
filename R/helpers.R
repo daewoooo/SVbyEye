@@ -40,26 +40,31 @@ q2t <- function(x, q.range, t.range) {
 #'
 #' @param gr A \code{\link{GRanges-class}} object with one or more ranges to be mirrored/reflected given the sequence length.
 #' @param seqlength  A \code{numeric} value containing the sequence length from where the submitted ranges originate from.
+#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom GenomicRanges GRanges strand start end
+#' @importFrom IRanges IRanges
 #' @return A \code{\link{GRanges-class}} object with mirrored coordinates.
 #' @author David Porubsky
 #' @export
 mirrorRanges <- function(gr, seqlength=NULL) {
   if (!is.null(seqlength)) {
     gr.len <- seqlength
-  } else if (!is.na(seqlengths(gr))) {
-    gr.len <- seqlengths(gr)
+  } else if (!is.na(GenomeInfoDb::seqlengths(gr))) {
+    gr.len <- GenomeInfoDb::seqlengths(gr)
   } else {
     stop('No seglength provided!!!')
   }
-  if (!all(end(gr) <= gr.len)) {
+  if (!all(GenomicRanges::end(gr) <= gr.len)) {
     stop("One or all submitted ranges are outside of defined seqlength!!!")
   }
-  starts <- gr.len - end(gr)
-  ends <- (gr.len - start(gr)) 
+  starts <- gr.len - GenomicRanges::end(gr)
+  ends <- gr.len - GenomicRanges::start(gr) 
   #starts <- gr.len - cumsum(width(gr))
   #ends <- starts + width(gr)
-  new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr), ranges = IRanges(start=starts, end=ends), strand = strand(gr))
-  suppressWarnings( seqlengths(new.gr) <- gr.len )
+  new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr), 
+                                   ranges = IRanges::IRanges(start=starts, end=ends), 
+                                   strand = GenomicRanges::strand(gr))
+  suppressWarnings( GenomeInfoDb::seqlengths(new.gr) <- gr.len )
   return(new.gr)
 }
 
@@ -102,7 +107,7 @@ getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=c(90, 95, 9
   ## Get break intervals
   vals <- data.table %>% dplyr::pull(eval(value.field))
   ids <- findInterval(vals, vec = breaks) + 1
-  data.table$col.levels <- levels[ids]
+  data.table$col.levels <- factor(levels[ids], levels = levels)
   colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = 'continuous')
   colors <- setNames(as.list(colors), levels)
   ## Return color scheme
