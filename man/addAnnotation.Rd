@@ -2,7 +2,7 @@
 % Please edit documentation in R/addAnnotation.R
 \name{addAnnotation}
 \alias{addAnnotation}
-\title{Add annotation ranges to miropeat style plot.}
+\title{Add annotation ranges to a SVbyEye plot.}
 \usage{
 addAnnotation(
   ggplot.obj = NULL,
@@ -13,7 +13,8 @@ addAnnotation(
   coordinate.space = "target",
   new.annotation.level = TRUE,
   offset.annotation = FALSE,
-  annotation.label = NULL
+  annotation.label = NULL,
+  y.label.id = NULL
 )
 }
 \arguments{
@@ -29,9 +30,15 @@ addAnnotation(
 
 \item{coordinate.space}{A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.}
 
+\item{new.annotation.level}{Set to \code{TRUE} if the annotation ranges should be plotted at a separate level
+defined by 5\% of the y-axis range.}
+
 \item{offset.annotation}{Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.}
 
 \item{annotation.label}{A \code{character} string to be used as a label to added annotation track.}
+
+\item{y.label.id}{A user defined metadata column id within \code{annot.gr} that for each annotation range contains
+corresponding y-axis label.}
 }
 \value{
 A \code{ggplot2} object.
@@ -50,13 +57,13 @@ plt <- plotMiro(paf.table = paf.table)
 ## Load target annotation file
 target.annot <- system.file("extdata", "test1_target_annot.txt", package="SVbyEye")
 target.annot.df <- read.table(target.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
-target.annot.gr <- makeGRangesFromDataFrame(target.annot.df)
+target.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(target.annot.df)
 ## Add target annotation as arrowhead
 plt <- addAnnotation(ggplot.obj = plt, annot.gr = target.annot.gr, coordinate.space = 'target')
 ## Load query annotation file
 query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
 query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
-query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
+query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 ## Add query annotation as rectangle
 addAnnotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle', coordinate.space = 'query')
 ## Lift target annotation to query and plot

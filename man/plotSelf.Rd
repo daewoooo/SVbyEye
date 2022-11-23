@@ -13,10 +13,10 @@ plotSelf(
   shape = "segment",
   sort.by = "position",
   color.by = "direction",
+  color.palette = NULL,
   add.alignment.arrows = TRUE,
   highlight.pos = NULL,
-  highlight.region = NULL,
-  title = NULL
+  highlight.region = NULL
 )
 }
 \arguments{
@@ -37,13 +37,14 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
 
+\item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
+to color alignment directionality, \verb{[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]}.}
+
 \item{add.alignment.arrows}{Set to \code{TRUE} if alignment arrows should be added to the plot.}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 
 \item{highlight.region}{A pair of positions to be highlighted as vertical range.}
-
-\item{title}{A title to be added to the final plot.}
 }
 \value{
 A \code{ggplot2} object.
@@ -69,11 +70,16 @@ plotSelf(paf.table = paf.table, min.deletion.size=50, min.insertion.size=50, hig
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
 plotSelf(paf.table = paf.table, binsize=1000)
 plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
-## Add duplicon annotation
+## Add annotation to self-alignments ##
 annot.file <- system.file("extdata", "test2.sd.annot.RData", package="SVbyEye")
 annot.gr <- get(load(annot.file))
 plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc')
+## Add annotation to a new level
 addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
+## Add annotation to the alignment level
+plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc', add.alignment.arrows=FALSE)
+addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', new.annotation.level=FALSE)
+
 }
 \author{
 David Porubsky

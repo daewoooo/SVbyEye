@@ -381,13 +381,13 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   
   ## Set the theme
   theme_self <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 
-                      panel.grid.minor = ggplot2::element_blank(),
-                      panel.background = ggplot2::element_blank(), 
-                      axis.line.x = ggplot2::element_line(linewidth = 1),
-                      axis.ticks.x = ggplot2::element_line(linewidth = 1),
-                      axis.ticks.length.x = grid::unit(2, 'mm'),
-                      axis.text.y = ggplot2::element_blank(),
-                      axis.ticks.y = ggplot2::element_blank())
+                               panel.grid.minor = ggplot2::element_blank(),
+                               panel.background = ggplot2::element_blank(), 
+                               axis.line.x = ggplot2::element_line(linewidth = 1),
+                               axis.ticks.x = ggplot2::element_line(linewidth = 1),
+                               axis.ticks.length.x = grid::unit(2, 'mm'),
+                               axis.text.y = ggplot2::element_blank(),
+                               axis.ticks.y = ggplot2::element_blank())
   plt <- plt + theme_self
   
   ## Return final plot

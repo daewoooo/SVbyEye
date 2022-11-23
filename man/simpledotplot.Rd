@@ -29,8 +29,6 @@ simpledotplot(
 
 \item{highlight.region}{A pair of positions to be highlighted as vertical range.}
 
-\item{title}{A title to be added to the final plot.}
-
 \item{coords.file}{A path to a PAF or NUCMER specific file containing alignments to be loaded.}
 
 \item{genome.coords}{Set to \code{TRUE} if the target sequence should be reported in genomic coordinates.}

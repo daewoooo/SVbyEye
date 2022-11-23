@@ -249,11 +249,11 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   
   ## Set the theme
   theme_miro <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 
-                      panel.grid.minor = ggplot2::element_blank(),
-                      panel.background = ggplot2::element_blank(), 
-                      axis.line.x = ggplot2::element_line(linewidth = 1),
-                      axis.ticks.x = ggplot2::element_line(linewidth = 1),
-                      axis.ticks.length.x = grid::unit(2, 'mm'))
+                               panel.grid.minor = ggplot2::element_blank(),
+                               panel.background = ggplot2::element_blank(), 
+                               axis.line.x = ggplot2::element_line(linewidth = 1),
+                               axis.ticks.x = ggplot2::element_line(linewidth = 1),
+                               axis.ticks.length.x = grid::unit(2, 'mm'))
   plt <- plt + theme_miro
   
   ## Return final plot
