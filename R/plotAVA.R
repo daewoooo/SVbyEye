@@ -149,9 +149,9 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   ## Flip query and target for alignments where query comes first
   flipQT <- which(paf$y1 > paf$y2)
   paf[flipQT,] <- transform(paf[flipQT,],
-                            q.name = t.name, q.start = t.start, q.end = t.end,
-                            t.name = q.name, t.start = q.start, t.end = q.end,
-                            y1 = y2, y2 = y1)
+                            'q.name' = t.name, 'q.start' = t.start, 'q.end' = t.end,
+                            't.name' = q.name, 't.start' = q.start, 't.end' = q.end,
+                            'y1' = y2, 'y2' = y1)
   paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], '___', paf$t.name[flipQT])
 
   ## Translate paf alignments to plotting coordinates ##
@@ -203,7 +203,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
     colors <- coords.l$colors
     
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(ggplot2::aes(x, y, group = group, fill=col.levels), alpha=0.5) +
+      geom_miropeats(ggplot2::aes(x, y, group = group, fill=.data$col.levels), alpha=0.5) +
       ggplot2::scale_fill_manual(values = colors, drop=FALSE, name='Identity')
   } else if (color.by == 'mapq') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
@@ -264,7 +264,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   ## Add sequence length lines
   seq.lines <- data.frame(y.breaks=y.breaks, y.labels=y.labels)
   seq.lines$seq.len <- paf.copy$q.len[match(seq.lines$y.labels, paf.copy$q.name)]
-  plt <- plt + ggplot2::geom_segment(data = seq.lines, ggplot2::aes(x=1, xend=seq.len, y=y.breaks, yend=y.breaks), size=1)
+  plt <- plt + ggplot2::geom_segment(data = seq.lines, ggplot2::aes(x=1, xend=.data$seq.len, y=y.breaks, yend=y.breaks), size=1)
   
   ## Set the theme and scales
   theme_ava <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 

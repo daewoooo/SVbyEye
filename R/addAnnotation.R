@@ -23,7 +23,7 @@
 #' @importFrom gggenes geom_gene_arrow
 #' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @importFrom IRanges IRanges ranges
-#' @importFrom GenomicRanges start end sort
+#' @importFrom GenomicRanges start end sort makeGRangesFromDataFrame
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -257,6 +257,10 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
 #' \code{\link{liftRangesToAlignment}} if coordinates need to be lifted from target space.
 #' @inheritParams breakPafAlignment
 #' @return A \code{\link{GRanges-class}} object.
+#' @importFrom GenomicRanges strand makeGRangesFromDataFrame
+#' @importFrom IRanges reflect ranges IRanges
+#' @importFrom GenomeInfoDb seqnames
+#' @importFrom dplyr recode
 #' @author David Porubsky
 #' @export
 #' @examples 
@@ -269,7 +273,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
 #'## Load query annotation file
 #'query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
 #'query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
-#'query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
+#'query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 #'## Synchronize orientation of query annotation file with flipped PAF alignments
 #'flipQueryAnnotation(paf.table = paf.table, query.annot.gr=query.annot.gr)
 #'
@@ -305,10 +309,10 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
         #annot.gr.flipped <- mirrorRanges(gr = annot.gr, seqlength = unique(paf.subtable$q.len))
         annot.gr.flipped <- annot.gr
         suppressWarnings(
-          ranges(annot.gr.flipped) <- IRanges::reflect(x = ranges(annot.gr), bounds = IRanges::IRanges(start = 1L, end = unique(paf.subtable$q.len)))
+          IRanges::ranges(annot.gr.flipped) <- IRanges::reflect(x = IRanges::ranges(annot.gr), bounds = IRanges::IRanges(start = 1L, end = unique(paf.subtable$q.len)))
         )
         ## Flip ranges strand orientation
-        strand(annot.gr.flipped) <- dplyr::recode(as.character(strand(annot.gr.flipped)), '+' = '-', '-' = '+')
+        GenomicRanges::strand(annot.gr.flipped) <- dplyr::recode(as.character(GenomicRanges::strand(annot.gr.flipped)), '+' = '-', '-' = '+')
         flipped.annot[[length(flipped.annot) + 1]] <- annot.gr.flipped 
       } else {
         flipped.annot[[length(flipped.annot) + 1]] <- annot.gr 

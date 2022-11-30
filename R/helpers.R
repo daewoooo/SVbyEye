@@ -81,6 +81,7 @@ mirrorRanges <- function(gr, seqlength=NULL) {
 #' List also contains element 'color' with a gradient color assigned to each 'col.level'.
 #' @importFrom wesanderson wes_palette
 #' @importFrom dplyr pull
+#' @importFrom stats setNames
 #' @author David Porubsky
 #' @export
 getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=c(90, 95, 96, 97, 98, 99, 99.5, 99.9)) {
@@ -109,7 +110,7 @@ getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=c(90, 95, 9
   ids <- findInterval(vals, vec = breaks) + 1
   data.table$col.levels <- factor(levels[ids], levels = levels)
   colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = 'continuous')
-  colors <- setNames(as.list(colors), levels)
+  colors <- stats::setNames(as.list(colors), levels)
   ## Return color scheme
   return(list(data=data.table, colors=colors))
 }

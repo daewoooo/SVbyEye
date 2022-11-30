@@ -6,6 +6,7 @@
 #' @importFrom GenomicRanges GRanges findOverlaps mcols
 #' @importFrom GenomicAlignments GAlignments mapFromAlignments
 #' @importFrom S4Vectors queryHits subjectHits
+#' @importFrom methods is
 #' @return A \code{\link{GRanges-class}} object with resized original set of ranges. 
 #' @author David Porubsky
 #' @export
@@ -19,7 +20,7 @@
 #'
 liftRangesToAlignment <- function(gr=NULL, paf.file=NULL, direction='query2target') {
   ## Check user input
-  stopifnot(is(gr, "GRanges"), file.exists(paf.file), is(direction, 'character'))
+  stopifnot(methods::is(gr, "GRanges"), file.exists(paf.file), methods::is(direction, 'character'))
   
   ## Read PAF alignments to reference
   paf.aln <- readPaf(paf.file = paf.file, restrict.paf.tags = 'cg')

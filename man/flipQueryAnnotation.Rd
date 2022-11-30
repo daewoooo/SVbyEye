@@ -28,7 +28,7 @@ paf.table <- flipPaf(paf.table = paf.table, force=TRUE)
 ## Load query annotation file
 query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
 query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
-query.annot.gr <- makeGRangesFromDataFrame(query.annot.df)
+query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 ## Synchronize orientation of query annotation file with flipped PAF alignments
 flipQueryAnnotation(paf.table = paf.table, query.annot.gr=query.annot.gr)
 

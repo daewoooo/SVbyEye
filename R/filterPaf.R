@@ -84,7 +84,7 @@ filterPaf <- function(paf.table, min.mapq=10, min.align.len=1000, min.align.n=1,
   ## Get unique alignment ID
   paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
   if (min.align.n > 0) {
-    paf <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::mutate(align.n = dplyr::n())
+    paf <- paf %>% dplyr::group_by(.data$seq.pair) %>% dplyr::mutate(align.n = dplyr::n())
     paf <- paf[paf$align.n >= min.align.n,]
   }
   

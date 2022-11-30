@@ -38,7 +38,7 @@ parseCigarString <- function(cigar.str=NULL, coordinate.space = 'reference') {
 #' @param collapse.mismatches Set to \code{TRUE} if mismatches should be collapsed in order expand matched regions.
 #' @inheritParams readPaf
 #' @inheritParams parseCigarString
-#' @importFrom GenomicRanges GRanges width shift reduce
+#' @importFrom GenomicRanges GRanges width shift reduce strand
 #' @return A \code{\link{GRanges}} object.
 #' @author David Porubsky
 #' @export
@@ -136,22 +136,22 @@ cigar2ranges <- function(paf.file=NULL, coordinate.space='reference', min.insert
     
     ## Prepare data for export
     if (length(match.gr) > 0) {
-      strand(match.gr) <- paf.aln$strand
+      GenomicRanges::strand(match.gr) <- paf.aln$strand
       match.gr$aln.id <- paste0('aln', i)
       match.gr$cg <- 'M'
     } 
     if (length(mismatch.gr) > 0) {
-      strand(mismatch.gr) <- paf.aln$strand
+      GenomicRanges::strand(mismatch.gr) <- paf.aln$strand
       mismatch.gr$aln.id <- paste0('aln', i)
       mismatch.gr$cg <- 'X'
     } 
     if (length(ins.gr) > 0) {
-      strand(ins.gr) <- paf.aln$strand
+      GenomicRanges::strand(ins.gr) <- paf.aln$strand
       ins.gr$aln.id <- paste0('aln', i)
       ins.gr$cg <- 'I'
     } 
     if (length(del.gr) > 0) {
-      strand(del.gr) <- paf.aln$strand
+      GenomicRanges::strand(del.gr) <- paf.aln$strand
       del.gr$aln.id <- paste0('aln', i)
       del.gr$cg <- 'D'
     }

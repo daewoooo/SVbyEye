@@ -1,5 +1,5 @@
 Package: SVbyEye
-Title: Visualization of genomic structural variants.
+Title: Visualization of genomic structural variants
 Version: 0.0.0.9000
 Authors@R: 
     person(given = "David",
@@ -21,15 +21,16 @@ Imports:
   dplyr,
   stringr,
   magrittr,
+  S4Vectors,
+  methods,
   tibble,
   utils,
   GenomicRanges,
   GenomicAlignments (>= 1.33.1),
   BSgenome,
+  Biostrings,
   IRanges,
-  data.table,
   GenomeInfoDb,
-  BiocGenerics,
   Rsamtools,
   wesanderson,
 Suggests:

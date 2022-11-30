@@ -12,6 +12,7 @@
 #' @importFrom utils read.table
 #' @importFrom GenomicRanges makeGRangesFromDataFrame findOverlaps resize start end
 #' @importFrom IRanges subsetByOverlaps
+#' @importFrom methods as
 #' @author David Porubsky
 #' @export
 #' @examples 
@@ -36,7 +37,7 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
   ## Filer alignments by target region ##
   if (!is.null(target.region)) {
     if (is.character(target.region)) {
-      target.region.gr <- as(target.region, 'GRanges')
+      target.region.gr <- methods::as(target.region, 'GRanges')
     } else if (class(target.region.gr) == 'GRanges') {
       target.region.gr <- target.region
     } else {

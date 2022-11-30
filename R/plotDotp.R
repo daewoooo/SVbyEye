@@ -11,6 +11,7 @@
 #' @inheritParams filterPaf
 #' @inheritParams plotSelf
 #' @return A \code{ggplot} object.
+#' @import ggplot2
 #' @importFrom scales comma
 #' @author David Porubsky
 #' @export
@@ -112,37 +113,37 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
   
   if (shape == 'segment') {
     ## Plot alignments
-    plt <- ggplot2::ggplot(coords.df, aes(x=s1.start,xend=s1.end,y=s2.start,yend=s2.end, color=dir)) + 
-      geom_segment()
+    plt <- ggplot2::ggplot(coords.df, ggplot2::aes(x=s1.start,xend=s1.end,y=s2.start,yend=s2.end, color=dir)) + 
+      ggplot2::geom_segment()
   } else if (shape == 'point') {
     coords.df$s1.midpoint <- coords.df$s1.start + ((coords.df$s1.end - coords.df$s1.start)/2)
     coords.df$s2.midpoint <- coords.df$s2.start + ((coords.df$s2.end - coords.df$s2.start)/2)
-    plt <- ggplot2::ggplot(coords.df, aes(x=s1.midpoint, y=s2.midpoint, color=dir)) + 
-      geom_point()
+    plt <- ggplot2::ggplot(coords.df, ggplot2::aes(x=s1.midpoint, y=s2.midpoint, color=dir)) + 
+      ggplot2::geom_point()
   } else {
     warning("Paremeter shape can only take values 'segment' or 'point' !!!")
-    plt <- ggplot()
+    plt <- ggplot2::ggplot()
   }  
   ## If there are multiple alignment to the target sequence use facets to divide the dotplot
   n.seq <- length(unique(coords.df$s2.id))
   if (n.seq > 1) {
     plt <- plt +
-      facet_grid(s2.id ~ ., space='free', scale='free') +
-      xlab(unique(coords.df$s1.id)) +
-      ylab(paste(unique(coords.df$s2.id), collapse = ';')) +
-      theme_bw() + 
-      scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
-      scale_x_continuous(labels = scales::comma) +
-      scale_y_continuous(labels = scales::comma)
+      ggplot2::facet_grid(s2.id ~ ., space='free', scales='free') +
+      ggplot2::xlab(unique(coords.df$s1.id)) +
+      ggplot2::ylab(paste(unique(coords.df$s2.id), collapse = ';')) +
+      ggplot2::theme_bw() + 
+      ggplot2::scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
+      ggplot2::scale_x_continuous(labels = scales::comma) +
+      ggplot2::scale_y_continuous(labels = scales::comma)
   } else {
     plt <- plt +  
-      xlab(unique(coords.df$s1.id)) +
-      ylab(unique(coords.df$s2.id)) +
-      theme_bw() + 
+      ggplot2::xlab(unique(coords.df$s1.id)) +
+      ggplot2::ylab(unique(coords.df$s2.id)) +
+      ggplot2::theme_bw() + 
       #theme(aspect.ratio=1) + #force x and y axis to have the same proportion
-      scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
-      scale_x_continuous(labels = scales::comma) +
-      scale_y_continuous(labels = scales::comma)
+      ggplot2::scale_color_manual(values = c('chartreuse4', 'darkgoldenrod2')) +
+      ggplot2::scale_x_continuous(labels = scales::comma) +
+      ggplot2::scale_y_continuous(labels = scales::comma)
   }
   
   ## Highlight user defined positions 
@@ -150,7 +151,7 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
     highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
     
     if (length(highlight.pos) > 0) {
-      plt <- plt + geom_vline(xintercept = highlight.pos)
+      plt <- plt + ggplot2::geom_vline(xintercept = highlight.pos)
     }  
   }
   
@@ -159,14 +160,15 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
     highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
     
     if (nrow(highlight.region) > 0) {
-      plt <- plt + geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
+      plt <- plt + 
+        ggplot2::geom_rect(data = highlight.region, ggplot2::aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
     }  
   }
   
   ## Add title if defined
   if (!is.null(title)) {
     if (nchar(title) > 0) {
-      plt <- plt + ggtitle(title)
+      plt <- plt + ggplot2::ggtitle(title)
     }
   }
   ## Return final plot
