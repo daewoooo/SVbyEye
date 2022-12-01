@@ -7,7 +7,7 @@
 #' @param format Is either 'mm2' or 'nucmer' for minimap2 or nucmer specific input 'coords.file', respectively.
 #' @param shape A shape used to plot aligned sequences: Either 'segment' or 'point'.
 #' @param keep.longest.aln Set to \code{TRUE} if a target sequence with a single longest alignment should be kept.
-#' @param genome.coords Set to \code{TRUE} if the target sequence should be reported in genomic coordinates.
+#' @param genome.coord Set to \code{TRUE} if the target sequence should be reported in genomic coordinates.
 #' @inheritParams filterPaf
 #' @inheritParams plotSelf
 #' @return A \code{ggplot} object.
@@ -16,7 +16,7 @@
 #' @author David Porubsky
 #' @export
 #' 
-simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min.align.len=1000, keep.longest.aln=FALSE, highlight.pos=NULL, highlight.region=NULL, title=NULL, genome.coord=FALSE) {
+simpledotplot <- function(coords.file=NULL, format='nucmer', shape='segment', min.align.len=1000, keep.longest.aln=FALSE, highlight.pos=NULL, highlight.region=NULL, genome.coord=FALSE) {
   
   ## Helper function
   remapCoord <- function(x = NULL, new.range = NULL) {
@@ -35,30 +35,32 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
   ################
   if (format == 'nucmer') {
     ## Read in coordinates from nucmer output
-    coords <- utils::read.table(coords.file, skip=5, stringsAsFactors = FALSE, comment.char = '&')
-    coords.df <- data.frame(s1.start=coords$V1,
-                            s1.end=coords$V2,
-                            s2.start=coords$V4,
-                            s2.end=coords$V5,
-                            s1.width=abs(coords$V1 - coords$V2),
-                            s2.width=abs(coords$V4 - coords$V5),
-                            s1.id=coords$V12,
-                            s2.id=coords$V13, 
+    coords <- utils::read.table(file = coords.file, skip = 5, stringsAsFactors = FALSE, comment.char = '&')
+    coords.df <- data.frame(s1.start = coords$V1,
+                            s1.end = coords$V2,
+                            s2.start = coords$V4,
+                            s2.end = coords$V5,
+                            s1.width = abs(coords$V1 - coords$V2),
+                            s2.width = abs(coords$V4 - coords$V5),
+                            s1.id = coords$V12,
+                            s2.id = coords$V13, 
                             stringsAsFactors = FALSE)
   } else if (format == 'mm2') {
     paf.data <- readPaf(paf.file = coords.file, include.paf.tags = FALSE)
-    coords.df <- data.frame(s1.start=paf.data$q.start,
-                            s1.end=paf.data$q.end,
-                            s2.start=paf.data$t.start,
-                            s2.end=paf.data$t.end,
-                            s1.width=paf.data$aln.len,
-                            s2.width=paf.data$aln.len,
-                            s1.id=paf.data$q.name,
-                            s2.id=paf.data$t.name,
+    coords.df <- data.frame(s1.start = paf.data$q.start,
+                            s1.end = paf.data$q.end,
+                            s2.start = paf.data$t.start,
+                            s2.end = paf.data$t.end,
+                            s1.width = paf.data$aln.len,
+                            s2.width = paf.data$aln.len,
+                            s1.id = paf.data$q.name,
+                            s2.id = paf.data$t.name,
                             stringsAsFactors = FALSE)
     
     ## Flip start and end for reverse oriented alignments
-    coords.df[paf.data$strand == '-',] <- transform(coords.df[paf.data$strand == '-',], 's2.start' = s2.end, 's2.end' = s2.start)
+    coords.df[paf.data$strand == '-',] <- transform(coords.df[paf.data$strand == '-',], 
+                                                    's2.start' = coords.df[paf.data$strand == '-',]$s2.end, 
+                                                    's2.end' = coords.df[paf.data$strand == '-',]$s2.start)
   }
   
   ## Get max position (for x-axis plotting)
@@ -113,12 +115,12 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
   
   if (shape == 'segment') {
     ## Plot alignments
-    plt <- ggplot2::ggplot(coords.df, ggplot2::aes(x=s1.start,xend=s1.end,y=s2.start,yend=s2.end, color=dir)) + 
+    plt <- ggplot2::ggplot(data = coords.df, ggplot2::aes(x = .data$s1.start,xend = .data$s1.end, y = .data$s2.start, yend = .data$s2.end, color = .data$dir)) + 
       ggplot2::geom_segment()
   } else if (shape == 'point') {
     coords.df$s1.midpoint <- coords.df$s1.start + ((coords.df$s1.end - coords.df$s1.start)/2)
     coords.df$s2.midpoint <- coords.df$s2.start + ((coords.df$s2.end - coords.df$s2.start)/2)
-    plt <- ggplot2::ggplot(coords.df, ggplot2::aes(x=s1.midpoint, y=s2.midpoint, color=dir)) + 
+    plt <- ggplot2::ggplot(data = coords.df, ggplot2::aes(x = .data$s1.midpoint, y = .data$s2.midpoint, color = .data$dir)) + 
       ggplot2::geom_point()
   } else {
     warning("Paremeter shape can only take values 'segment' or 'point' !!!")
@@ -165,12 +167,6 @@ simpledotplot <- function(aln.coords=NULL, format='nucmer', shape='segment', min
     }  
   }
   
-  ## Add title if defined
-  if (!is.null(title)) {
-    if (nchar(title) > 0) {
-      plt <- plt + ggplot2::ggtitle(title)
-    }
-  }
   ## Return final plot
   return(plt)
 }

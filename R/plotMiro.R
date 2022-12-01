@@ -160,7 +160,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Plot alignments and color by direction or identity
   if (color.by == 'direction') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(ggplot2::aes(x, y, group = group, fill = direction), alpha = 0.5) +
+      geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$direction), alpha = 0.5) +
       ggplot2::scale_fill_manual(values = pal, name = 'Alignment\ndirection')
   } else if (color.by == 'identity') {
     coords$identity <- (coords$n.match / coords$aln.len) * 100
@@ -171,21 +171,21 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
     colors <- coords.l$colors
     
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(ggplot2::aes(x, y, group = group, fill=col.levels), alpha=0.5) +
+      geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
       ggplot2::scale_fill_manual(values = colors, drop=FALSE, name='Identity')
   } else if (color.by == 'mapq') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(ggplot2::aes(x, y, group = group, fill=mapq), alpha=0.5) +
+      geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$mapq), alpha=0.5) +
       ggplot2::scale_fill_gradient(low = 'gray', high = 'red')
   } else {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(ggplot2::aes(x, y, group = group), alpha=0.5, fill='gray')
+      geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), alpha=0.5, fill='gray')
   }
   
   ## Add alignment outlines 
   if (outline.alignments) {
     plt <- plt + 
-      geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x, y, group = group),  fill=NA, color='gray', size=0.25)
+      geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group),  fill=NA, color='gray', size=0.25)
   }  
   
   ## Add indels
@@ -194,11 +194,11 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
       ## Add SVs to the plot
       if (highlight.sv == 'outline') {
         plt <- plt + ggnewscale::new_scale_color() +
-          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x, y, group = group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, color = .data$ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
           ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else if (highlight.sv == 'fill') {
         plt <- plt + ggnewscale::new_scale_fill() +
-          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x, y, group = group, fill=ID), alpha=0.5, inherit.aes = FALSE) +
+          geom_miropeats(data=coords[coords$ID != 'M',], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$ID), alpha=0.5, inherit.aes = FALSE) +
           ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else {
         warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
@@ -243,7 +243,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
   
   plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-    gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = grid::unit(3, 'mm')) +
+    gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, color = .data$direction, fill = .data$direction), arrowhead_height = grid::unit(3, 'mm')) +
     ggplot2::scale_fill_manual(values = pal, name='Alignment\ndirection') +
     ggplot2::scale_color_manual(values = pal, name='Alignment\ndirection')
   

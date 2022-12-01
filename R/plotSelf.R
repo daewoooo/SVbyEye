@@ -16,7 +16,7 @@
 #' @importFrom grid unit
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
-#' @importFrom dplyr group_by mutate arrange bind_rows
+#' @importFrom dplyr group_by mutate arrange bind_rows desc
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -109,47 +109,49 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   
   ## Prepare data for plotting
   paf <- paf[paf$ID == 'M',]
-  coords <- data.frame(s1.start=paf$q.start,
-                       s1.end=paf$q.end,
-                       s2.start=paf$t.start,
-                       s2.end=paf$t.end,
-                       s1.width=(paf$q.end - paf$q.start) + 1,
-                       s2.width=(paf$t.end - paf$t.start) + 1,
-                       s1.id=paf$q.name,
-                       s2.id=paf$t.name,
-                       dir=paf$strand,
-                       n.match=paf$n.match,
-                       aln.len=paf$aln.len,
-                       identity=(paf$n.match / paf$aln.len) * 100,
+  coords <- data.frame(s1.start = paf$q.start,
+                       s1.end = paf$q.end,
+                       s2.start = paf$t.start,
+                       s2.end = paf$t.end,
+                       s1.width = (paf$q.end - paf$q.start) + 1,
+                       s2.width = (paf$t.end - paf$t.start) + 1,
+                       s1.id = paf$q.name,
+                       s2.id = paf$t.name,
+                       dir = paf$strand,
+                       n.match = paf$n.match,
+                       aln.len = paf$aln.len,
+                       identity = (paf$n.match / paf$aln.len) * 100,
                        aln.id = paf$aln.id,
                        stringsAsFactors = FALSE)
   
   ## Get max position (for x-axis plotting)
   max.pos <- unique(paf$q.len)
   ## Flip start and end for reverse oriented alignments
-  coords[coords$dir == '-',] <- transform(coords[coords$dir == '-',], 's2.start' = s2.end, 's2.end' = s2.start)
+  coords[coords$dir == '-',] <- transform(coords[coords$dir == '-',], 
+                                          's2.start' = coords[coords$dir == '-',]$s2.end, 
+                                          's2.end' = coords[coords$dir == '-',]$s2.start)
   ## Sort alignments
   if (sort.by == 'position') {
     ## Order alignments by query position
     ord.aln.id <- coords %>% 
-      dplyr::group_by(aln.id) %>% 
-      dplyr::summarise(start.id = min(s1.start)) %>%
-      dplyr::arrange(start.id)
+      dplyr::group_by(.data$aln.id) %>% 
+      dplyr::summarise(start.id = min(.data$s1.start)) %>%
+      dplyr::arrange(.data$start.id)
     coords$aln.id <- factor(coords$aln.id, levels = ord.aln.id$aln.id)  
     
     coords <- coords %>% 
-      dplyr::group_by(aln.id) %>%
-      dplyr::arrange(s1.start, .by_group = TRUE)
+      dplyr::group_by(.data$aln.id) %>%
+      dplyr::arrange(.data$s1.start, .by_group = TRUE)
     
   } else if (sort.by == 'length') {
     ## Order alignments by alignment length
     coords <- coords %>% 
-      dplyr::group_by(aln.id) %>% 
-      dplyr::mutate(length.id = sum(aln.len)) %>% 
-      dplyr::arrange(desc(length.id), s1.start)
+      dplyr::group_by(.data$aln.id) %>% 
+      dplyr::mutate(length.id = sum(.data$aln.len)) %>% 
+      dplyr::arrange(dplyr::desc(.data$length.id), .data$s1.start)
   } else {
     ## Order by alignment id
-    coords <- coords %>% dplyr::arrange(aln.id, s1.start)
+    coords <- coords %>% dplyr::arrange(.data$aln.id, .data$s1.start)
   }
 
   
@@ -237,10 +239,10 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     y.limit <- max(c(coords$y1end, coords$y2end))
     ## Plot alignment pairs
     plt <- ggplot2::ggplot(coords) +
-      ggplot2::geom_segment(ggplot2::aes(x=s1.start, xend=s1.end, y=y1, yend=y1end)) +
-      ggplot2::geom_segment(ggplot2::aes(x=s2.start, xend=s2.end, y=y2, yend=y2end)) +
-      ggplot2::geom_polygon(data=poly.dir.df, ggplot2::aes(x=x, y=y, group=group, fill=.data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
-      ggplot2::geom_polygon(data=poly.rev.df, ggplot2::aes(x=x, y=y, group=group, fill=.data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
+      ggplot2::geom_segment(ggplot2::aes(x = .data$s1.start, xend = .data$s1.end, y = .data$y1, yend = .data$y1end)) +
+      ggplot2::geom_segment(ggplot2::aes(x = .data$s2.start, xend = .data$s2.end, y = .data$y2, yend = .data$y2end)) +
+      ggplot2::geom_polygon(data=poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
+      ggplot2::geom_polygon(data=poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
       ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
       ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
       ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
@@ -263,11 +265,11 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
         ## Add SVs to the plot
         if (highlight.sv == 'outline') {
           plt <- plt + ggnewscale::new_scale_color() +
-            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin=start, xmax=end, ymin = -Inf, ymax=Inf, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, ymin = -Inf, ymax = Inf, color = .data$ID), fill = NA, alpha = 0.5, inherit.aes = FALSE) +
             ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else if (highlight.sv == 'fill') {
           plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin=start, xmax=end, ymin = -Inf, ymax=Inf, fill=ID, color=ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
+            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, ymin = -Inf, ymax = Inf, fill = .data$ID, color = .data$ID), size = 0.2, alpha = 0.5, inherit.aes = FALSE) +
             ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
             ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else {
@@ -294,7 +296,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
                          identity=identity)
     
     plt <- ggplot2::ggplot(plt.df) +
-      geom_wide_arc(ggplot2::aes(x=x, y=y, group=group, fill=.data[[color.by]]), alpha=0.5) +
+      geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha = 0.5) +
       ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
       ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
       ggplot2::ylab('Self-alignments') +
@@ -321,11 +323,11 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
         ## Add SVs to the plot
         if (highlight.sv == 'outline') {
           plt <- plt + ggnewscale::new_scale_color() +
-            geom_wide_arc(data=svs.df, ggplot2::aes(x=x, y=y, group=group, color=ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
+            geom_wide_arc(data=svs.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, color = .data$ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
             ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else if (highlight.sv == 'fill') {
           plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-            geom_wide_arc(data=svs.df, ggplot2::aes(x=x, y=y, group=group, fill=ID, color=ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
+            geom_wide_arc(data=svs.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$ID, color = .data$ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
             ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
             ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
         } else {
@@ -357,7 +359,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
     ## Plot arrows
     plt <- plt + ggnewscale::new_scale_fill() +
-      gggenes::geom_gene_arrow(data=arrow.df, aes(xmin=xmin, xmax=xmax, y=0, forward=direction, fill=dir), arrowhead_height = unit(3, 'mm'), inherit.aes = FALSE) +
+      gggenes::geom_gene_arrow(data=arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = 0, forward = .data$direction, fill = .data$dir), arrowhead_height = grid::unit(3, 'mm'), inherit.aes = FALSE) +
       ggplot2::scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'))
   }
   
@@ -375,7 +377,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
     
     if (nrow(highlight.region) > 0) {
-      plt <- plt + ggplot2::geom_rect(data = highlight.region, aes(xmin=xmin, xmax=xmax, ymin=0, ymax=Inf), color='red', alpha=0.25)
+      plt <- plt + ggplot2::geom_rect(data = highlight.region, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = 0, ymax = Inf), color = 'red', alpha = 0.25)
     }  
   }
   

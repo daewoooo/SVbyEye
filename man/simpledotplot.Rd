@@ -5,18 +5,19 @@
 \title{Plot simple dotplot of two sequences.}
 \usage{
 simpledotplot(
-  aln.coords = NULL,
+  coords.file = NULL,
   format = "nucmer",
   shape = "segment",
   min.align.len = 1000,
   keep.longest.aln = FALSE,
   highlight.pos = NULL,
   highlight.region = NULL,
-  title = NULL,
   genome.coord = FALSE
 )
 }
 \arguments{
+\item{coords.file}{A path to a PAF or NUCMER specific file containing alignments to be loaded.}
+
 \item{format}{Is either 'mm2' or 'nucmer' for minimap2 or nucmer specific input 'coords.file', respectively.}
 
 \item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'point'.}
@@ -29,9 +30,7 @@ simpledotplot(
 
 \item{highlight.region}{A pair of positions to be highlighted as vertical range.}
 
-\item{coords.file}{A path to a PAF or NUCMER specific file containing alignments to be loaded.}
-
-\item{genome.coords}{Set to \code{TRUE} if the target sequence should be reported in genomic coordinates.}
+\item{genome.coord}{Set to \code{TRUE} if the target sequence should be reported in genomic coordinates.}
 }
 \value{
 A \code{ggplot} object.
