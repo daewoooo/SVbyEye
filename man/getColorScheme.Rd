@@ -22,7 +22,7 @@ A \code{\link{list}} containing original 'data.table' with extra column adding '
 List also contains element 'color' with a gradient color assigned to each 'col.level'.
 }
 \description{
-This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into
+This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into 
 chunks based on defined breaks. Each chunk has assigned unique color on a gradient scale.
 }
 \author{

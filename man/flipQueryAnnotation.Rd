@@ -7,6 +7,9 @@
 flipQueryAnnotation(paf.table, query.annot.gr = NULL)
 }
 \arguments{
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
+
 \item{query.annot.gr}{A \code{\link{GRanges-class}} object with a set of ranges in query coordinates. See function
 \code{\link{liftRangesToAlignment}} if coordinates need to be lifted from target space.}
 }

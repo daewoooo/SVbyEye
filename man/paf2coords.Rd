@@ -7,6 +7,9 @@
 paf2coords(paf.table, offset.alignments = FALSE)
 }
 \arguments{
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
+
 \item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.}
 }
 \value{

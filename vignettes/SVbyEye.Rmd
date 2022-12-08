@@ -2,17 +2,17 @@
 title: 'SVbyEye: A visual approach to study genomic structural variantion.'
 author: "David Porubsky"
 date: "`r Sys.Date()`"
-output:
-  pdf_document
 package: SVbyEye
+bibliography: SVbyEyeBib.bib
 abstract: >
   To be filled in.
 vignette: >
   %\\VignetteIndexEntry{Vignette Title} 
   %\\VignetteEngine{knitr::rmarkdown}
-  %\\VignetteEncoding{UTF-8}\n"
-  
-bibliography: /home/porubsky/SVbyEye/vignettes/SVbyEyeBib.bib
+  %\\VignetteEncoding{UTF-8}
+  %\\newenvironment{CSLReferences}
+output:
+  BiocStyle::pdf_document
 ---
 
 # Introduction

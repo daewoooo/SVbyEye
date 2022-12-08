@@ -18,32 +18,37 @@ geom_wide_arc(
 )
 }
 \arguments{
-\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, }{etc... As standard for ggplot2.}
+\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, ...}{As is standard for ggplot2.}
+
+\item{geom}{The geometric object to use to display the data, either as a
+\code{ggproto} \code{Geom} subclass or as a string naming the geom stripped of the
+\code{geom_} prefix (e.g. \code{"point"} rather than \code{"geom_point"})}
+
+\item{n}{The number of points to create for each alignment polygon (Default : `100`).}
 }
 \description{
-\code{geom_wide_arc()} draws wide polygons between two sets of start and end coordinates.
+`geom_wide_arc()` draws wide polygons between two sets of start and end coordinates.
 }
 \details{
 This geom is intended to draws wide arc polygons between self-alignments defined in PAF format.
 Such alignments can be directly visualized using a wrapper function \code{\link{plotSelf}}.
-Input data is a \code{data.frame} object that contains required aesthetics \code{x} and \code{y} coordinates as well as
-\code{group} field that is required in order to determine which coordinates represent a single alignment.
+Input data is a \code{data.frame} object that contains required aesthetics `x` and `y` coordinates as well as 
+`group` field that is required in order to determine which coordinates represent a single alignment.
 }
 \section{Aesthetics}{
 
-\code{geom_wide_arc()} require or can take the following aesthetics
+`geom_wide_arc()` require or can take the following aesthetics
 (required aesthetics are in bold):
-\itemize{
-\item \strong{x}
-\item \strong{y}
-\item \strong{group}
-\item color
-\item linewidth
-\item linetype
-\item alpha
-\item fill
-\item size
-}
+
+- **x**
+- **y**
+- **group**
+- color
+- linewidth
+- linetype
+- alpha
+- fill
+- size
 }
 
 \examples{
@@ -57,7 +62,7 @@ ggplot2::ggplot(plt.df) +
 
 }
 \seealso{
-\code{\link[=plotSelf]{plotSelf()}}
+[plotSelf()]
 }
 \author{
 David Porubsky

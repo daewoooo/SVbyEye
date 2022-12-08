@@ -19,33 +19,41 @@ geom_miropeats(
 )
 }
 \arguments{
-\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, }{etc... As standard for ggplot2.}
+\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, ...}{As is standard for ggplot2.}
+
+\item{geom}{The geometric object to use to display the data, either as a
+\code{ggproto} \code{Geom} subclass or as a string naming the geom stripped of the
+\code{geom_} prefix (e.g. \code{"point"} rather than \code{"geom_point"})}
+
+\item{n}{The number of points to create for each alignment polygon (Default : `100`).}
+
+\item{strength}{The proportion to move the control point along the y-axis
+towards the other end of the alignment polygon (Default : `0.5`).}
 }
 \description{
-\code{geom_miropeats()} draws miropeat style polygons between query to target genomic alignments.
+`geom_miropeats()` draws miropeat style polygons between query to target genomic alignments.
 }
 \details{
 This geom draws polygons between query to target alignments defined in PAF format.
 Such alignments are first loaded using \code{\link{readPaf}} function into a \code{tibble} object.
 Then loaded alignments are converted into the plotting coordinates using \code{\link{paf2coords}} function.
-molecule. Resulting \code{data.frame} object contains required aesthetics \code{x} and \code{y} coordinates as well as
-\code{group} field that is required in order to determine which coordinates represent a single alignment.
+molecule. Resulting \code{data.frame} object contains required aesthetics `x` and `y` coordinates as well as 
+`group` field that is required in order to determine which coordinates represent a single alignment.
 }
 \section{Aesthetics}{
 
-\code{geom_miropeats()} require or can take the following aesthetics
+`geom_miropeats()` require or can take the following aesthetics
 (required aesthetics are in bold):
-\itemize{
-\item \strong{x}
-\item \strong{y}
-\item \strong{group}
-\item color
-\item linewidth
-\item linetype
-\item alpha
-\item fill
-\item size
-}
+
+- **x**
+- **y**
+- **group**
+- color
+- linewidth
+- linetype
+- alpha
+- fill
+- size
 }
 
 \examples{
@@ -61,7 +69,7 @@ ggplot2::ggplot(coords) +
 
 }
 \seealso{
-\code{\link[=readPaf]{readPaf()}}, \code{\link[=paf2coords]{paf2coords()}}
+[readPaf()], [paf2coords()]
 }
 \author{
 David Porubsky

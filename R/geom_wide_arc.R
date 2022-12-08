@@ -21,10 +21,18 @@
 #' - fill
 #' - size
 #' 
-#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes, etc... As standard for ggplot2.
+#' @inheritParams ggplot2::geom_polygon
+#' @inheritParams ggplot2::stat_identity
+#' 
+#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes,... As is standard for ggplot2.
+#' @param n The number of points to create for each alignment polygon (Default : `100`).
+#' 
 #' @seealso [plotSelf()]
 #' @author David Porubsky
-#' @export
+#' 
+#' @name geom_wide_arc
+#' @rdname geom_wide_arc
+#' 
 #' @examples 
 #'## Create example data.frame to plot
 #'plt.df <- data.frame(x=c(100, 500, 200, 1000),
@@ -34,31 +42,9 @@
 #'ggplot2::ggplot(plt.df) + 
 #'  geom_wide_arc(ggplot2::aes(x=x, y=y, group=group), alpha=0.5)
 #'
-geom_wide_arc <- function(mapping = NULL, data = NULL, geom = 'polygon',
-                           stat = 'wide_arc', position = 'identity',
-                           n = 100, na.rm = FALSE,
-                           show.legend = NA, inherit.aes = TRUE, ...) {
-  ggplot2::layer(
-    data = data, mapping = mapping, stat = stat, geom = geom,
-    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(na.rm = na.rm, n = n, ...)
-  )
-}
+NULL
 
-## Helper function definition
-#' @format NULL
-#' @usage NULL
-add.widearc.controls.points <- function(data) {
-  start <- data[c(TRUE, FALSE), ]
-  end <- data[c(FALSE, TRUE), ]
-  y_height <- sqrt(abs(end$x - start$x))
-  mid1 <- start
-  mid1$y <- y_height
-  mid2 <- end
-  mid2$y <- y_height
-  rbind(start, mid1, mid2, end)
-}
-
+#' A ggproto class definition to extend the functionality of ggplot2.
 #' @importFrom ggforce StatBezier
 #' @format NULL
 #' @usage NULL
@@ -83,3 +69,30 @@ StatWideArc <- ggplot2::ggproto('StatWideArc', ggplot2::Stat,
                                 required_aes = c('x', 'y', 'group'),
                                 extra_params = c('na.rm', 'n')
 )
+
+#' @rdname geom_wide_arc
+#' @export
+geom_wide_arc <- function(mapping = NULL, data = NULL, geom = 'polygon',
+                           stat = 'wide_arc', position = 'identity',
+                           n = 100, na.rm = FALSE,
+                           show.legend = NA, inherit.aes = TRUE, ...) {
+  ggplot2::layer(
+    data = data, mapping = mapping, stat = stat, geom = geom,
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, n = n, ...)
+  )
+}
+
+## Helper function definition
+#' @format NULL
+#' @usage NULL
+add.widearc.controls.points <- function(data) {
+  start <- data[c(TRUE, FALSE), ]
+  end <- data[c(FALSE, TRUE), ]
+  y_height <- sqrt(abs(end$x - start$x))
+  mid1 <- start
+  mid1$y <- y_height
+  mid2 <- end
+  mid2$y <- y_height
+  rbind(start, mid1, mid2, end)
+}

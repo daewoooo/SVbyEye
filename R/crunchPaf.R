@@ -4,8 +4,7 @@
 #' desired CIGAR operations and filtering steps.
 #'
 #' @param min.align.len Filter our PAF alignemnt smaller than this size.
-#' @param min.selfaln.dist Keep alignment pairs with this or larger distance from each other [Applied only for FASTA self-alignments].
-#' @param collapse.overlaps Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.
+#' @param min.selfaln.dist Keep alignment pairs with this or larger distance from each other (Applied only to FASTA self-alignments).
 #' @param break.paf.aln Set to \code{TRUE} in order to split CIGAR string at insertions and deletions.
 #' @param bin.paf.aln Set to \code{TRUE} in order to bin each alignment into bins defined in 'binsize' parameter.
 #' @param binsize A user defined binsize (in bp) to split each PAF alignment into.

@@ -5,7 +5,7 @@
 #' expanded in a set of x and y coordinates ready to be plotted by \code{\link{geom_miropeats}} function.
 #'
 #' @param offset.alignments Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.
-#' @inheritParams breakPafAlignment
+#' @inheritParams breakPaf
 #' @return A \code{data.frame} of PAF alignments reported as x and y coordinate values.
 #' @author David Porubsky
 #' @export

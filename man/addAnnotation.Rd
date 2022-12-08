@@ -31,13 +31,13 @@ addAnnotation(
 \item{coordinate.space}{A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.}
 
 \item{new.annotation.level}{Set to \code{TRUE} if the annotation ranges should be plotted at a separate level
-defined by 5\% of the y-axis range.}
+defined by 0.05 fraction of the y-axis range.}
 
 \item{offset.annotation}{Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.}
 
 \item{annotation.label}{A \code{character} string to be used as a label to added annotation track.}
 
-\item{y.label.id}{A user defined metadata column id within \code{annot.gr} that for each annotation range contains
+\item{y.label.id}{A user defined metadata column id within `annot.gr` that for each annotation range contains
 corresponding y-axis label.}
 }
 \value{

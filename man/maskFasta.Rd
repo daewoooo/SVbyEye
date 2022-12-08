@@ -19,7 +19,7 @@ maskFasta(
 
 \item{invert}{If set \code{TRUE} ranges defined in 'mask.ranges' will be kept while the rest of the FASTA will be masked.}
 
-\item{mask.character}{A single character to be used for masking \link{default: 'N'}.}
+\item{mask.character}{A single character to be used for masking (Default : 'N').}
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pafAlignmentToBins.R
 \name{pafToBins}
 \alias{pafToBins}
-\title{A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments
+\title{A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments 
 into a set of binned alignments between query and target sequence.}
 \usage{
 pafToBins(paf.table = NULL, binsize = 10000)
@@ -17,7 +17,7 @@ along with CIGAR string defined in 'cg' column.}
 A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 }
 \description{
-A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments
+A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments 
 into a set of binned alignments between query and target sequence.
 }
 \author{

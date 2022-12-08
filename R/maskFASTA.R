@@ -3,7 +3,7 @@
 #' @param fasta.file A path to a FASTA file to be masked.
 #' @param mask.ranges A \code{\link{IRanges-class}} object of coordinates to be masked in input FASTA.
 #' @param invert If set \code{TRUE} ranges defined in 'mask.ranges' will be kept while the rest of the FASTA will be masked.
-#' @param mask.character A single character to be used for masking [default: 'N'].
+#' @param mask.character A single character to be used for masking (Default : 'N').
 #' @inheritParams paf2FASTA
 #' @importFrom Rsamtools scanFa
 #' @importFrom Biostrings replaceAt

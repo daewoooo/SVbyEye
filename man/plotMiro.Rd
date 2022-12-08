@@ -33,7 +33,7 @@ along with CIGAR string defined in 'cg' column.}
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
-to color alignment directionality, \verb{[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]}.}
+to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
 
 \item{outline.alignments}{Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.}
 
@@ -43,7 +43,7 @@ to color alignment directionality, \verb{[default: color.palette <- c('-' = 'cor
 a \code{\link{GRanges-class}} object containing a single genomic region to which PAF alignments will be
 narrowed down.}
 
-\item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') \verb{[default: 'bp']}.}
+\item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') `[default: 'bp']`.}
 }
 \value{
 A \code{ggplot2} object.

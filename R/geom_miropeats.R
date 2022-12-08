@@ -22,10 +22,20 @@
 #' - fill
 #' - size
 #' 
-#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes, etc... As standard for ggplot2.
+#' @inheritParams ggplot2::geom_polygon
+#' @inheritParams ggplot2::stat_identity
+#' 
+#' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes,... As is standard for ggplot2.
+#' @param n The number of points to create for each alignment polygon (Default : `100`).
+#' @param strength The proportion to move the control point along the y-axis
+#' towards the other end of the alignment polygon (Default : `0.5`).
+#' 
 #' @seealso [readPaf()], [paf2coords()]
 #' @author David Porubsky
-#' @export
+#' 
+#' @name geom_miropeats
+#' @rdname geom_miropeats
+#' 
 #' @examples 
 #'## Get PAF to plot
 #'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
@@ -37,18 +47,9 @@
 #'ggplot2::ggplot(coords) +
 #'  geom_miropeats(ggplot2::aes(x, y, group = group, fill = direction), alpha = 0.5)
 #'
-geom_miropeats <- function(mapping = NULL, data = NULL, geom = 'polygon',
-                               stat = 'miropeats', position = 'identity',
-                               n = 100, na.rm = FALSE, strength = 0.5,
-                               show.legend = NA, inherit.aes = TRUE, ...) {
-  ggplot2::layer(
-    data = data, mapping = mapping, stat = stat, geom = geom,
-    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-    params = list(na.rm = na.rm, n = n, strength = strength, ...)
-  )
-}
+NULL
 
-
+#' A ggproto class definition to extend the functionality of ggplot2.
 #' @importFrom ggforce StatBezier
 #' @format NULL
 #' @usage NULL
@@ -84,3 +85,16 @@ StatMiropeats <- ggplot2::ggproto('StatMiropeats', ggplot2::Stat,
                                   required_aes = c('x', 'y', 'group'),
                                   extra_params = c('na.rm', 'n', 'strength')
 )
+
+#' @rdname geom_miropeats
+#' @export
+geom_miropeats <- function(mapping = NULL, data = NULL, geom = 'polygon',
+                           stat = 'miropeats', position = 'identity',
+                           n = 100, na.rm = FALSE, strength = 0.5,
+                           show.legend = NA, inherit.aes = TRUE, ...) {
+  ggplot2::layer(
+    data = data, mapping = mapping, stat = stat, geom = geom,
+    position = position, show.legend = show.legend, inherit.aes = inherit.aes,
+    params = list(na.rm = na.rm, n = n, strength = strength, ...)
+  )
+}

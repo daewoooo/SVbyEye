@@ -10,7 +10,7 @@ readGaf(gaf.file = NULL)
 \item{gaf.file}{A path to a GAF file containing graph alignments.}
 }
 \description{
-This function takes an GAF output file from minigraph and loads the file and
+This function takes an GAF output file from minigraph and loads the file and 
 parse all the alignments.
 }
 \author{

@@ -1,19 +1,19 @@
 #' Add annotation ranges to a SVbyEye plot.
 #'
-#' This function takes a \code{ggplot2} object generated using \code{\link{plotMiro}} function and adds extra annotation on top of query 
+#' This function takes a \code{ggplot2} object generated using \code{\link{plotMiro}} function and adds extra annotation on top of query
 #' or target coordinates. These ranges are specified in 'annot.gr' object and are visualized either as arrowheads or rectangles.
 #'
 #' @param ggplot.obj A \code{ggplot2} object generated using \code{\link{plotMiro}} function.
 #' @param annot.gr A \code{\link{GRanges-class}} object with a set of ranges to be added as extra annotation.
 #' @param shape A user defined shape ranges in 'annot.gr' are visualized, either 'arrowhead' or 'rectangle'.
 #' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.
-#' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels).  
+#' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels).
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.
-#' @param new.annotation.level Set to \code{TRUE} if the annotation ranges should be plotted at a separate level 
-#' defined by 5% of the y-axis range. 
+#' @param new.annotation.level Set to \code{TRUE} if the annotation ranges should be plotted at a separate level
+#' defined by 0.05 fraction of the y-axis range.
 #' @param offset.annotation Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.
 #' @param annotation.label A \code{character} string to be used as a label to added annotation track.
-#' @param y.label.id A user defined metadata column id within `annot.gr` that for each annotation range contains 
+#' @param y.label.id A user defined metadata column id within `annot.gr` that for each annotation range contains
 #' corresponding y-axis label.
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
@@ -71,21 +71,21 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
   gg.data <- ggplot.obj$data
   target.id <- unique(gg.data$seq.name[gg.data$seq.id == 'target'])
   query.id <- unique(gg.data$seq.name[gg.data$seq.id == 'query'])
-  
+
   ## Get x and y-axis limits
   #xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
   ## For x-axis range also consider user defined cartesian coordinates for target region
   xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == 'target'], ggplot.obj$coordinates$limits$x))
   ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
   ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
-  
+
   ## Define the offset value to be 5% of the y axis range
   if (new.annotation.level) {
     offset <- diff(ylim) * 0.05
   } else {
     offset <- 0
-  }  
-  
+  }
+
   ## Get query and target coordinate ranges
   if (coordinate.space == 'query' | coordinate.space == 'target') {
     t.range <- range(gg.data$seq.pos[gg.data$seq.id == 'target'])
@@ -93,8 +93,8 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
     ## Adjust target ranges given the size difference with respect to query ranges
     range.offset <- diff(q.range) - diff(t.range)
     t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
-  }  
-  
+  }
+
   ## Translate query coordinates to target coordinates
   if (coordinate.space == 'query') {
     if (length(annot.gr) > 0) {
@@ -103,9 +103,9 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
       new.end <- SVbyEye::q2t(x = end(annot.gr), q.range = q.range, t.range = t.range)
       new.ranges <- IRanges::IRanges(start = new.start, end = new.end)
       suppressWarnings( IRanges::ranges(annot.gr) <- new.ranges )
-    }  
-  }  
-  
+    }
+  }
+
   ## Get annotation track offset
   if (coordinate.space == 'target') {
     y.offset <- max(ylim) + offset
@@ -116,7 +116,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
   } else {
     stop("Please specify 'coordinate.space' as either 'target', 'query' or 'self' !!!")
   }
-  
+
   if (!is.null(annot.gr) & class(annot.gr) == 'GRanges') {
     ## Restrict annotation ranges to x-limits
     annot.gr <- annot.gr[GenomicRanges::start(annot.gr) >= xlim[1] &  GenomicRanges::end(annot.gr) <= xlim[2]]
@@ -130,9 +130,9 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
           y.offset <- rep(y.offset - c(0, offset), times=ceiling(length(annot.gr) / 2))[1:length(annot.gr)]
         } else if (coordinate.space == 'self') {
           y.offset <- rep(y.offset - c(0, offset), times=ceiling(length(annot.gr) / 2))[1:length(annot.gr)]
-        } 
+        }
       }
-      
+
       ## Prepare data for plotting ##
       ## Convert to data frame object
       annot.df <- as.data.frame(annot.gr)
@@ -148,11 +148,11 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
         } else {
           warning("User defined 'y.label.id' is not a valid metadata column in 'annot.gr', skipping !!!")
           annot.df$y.offset <- y.offset
-        } 
+        }
       } else {
         annot.df$y.offset <- y.offset
-      }  
-      
+      }
+
       ## Define color scale ##
       if (!is.null(fill.by)) {
         if (fill.by %in% colnames(annot.df)) {
@@ -172,8 +172,8 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
                 col.scale <- 'discreteNoLegend'
               } else {
                 col.scale <- 'discrete'
-              }  
-              ## Create default discrete color palette  
+              }
+              ## Create default discrete color palette
             } else {
               if (n.uniq <= 20) {
                 pal <- wesanderson::wes_palette("Zissou1", n.uniq, type = "continuous")
@@ -181,17 +181,17 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
               } else {
                 warning("More than 20 color levels, legend won't be reported!!!")
                 col.scale <- 'discreteNoLegend'
-              }  
-            } 
+              }
+            }
           }
         } else {
           stop("User defined 'fill.by' value is not a valid field in 'annot.gr' !!!")
-        } 
+        }
       } else {
         pal <- 'black'
         col.scale <- 'discreteNoLegend'
-      }  
-      
+      }
+
       ## Add annotation to the ggplot obkect ##
       if (shape == 'arrowhead') {
         ## Make sure field 'strand' is defined
@@ -204,7 +204,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
         } else {
           plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
             geom_arrowhead(data=annot.df, ggplot2::aes(xmin=start, xmax=end, y=y.offset, color=NULL, fill=NULL, strand=strand))
-        }  
+        }
       } else if (shape == 'rectangle') {
         if (!is.null(fill.by)) {
           plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
@@ -212,9 +212,9 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
         } else {
           plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
             geom_roundrect(data=annot.df, ggplot2::aes(xmin=start, xmax=end, y=y.offset + 0.01, color=NULL, fill=NULL), radius=grid::unit(0, "mm"))
-        }  
+        }
       }
-      
+
       ## Add y-label to annotation track if defined
       if (!is.null(annotation.label)) {
         if (nchar(annotation.label) > 0) {
@@ -224,10 +224,15 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
           y.labels <- c(ylabels, annotation.label)
           suppressMessages(
             plt <- plt + ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels)
-          )  
+          )
         }
       }
-      
+
+      ## Expand x-axis
+      suppressMessages(
+        plt <- plt + ggplot2::scale_x_continuous(expand = c(0, 0))
+      )
+
       if (col.scale == 'gradient') {
         plt <- plt + ggplot2::scale_fill_gradientn(colours = pal) + ggplot2::scale_color_gradientn(colours = pal)
       } else if (col.scale == 'discrete') {
@@ -239,7 +244,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
     } else {
       warning("None of the ranges reported in 'annot.gr' falls into the x-axis limits !!!")
       return(ggplot.obj)
-    } 
+    }
   } else {
     return(ggplot.obj)
     warning("Make sure that 'annot.gr' is 'GRanges' class object !!!")
@@ -247,15 +252,15 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
 }
 
 
-#' Flip query annotation ranges 
-#' 
-#' This function takes loaded PAF alignments using \code{\link{readPaf}} function and postprocessed using 
+#' Flip query annotation ranges
+#'
+#' This function takes loaded PAF alignments using \code{\link{readPaf}} function and postprocessed using
 #' \code{\link{flipPaf}} function. In case the PAF alignments were flipped ranges defined in 'query.annot.gr'
 #' will be flipped accordingly to match query coordinates defined in 'paf.table'.
-#' 
+#'
 #' @param query.annot.gr A \code{\link{GRanges-class}} object with a set of ranges in query coordinates. See function
 #' \code{\link{liftRangesToAlignment}} if coordinates need to be lifted from target space.
-#' @inheritParams breakPafAlignment
+#' @inheritParams breakPaf
 #' @return A \code{\link{GRanges-class}} object.
 #' @importFrom GenomicRanges strand makeGRangesFromDataFrame
 #' @importFrom IRanges reflect ranges IRanges
@@ -263,7 +268,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
 #' @importFrom dplyr recode
 #' @author David Porubsky
 #' @export
-#' @examples 
+#' @examples
 #'## Get PAF to process
 #'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
 #'## Read in PAF
@@ -292,13 +297,13 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
-  
+
   ## Process per query name
   paf.table.l <- split(paf.table, paf.table$q.name)
-  query.annot.grl <- split(query.annot.gr, GenomeInfoDb::seqnames(query.annot.gr)) 
+  query.annot.grl <- split(query.annot.gr, GenomeInfoDb::seqnames(query.annot.gr))
   ## Keep only non-empty list elements
   query.annot.grl <- query.annot.grl[lengths(query.annot.grl) > 0]
-  
+
   flipped.annot <- list()
   for (q.name in names(query.annot.grl)) {
     annot.gr <- query.annot.grl[[q.name]]
@@ -313,12 +318,12 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
         )
         ## Flip ranges strand orientation
         GenomicRanges::strand(annot.gr.flipped) <- dplyr::recode(as.character(GenomicRanges::strand(annot.gr.flipped)), '+' = '-', '-' = '+')
-        flipped.annot[[length(flipped.annot) + 1]] <- annot.gr.flipped 
+        flipped.annot[[length(flipped.annot) + 1]] <- annot.gr.flipped
       } else {
-        flipped.annot[[length(flipped.annot) + 1]] <- annot.gr 
+        flipped.annot[[length(flipped.annot) + 1]] <- annot.gr
       }
     }
-  } 
+  }
   flipped.annot.gr <- suppressWarnings( do.call(c, flipped.annot) )
   return(flipped.annot.gr)
 }

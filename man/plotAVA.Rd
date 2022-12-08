@@ -37,7 +37,7 @@ along with CIGAR string defined in 'cg' column.}
 A \code{list} of miropeat style plots.
 }
 \description{
-This function takes PAF output file from minimap2 reporting all-versus-all alignments of multiple FASTA sequences
+This function takes PAF output file from minimap2 reporting all-versus-all alignments of multiple FASTA sequences 
 and visualize the alignments in a miropeat style.
 }
 \examples{

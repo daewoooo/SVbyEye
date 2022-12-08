@@ -17,35 +17,34 @@ geom_arrowhead(
 )
 }
 \arguments{
-\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, }{etc... As standard for ggplot2.}
+\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, ...}{As is standard for ggplot2.}
 
-\item{arrowhead_height}{A \code{grid::unit()} object providing the height of the arrowhead.  \link{Default: 3 mm}.}
+\item{arrowhead_height}{A `grid::unit()` object providing the height of the arrowhead. (Default : `3`mm).}
 }
 \description{
-\code{geom_arrowhead()} draws ranges defined by \code{xmin} and \code{xmax} as triangular polygon.
+`geom_arrowhead()` draws ranges defined by `xmin` and `xmax` as triangular polygon.
 draws genomic ranges as arrowheads, allowing to draw for instance segmental
 duplication maps.
 }
 \details{
-This geom draws triangular polygons as arrowheads between defined start and end coordinates.
+This geom draws triangular polygons as arrowheads between defined start and end coordinates. 
 Intended application of this geom is to visualize genomic coordinates defined by start and end
 position.
 }
 \section{Aesthetics}{
 
-\code{geom_roundrect()} require or can take the following aesthetics
+`geom_roundrect()` require or can take the following aesthetics
 (required aesthetics are in bold):
-\itemize{
-\item \strong{xmin}
-\item \strong{xmax}
-\item \strong{y}
-\item color
-\item linewidth
-\item linetype
-\item alpha
-\item fill
-\item size
-}
+
+- **xmin**
+- **xmax**
+- **y**
+- color
+- linewidth
+- linetype
+- alpha
+- fill
+- size
 }
 
 \examples{

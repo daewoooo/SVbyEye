@@ -32,7 +32,7 @@ paf2FASTA(
 
 \item{report.query.name}{A single query (contig) name/id to be reported as FASTA sequence.}
 
-\item{concatenate.aln}{Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence \link{default: TRUE}.}
+\item{concatenate.aln}{Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence (Default : `TRUE`).}
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 

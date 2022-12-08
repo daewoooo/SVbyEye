@@ -20,7 +20,7 @@ crunchPaf(
 
 \item{min.align.len}{Filter our PAF alignemnt smaller than this size.}
 
-\item{min.selfaln.dist}{Keep alignment pairs with this or larger distance from each other \link{Applied only for FASTA self-alignments}.}
+\item{min.selfaln.dist}{Keep alignment pairs with this or larger distance from each other (Applied only to FASTA self-alignments).}
 
 \item{min.deletion.size}{A minimum size (in base pairs) of a deletion to be retained.}
 
@@ -31,14 +31,12 @@ crunchPaf(
 \item{bin.paf.aln}{Set to \code{TRUE} in order to bin each alignment into bins defined in 'binsize' parameter.}
 
 \item{binsize}{A user defined binsize (in bp) to split each PAF alignment into.}
-
-\item{collapse.overlaps}{Set to \code{TRUE} to merge overlapping pair of alignments with the same relative orientation.}
 }
 \value{
 A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') regions.
 }
 \description{
-This function takes an PAF output file (e.g. minimap2 output) and loads the file and applies
+This function takes an PAF output file (e.g. minimap2 output) and loads the file and applies 
 desired CIGAR operations and filtering steps.
 }
 \author{

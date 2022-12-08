@@ -4,7 +4,7 @@
 #' the alignments given the desired majority strand orientation (Either '+' or '-').
 #' 
 #' @param force Set to \code{TRUE} if query PAF alignments should be flipped.
-#' @inheritParams breakPafAlignment
+#' @inheritParams breakPaf
 #' @inheritParams syncRangesDir
 #' @return A \code{tibble} of PAF alignments flipped based on desired majority strand orientation.
 #' @importFrom tibble is_tibble as_tibble

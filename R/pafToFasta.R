@@ -6,7 +6,7 @@
 #' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
 #' @param report.query.name A single query (contig) name/id to be reported as FASTA sequence.
-#' @param concatenate.aln Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence [default: TRUE].
+#' @param concatenate.aln Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence (Default : `TRUE`).
 #' @param fasta.save A path to a filename where to store final FASTA file.
 #' @param return Set to either 'fasta' or 'index' to return either FASTA in \code{\link{DNAStringSet-class}} object or region index in \code{\link{GRanges-class}} object is returned.
 #' @inheritParams syncRangesDir

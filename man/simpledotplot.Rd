@@ -36,7 +36,7 @@ simpledotplot(
 A \code{ggplot} object.
 }
 \description{
-This function takes alignment coordinates from 'nucmer' or 'minimap2' aligner and
+This function takes alignment coordinates from 'nucmer' or 'minimap2' aligner and 
 construct a simple dot plot.
 }
 \author{

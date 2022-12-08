@@ -18,35 +18,34 @@ geom_roundrect(
 )
 }
 \arguments{
-\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, }{etc... As standard for ggplot2.}
+\item{mapping, data, stat, position, na.rm, show.legend, inherit.aes, ...}{As is standard for ggplot2.}
 
-\item{rect_height}{A \code{grid::unit()} object providing the height of the rectangle.  \link{Default: 3 mm}.}
+\item{rect_height}{A `grid::unit()` object providing the height of the rectangle.  (Default : `3`mm).}
 
-\item{radius}{A \code{grid::unit()} object providing required curvature of rectangle edges. \link{Default: 1 mm}.}
+\item{radius}{A `grid::unit()` object providing required curvature of rectangle edges. (Default : `1`mm).}
 }
 \description{
-\code{geom_roundrect()} draws ranges defined by \code{xmin} and \code{xmax} coordinates with rounded edges.
+`geom_roundrect()` draws ranges defined by `xmin` and `xmax` coordinates with rounded edges.
 }
 \details{
-This geom draws rectangle with round or sharp edges between defined start and end coordinates.
+This geom draws rectangle with round or sharp edges between defined start and end coordinates. 
 Intended application of this geom is to visualize genomic coordinates defined by start and end
 position. Rounded edges will help to observe boundaries between closely positioned genomic ranges.
 }
 \section{Aesthetics}{
 
-\code{geom_roundrect()} require or can take the following aesthetics
+`geom_roundrect()` require or can take the following aesthetics
 (required aesthetics are in bold):
-\itemize{
-\item \strong{xmin}
-\item \strong{xmax}
-\item \strong{y}
-\item color
-\item linewidth
-\item linetype
-\item alpha
-\item fill
-\item size
-}
+
+- **xmin**
+- **xmax**
+- **y**
+- color
+- linewidth
+- linetype
+- alpha
+- fill
+- size
 }
 
 \examples{
