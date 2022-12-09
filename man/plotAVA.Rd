@@ -37,13 +37,13 @@ along with CIGAR string defined in 'cg' column.}
 A \code{list} of miropeat style plots.
 }
 \description{
-This function takes PAF output file from minimap2 reporting all-versus-all alignments of multiple FASTA sequences 
+This function takes PAF output file from minimap2 reporting all-versus-all alignments of multiple FASTA sequences
 and visualize the alignments in a miropeat style.
 }
 \examples{
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test_ava.paf", package="SVbyEye")
-## Read in PAF 
+## Read in PAF
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 ## Make a plot
 ## Color by alignment directionality
@@ -56,7 +56,8 @@ plotAVA(paf.table = paf.table, color.by = 'direction', seqnames.order = seqnames
 ## Outline PAF alignments
 plotAVA(paf.table = paf.table, outline.alignments = TRUE)
 ## Highlight structural variants
-plotAVA(paf.table = paf.table, min.deletion.size=1000, min.insertion.size=1000, highlight.sv='outline')
+plotAVA(paf.table = paf.table, min.deletion.size=1000, min.insertion.size=1000,
+       highlight.sv='outline')
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
 plotAVA(paf.table = paf.table, binsize=10000)
 }

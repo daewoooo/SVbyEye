@@ -1,7 +1,7 @@
 #' Export FASTA sequences from a set of alignments reported in PAF formatted file.
-#' 
+#'
 #' @param paf.file paf.file A path to a PAF file containing alignments to be loaded.
-#' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from. 
+#' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
 #' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
@@ -18,7 +18,7 @@
 #'
 paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=NULL, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
   ## Load BSgenome object
-  if (class(bsgenome) != 'BSgenome') {
+  if (!is(bsgenome, 'BSgenome')) {
     if (is.character(bsgenome)) {
       bsgenome <- tryCatch({
         suppressPackageStartupMessages(library(bsgenome, character.only=TRUE))
@@ -27,13 +27,13 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     }
   }
   ## Check if submitted fasta file is indexed
-  if (!is.null(asm.fasta)) {	
+  if (!is.null(asm.fasta)) {
     asm.fasta.idx <- paste0(asm.fasta, ".fai")
     if (!file.exists(asm.fasta.idx)) {
       fa.idx <- Rsamtools::indexFa(file = asm.fasta)
     }
   }
-  
+
   ## Read in PAF file
   if (file.exists(paf.file)) {
     #message("Loading PAF file: ", paf.file)
@@ -45,12 +45,12 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     #   ## Keep only first 12 columns
     #   paf <- paf[,c(1:12)]
     #   ## Add header
-    #   header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq') 
+    #   header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq')
     #   colnames(paf) <- header
-    # }  
+    # }
   } else {
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
-  }  
+  }
   if (!is.null(paf)) {
     ## Convert query coordinates to GRanges
     paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
@@ -58,7 +58,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     paf.gr$target.gr <- target.gr
     ## Make sure no genomic region starts with zero
     GenomicRanges::start(paf.gr) <- pmax(GenomicRanges::start(paf.gr), 1)
-    
+
     ## If defined process only a certain query name(s)
     if (!is.null(report.query.name)) {
       if (report.query.name %in% as.character(GenomeInfoDb::seqnames(paf.gr))) {
@@ -69,7 +69,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
         warning("User defined 'report.query.name', ", report.query.name, " doesn't exist in submitted paf file!!!")
       }
     }
-    
+
     ## Sync alignment directionality based on preferred majority strand
     paf.grl <- split(paf.gr, seqnames(paf.gr))
     for (i in seq_along(paf.grl)) {
@@ -89,7 +89,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
           gr <- qy.red
           gr$target.gr <- tg.red
           gr$revcomp <- FALSE
-        }  
+        }
       } else {
         gr <- qy.red
         gr$target.gr <- tg.red
@@ -103,7 +103,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     if (!is.null(revcomp)) {
       paf.gr$revcomp <- revcomp
     }
-    
+
     ## Order regions by query position
     #paf.gr <- GenomicRanges::sort(paf.gr, ignore.strand=TRUE)
     ## Order regions by target position
@@ -111,7 +111,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     ## Collapse consecutive alignments coming from the same contig/sequence
     #paf.gr$q.id <- as.character(GenomeInfoDb::seqnames(paf.gr))
     #paf.gr <- primatR::collapseBins(paf.gr, id.field = 3)
-    
+
     ## Extract FASTA sequence
     if (!is.null(bsgenome)) {
       ## Extract FASTA from BSgenome object
@@ -129,18 +129,18 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
         if (length(paf.gr) == 0) {
           stop('None of the PAF ranges present in the submitted FASTA file, likely wrong FASTA file submitted!!!')
         }
-      } 
+      }
       ## Read in sequence for a given range(s)
       gr.seq <- Rsamtools::scanFa(file = fa.file, param = paf.gr, as = "DNAStringSet")
       ## Reverse complement if the strand was switched during setting the majority strand step
       #if (reverseComp) {
       gr.seq[which(paf.gr$revcomp == TRUE)] <- Biostrings::reverseComplement(gr.seq[which(paf.gr$revcomp == TRUE)])
-      #}  
+      #}
       #names(gr.seq) <- as.character(gr)
     } else {
       stop("Please set a 'bsgenome' or 'asm.fasta' parameter!!!")
     }
-    
+
     ## If TRUE report only the contig with the longest alignment
     if (report.longest.aln) {
       gr.seq <- gr.seq[which.max(width(gr.seq))]
@@ -158,8 +158,8 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     } else {
       index.gr <- paf.gr
       gr.seq <- gr.seq
-    } 
-    
+    }
+
     ## Write final FASTA
     if (is.character(fasta.save)) {
       ## Remove comment character from sequence names
@@ -175,8 +175,8 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       return(index.gr)
     } else {
       return(NULL)
-    }  
+    }
   } else {
     return(paf)
-  }  
+  }
 }

@@ -1,7 +1,7 @@
 #' Plot all-versus-all alignments stored in PAf format.
-#' 
-#' This function takes PAF output file from minimap2 reporting all-versus-all alignments of multiple FASTA sequences 
-#' and visualize the alignments in a miropeat style. 
+#'
+#' This function takes PAF output file from minimap2 reporting all-versus-all alignments of multiple FASTA sequences
+#' and visualize the alignments in a miropeat style.
 #'
 #' @param seqnames.order A user defined order sequence names to be plotted from top to the bottom.
 #' @inheritParams readPaf
@@ -16,7 +16,7 @@
 #' @examples
 #'## Get PAF to plot
 #'paf.file <- system.file("extdata", "test_ava.paf", package="SVbyEye")
-#'## Read in PAF 
+#'## Read in PAF
 #'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 #'## Make a plot
 #'## Color by alignment directionality
@@ -29,7 +29,8 @@
 #'## Outline PAF alignments
 #'plotAVA(paf.table = paf.table, outline.alignments = TRUE)
 #'## Highlight structural variants
-#'plotAVA(paf.table = paf.table, min.deletion.size=1000, min.insertion.size=1000, highlight.sv='outline')
+#'plotAVA(paf.table = paf.table, min.deletion.size=1000, min.insertion.size=1000,
+#'        highlight.sv='outline')
 #'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #'plotAVA(paf.table = paf.table, binsize=10000)
 ## Add annotation to self-alignments ##
@@ -47,14 +48,14 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
-  
+
   ## Break PAF at insertion/deletions defined in cigar string
   if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
     if (min.deletion.size > 0 | min.insertion.size > 0) {
       paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
       paf <- paf.l$M
       paf.svs <- paf.l$SVs
-    }  
+    }
   } else {
     paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
@@ -63,34 +64,34 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
       warning("Please specify 'min.deletion.size' and 'min.insertion.size' in order to make parameter 'highlight.sv' to work !!!")
     }
   }
-  ## Store PAF alignments for later addition of 'geom_gene_arrow' 
+  ## Store PAF alignments for later addition of 'geom_gene_arrow'
   paf.copy <- paf
   paf.copy$ID <- 'M'
-  
-  ## Bin PAF alignments 
+
+  ## Bin PAF alignments
   if (!is.null(binsize)) {
     if (binsize > 0) {
       if (binsize < 10) {
         binsize <- 10
         warning('Minimum allowed bin size is 10, forced binsize=10!!!')
-      }  
+      }
       paf <- pafToBins(paf.table = paf, binsize = binsize)
       ## If the PAF alignments are binned only color.by = 'fraction.matches' is allowed
       color.by <- 'identity'
-    } 
+    }
   }
   ## Mark alignments ranges by 'M' (matches)
   paf$ID <- 'M'
-  
+
   ## Add SVs to the alignment table
   if (!is.null(paf.svs)) {
     if (nrow(paf.svs) > 0) {
       paf.svs$ID <- 'INS'
       paf.svs$ID[grep(paf.svs$cg, pattern = 'D', ignore.case = TRUE)] <- 'DEL'
       paf <- dplyr::bind_rows(paf, paf.svs)
-    }  
-  }  
-  
+    }
+  }
+
   ## Rename sequences if named vector defined by a user
   # if (!is.null(seqnames.order)) {
   #   ## Make sure at least two seqnames in user defined list are present in PAF alignments
@@ -134,7 +135,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   #paf <- paf %>% dplyr::arrange(match(paf$q.name, seq.names))
   #paf <- paf[match(paf$q.name, seqnames.order),]
   #paf <- paf[paf$seq.pair %in% desired.pairs,]
-  
+
   ## Flip start-end if strand == '-'
   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
 
@@ -158,7 +159,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
                               'q.name' = paf.sub$t.name, 'q.start' = paf.sub$t.start, 'q.end' = paf.sub$t.end,
                               't.name' = paf.sub$q.name, 't.start' = paf.sub$q.start, 't.end' = paf.sub$q.end,
                               'y1' = paf.sub$y2, 'y2' = paf.sub$y1)
-  }  
+  }
   paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], '___', paf$t.name[flipQT])
 
   ## Translate paf alignments to plotting coordinates ##
@@ -191,11 +192,11 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
                        #direction.flip=direction.flip,
                        seq.pair=seq.pair,
                        stringsAsFactors = FALSE)
-  
+
   ## Get x-axis labels
   y.labels <- unique(coords$seq.name)
   y.breaks <- coords$y[match(y.labels, coords$seq.name)]
-  
+
   ## Color alignments by variable
   if (color.by == 'direction') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
@@ -208,7 +209,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
     coords.l <- getColorScheme(data.table = coords, value.field = 'identity', breaks=c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9))
     coords <- coords.l$data
     colors <- coords.l$colors
-    
+
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
       geom_miropeats(ggplot2::aes(x, y, group = group, fill=.data$col.levels), alpha=0.5) +
       ggplot2::scale_fill_manual(values = colors, drop=FALSE, name='Identity')
@@ -220,15 +221,15 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
       geom_miropeats(ggplot2::aes(x, y, group = group), alpha=0.5, fill='gray')
   }
-  
-  ## Add alignment outlines 
+
+  ## Add alignment outlines
   if (outline.alignments) {
     plt <- plt + geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x, y, group = group), fill=NA, color='gray', size=0.25)
-  } 
-  
+  }
+
   ## Add indels
   if (!is.null(highlight.sv)) {
-    if (nrow(coords[coords$ID != 'M',]) > 0) { 
+    if (nrow(coords[coords$ID != 'M',]) > 0) {
       ## Add SVs to the plot
       if (highlight.sv == 'outline') {
         plt <- plt + ggnewscale::new_scale_color() +
@@ -240,12 +241,12 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
           ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
       } else {
         warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
-      } 
+      }
     } else {
       warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
-    }  
+    }
   }
-  
+
   ## Add x and y scales
   suppressMessages(
     plt <- plt +
@@ -254,7 +255,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
       ggplot2::xlab('Genomic position (bp)') +
       ggplot2::ylab('')
   )
-  
+
   ## Add arrows to mark start and end of each alignment
   # start <- coords$x[c(T, T, F, F)]
   # end <- coords$x[c(F, F, T, T)]
@@ -262,7 +263,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   # group <- coords$group[c(T, T, F, F)]
   # plt.df <- data.frame(start=start, end=end, y=y, group=group)
   # plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
-  # 
+  #
   # plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
   #   gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = start, xmax = end, y = y, color= direction, fill = direction), arrowhead_height = unit(3, 'mm')) +
   #   scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection') +
@@ -272,19 +273,19 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   seq.lines <- data.frame(y.breaks=y.breaks, y.labels=y.labels)
   seq.lines$seq.len <- paf.copy$q.len[match(seq.lines$y.labels, paf.copy$q.name)]
   plt <- plt + ggplot2::geom_segment(data = seq.lines, ggplot2::aes(x=1, xend=.data$seq.len, y=y.breaks, yend=y.breaks), linewidth=1)
-  
+
   ## Set the theme and scales
-  theme_ava <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(), 
+  theme_ava <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
                               panel.grid.minor = ggplot2::element_blank(),
-                              panel.background = ggplot2::element_blank(), 
+                              panel.background = ggplot2::element_blank(),
                               axis.line.x = ggplot2::element_line(linewidth = 1),
                               axis.ticks.x = ggplot2::element_line(linewidth = 1),
                               axis.ticks.length.x = grid::unit(2, 'mm'))
   plt <- plt + theme_ava
-  
+
   ## Return final plot
   return(plt)
-}  
+}
 
 
 
@@ -296,20 +297,20 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 #   } else {
 #     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
 #   }
-#   
+#
 #   ## Flip start-end if strand == '-'
 #   paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
 #   #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
-#   
+#
 #   ## Get subsequent seqnames order
 #   seq.names <- unique(c(paf$q.name, paf$t.name))
 #   #seq.names <- unique(c(rbind(paf$q.name, paf$t.name)))
-#   
+#
 #   ## Get unique alignment ID
 #   if (!'seq.pair' %in% colnames(paf)) {
 #     paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
 #   }
-#   
+#
 #   ## Sync scales between alignments [per region id]
 #   paf.l <- split(paf, paf$seq.pair)
 #   for (i in seq_along(paf.l)) {
@@ -327,9 +328,9 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 #     # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
 #     # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
 #     paf.l[[i]] <- paf.sub
-#   }  
+#   }
 #   paf <- do.call(rbind, paf.l)
-#   
+#
 #   ## Assign level to seq.names
 #   seq.ids <- length(seq.names):1
 #   names(seq.ids) <- seq.names
@@ -337,15 +338,15 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 #   paf$y2 <- seq.ids[match(paf$t.name, names(seq.ids))]
 #   ## Keep subsequent comparisons only
 #   paf <- paf[abs(paf$y2 - paf$y1) == 1,]
-#   
+#
 #   ## Flip query and target for alignments where query comes first
 #   flipQT <- which(paf$y1 > paf$y2)
-#   paf[flipQT,] <- transform(paf[flipQT,], 
+#   paf[flipQT,] <- transform(paf[flipQT,],
 #                             q.name = t.name, q.start = t.start, q.end = t.end,
 #                             t.name = q.name, t.start = q.start, t.end = q.end,
 #                             y1 = y2, y2 = y1)
 #   paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], '___', paf$t.name[flipQT])
-#   
+#
 #   ## Vectorize data transformation ##
 #   #x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
 #   #y <- rep(c(1,2,1,2), times=nrow(paf))
@@ -355,7 +356,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 #   if (offset.alignments) {
 #     offset <- rep(c(0,0,0,0,0,0.05,0,0.05), times=ceiling(nrow(paf) / 2))[1:length(y)]
 #     y <- y + offset
-#   }  
+#   }
 #   group <- rep(1:nrow(paf), each=4)
 #   seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
 #   seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
@@ -367,14 +368,14 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 #   ID <- rep(paf$ID, each=4)
 #   seq.pair <- rep(paf$seq.pair, each=4)
 #   direction <- rep(paf$strand, each=4)
-#   
+#
 #   ## Create final data coordinate data frame
-#   coords <- data.frame(x=x, 
-#                        y=y, 
-#                        group=group, 
+#   coords <- data.frame(x=x,
+#                        y=y,
+#                        group=group,
 #                        seq.pos=seq.pos,
 #                        direction=direction,
-#                        seq.name=seq.name, 
+#                        seq.name=seq.name,
 #                        seq.id=seq.id,
 #                        n.match=n.match,
 #                        aln.len=aln.len,
@@ -384,7 +385,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 #                        #direction.flip=direction.flip,
 #                        seq.pair=seq.pair,
 #                        stringsAsFactors = FALSE)
-#   
+#
 #   return(coords)
 # }
-# 
+#

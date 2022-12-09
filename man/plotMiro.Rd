@@ -53,12 +53,13 @@ This function takes PAF output file from minimap2 alignments, and visualize the 
 in miropeat style.
 }
 \examples{
-## Get PAF to plot
+## Get PAF to plot ##
 paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
-## Read in PAF 
+## Read in PAF
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
-## Optional steps include PAF filtering and flipping query coordinates (see filterPaf and flipPaf function documentation)
-## Make a plot
+## Optional steps include PAF filtering and flipping query coordinates
+## (see filterPaf and flipPaf function documentation)
+## Make a plot ##
 ## Color by alignment directionality
 plotMiro(paf.table = paf.table, color.by = 'direction')
 ## Color by fraction of matched bases in each alignment

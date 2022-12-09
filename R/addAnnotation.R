@@ -44,10 +44,13 @@
 #'query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 #'query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 #'## Add query annotation as rectangle
-#'addAnnotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle', coordinate.space = 'query')
+#'addAnnotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle',
+#'              coordinate.space = 'query')
 #'## Lift target annotation to query and plot
-#'lifted.annot.gr <- liftRangesToAlignment(gr = target.annot.gr, paf.file = paf.file, direction = 'target2query')
-#'addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = 'rectangle', coordinate.space = 'query')
+#'lifted.annot.gr <- liftRangesToAlignment(gr = target.annot.gr, paf.file = paf.file,
+#'                                         direction = 'target2query')
+#'addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = 'rectangle',
+#'              coordinate.space = 'query')
 #'## Add segmental duplication annotation
 #'plt <- plotMiro(paf.table = paf.table)
 #'sd.annot <- system.file("extdata", "test1.sd.annot.RData", package="SVbyEye")
@@ -58,13 +61,17 @@
 #'sd.categ <- factor(sd.categ, levels=c('<95%', '95-98%', '98-99%', '>=99%'))
 #'sd.annot.gr$sd.categ <- sd.categ
 #'## Create a custom color palette
-#'color.palette <- c('<95%' = 'gray72', '95-98%' = 'gray47', '98-99%' = '#cccc00', '>=99%' = '#ff6700')
+#'color.palette <- c('<95%' = 'gray72', '95-98%' = 'gray47', '98-99%' = '#cccc00',
+#'                   '>=99%' = '#ff6700')
 #'## Add annotation to the plot
-#'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target')
+#'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ',
+#'              color.palette = color.palette, coordinate.space = 'target')
 #'## Offset annotation ranges
-#'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target', offset.annotation = TRUE)
+#'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ',
+#'              color.palette = color.palette, coordinate.space = 'target', offset.annotation = TRUE)
 #'## Add label to the added annotation
-#'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target', annotation.label = 'SD')
+#'addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ',
+#'              color.palette = color.palette, coordinate.space = 'target', annotation.label = 'SD')
 #'
 addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fill.by=NULL, color.palette=NULL, coordinate.space='target', new.annotation.level=TRUE, offset.annotation=FALSE, annotation.label=NULL, y.label.id=NULL) {
   ## Get plotted data
@@ -117,7 +124,7 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
     stop("Please specify 'coordinate.space' as either 'target', 'query' or 'self' !!!")
   }
 
-  if (!is.null(annot.gr) & class(annot.gr) == 'GRanges') {
+  if (!is.null(annot.gr) & is(annot.gr, 'GRanges')) {
     ## Restrict annotation ranges to x-limits
     annot.gr <- annot.gr[GenomicRanges::start(annot.gr) >= xlim[1] &  GenomicRanges::end(annot.gr) <= xlim[2]]
     if (length(annot.gr) > 0) {
@@ -228,10 +235,10 @@ addAnnotation <- function(ggplot.obj=NULL, annot.gr=NULL, shape='arrowhead', fil
         }
       }
 
-      ## Expand x-axis
-      suppressMessages(
-        plt <- plt + ggplot2::scale_x_continuous(expand = c(0, 0))
-      )
+      ## Expand x-axis [TODO not sure if needed, if set scondary axis disapears!!!]
+      # suppressMessages(
+      #   plt <- plt + ggplot2::(add = 0)
+      # )
 
       if (col.scale == 'gradient') {
         plt <- plt + ggplot2::scale_fill_gradientn(colours = pal) + ggplot2::scale_color_gradientn(colours = pal)
@@ -286,7 +293,7 @@ flipQueryAnnotation <- function(paf.table, query.annot.gr=NULL) {
   ## Check user input ##
   ## Check if submitted query annotation is GRanges object
   if (!is.null(query.annot.gr)) {
-    if (class(query.annot.gr) != 'GRanges') {
+    if (!is(query.annot.gr, 'GRanges')) {
       stop("Parameter 'query.annot.gr' has to be of 'GenomicRanges' object !!!")
     }
   }

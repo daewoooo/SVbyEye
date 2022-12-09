@@ -65,10 +65,13 @@ query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye"
 query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
 query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 ## Add query annotation as rectangle
-addAnnotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle', coordinate.space = 'query')
+addAnnotation(ggplot.obj = plt, annot.gr = query.annot.gr, shape = 'rectangle',
+             coordinate.space = 'query')
 ## Lift target annotation to query and plot
-lifted.annot.gr <- liftRangesToAlignment(gr = target.annot.gr, paf.file = paf.file, direction = 'target2query')
-addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = 'rectangle', coordinate.space = 'query')
+lifted.annot.gr <- liftRangesToAlignment(gr = target.annot.gr, paf.file = paf.file,
+                                        direction = 'target2query')
+addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = 'rectangle',
+             coordinate.space = 'query')
 ## Add segmental duplication annotation
 plt <- plotMiro(paf.table = paf.table)
 sd.annot <- system.file("extdata", "test1.sd.annot.RData", package="SVbyEye")
@@ -79,13 +82,17 @@ sd.categ <- dplyr::recode(sd.categ, '0' = '<95\%', '1' = '95-98\%', '2' = '98-99
 sd.categ <- factor(sd.categ, levels=c('<95\%', '95-98\%', '98-99\%', '>=99\%'))
 sd.annot.gr$sd.categ <- sd.categ
 ## Create a custom color palette
-color.palette <- c('<95\%' = 'gray72', '95-98\%' = 'gray47', '98-99\%' = '#cccc00', '>=99\%' = '#ff6700')
+color.palette <- c('<95\%' = 'gray72', '95-98\%' = 'gray47', '98-99\%' = '#cccc00',
+                  '>=99\%' = '#ff6700')
 ## Add annotation to the plot
-addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target')
+addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ',
+             color.palette = color.palette, coordinate.space = 'target')
 ## Offset annotation ranges
-addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target', offset.annotation = TRUE)
+addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ',
+             color.palette = color.palette, coordinate.space = 'target', offset.annotation = TRUE)
 ## Add label to the added annotation
-addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ', color.palette = color.palette, coordinate.space = 'target', annotation.label = 'SD')
+addAnnotation(ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = 'sd.categ',
+             color.palette = color.palette, coordinate.space = 'target', annotation.label = 'SD')
 
 }
 \author{

@@ -18,7 +18,7 @@ simpledotplot(
 \arguments{
 \item{coords.file}{A path to a PAF or NUCMER specific file containing alignments to be loaded.}
 
-\item{format}{Is either 'mm2' or 'nucmer' for minimap2 or nucmer specific input 'coords.file', respectively.}
+\item{format}{Is either 'mm2' or 'nucmer' for minimap2 or NUCmer specific input 'coords.file', respectively.}
 
 \item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'point'.}
 
@@ -36,8 +36,22 @@ simpledotplot(
 A \code{ggplot} object.
 }
 \description{
-This function takes alignment coordinates from 'nucmer' or 'minimap2' aligner and 
+This function takes alignment coordinates from 'nucmer' or 'minimap2' aligner and
 construct a simple dot plot.
+}
+\examples{
+## Get NUCmer alignment coordinates to plot
+nucmer.coords <- system.file("extdata", "HG00438_1_nucmer.coords", package="SVbyEye")
+## Make a dotplot
+simpledotplot(coords.file = nucmer.coords, format = 'nucmer')
+## Get minimap2 alignments to plot
+mm2.coords <- system.file("extdata", "HG01071_2_mm2.paf", package="SVbyEye")
+## Make a dotplot
+simpledotplot(coords.file = mm2.coords, format = 'mm2')
+## Highlight desired genomic positions
+highlight.pos <- c(330000, 560000)
+simpledotplot(coords.file = mm2.coords, format = 'mm2', highlight.pos = highlight.pos)
+
 }
 \author{
 David Porubsky

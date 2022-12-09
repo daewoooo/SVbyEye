@@ -35,7 +35,7 @@ syncRangesDir <- function(ranges, majority.strand = '+', strand.only = FALSE) {
     } else {
       return(ranges)
     }
-  } else if (class(ranges) == 'GRanges') {
+  } else if (is(ranges, 'GRanges')) {
     gr <- ranges
     ## Flip directionality based to make sure majority strand covers the most bases
     if (sum(GenomicRanges::width(gr[GenomicRanges::strand(gr) == majority.strand])) > sum(GenomicRanges::width(gr[GenomicRanges::strand(gr) == minority.strand]))) {
@@ -43,7 +43,7 @@ syncRangesDir <- function(ranges, majority.strand = '+', strand.only = FALSE) {
         return(as.character(GenomicRanges::strand(gr)))
       } else {
         return(gr)
-      }  
+      }
     } else {
       gr.new <- gr
       GenomicRanges::strand(gr.new)[GenomicRanges::strand(gr) == majority.strand] <- minority.strand

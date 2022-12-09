@@ -1,5 +1,5 @@
 #' Cut PAF alignments at desired genomic range.
-#' 
+#'
 #' This function takes loaded PAF alignments using \code{\link{readPaf}} function and then subsets
 #' as well as cuts PAF alignments at desired target coordinates.
 #'
@@ -15,7 +15,7 @@
 #' @importFrom methods as
 #' @author David Porubsky
 #' @export
-#' @examples 
+#' @examples
 #'## Get PAF to plot
 #'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
 #'## Read in PAF
@@ -24,7 +24,7 @@
 #'cutPafAlignments(paf.table = paf.table, target.region = 'target.region:19050000-19200000')
 #'
 cutPafAlignments <- function(paf.table, target.region=NULL) {
-  
+
   ptm <- startTimedMessage("[cutPafAlignments] Subsetting&cutting PAF alignments")
   ## Check user input ##
   ## Make sure PAF has at least 12 mandatory fields
@@ -33,12 +33,12 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
-  
+
   ## Filer alignments by target region ##
   if (!is.null(target.region)) {
     if (is.character(target.region)) {
       target.region.gr <- methods::as(target.region, 'GRanges')
-    } else if (class(target.region.gr) == 'GRanges') {
+    } else if (is(target.region.gr, 'GRanges')) {
       target.region.gr <- target.region
     } else {
       message("Parameter 'target.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")
@@ -50,9 +50,9 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
       paf <- paf[S4Vectors::queryHits(hits),]
     } else {
       stop("None of the PAF ranges overlap user defined 'target.region', exiting ...")
-    }  
+    }
   }
-  
+
   ## Check if any paf alignment overlap user defined target region
   if (!all(target.gr == IRanges::subsetByOverlaps(target.gr, target.region.gr, type='within'))) {
     if (nrow(paf) > 1) {
@@ -86,8 +86,8 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
         paf[cut.start.idx,]$n.match <- new.start.n.match
         paf[cut.start.idx,]$aln.len <- new.start.aln.len
         paf[cut.start.idx,]$cg <- new.start.cigar
-      }  
-      
+      }
+
       ## Narrow alignment at desired end position ##
       cut.end.idx <- which(paf$t.end > GenomicRanges::end(target.region.gr))
       if (length(cut.end.idx) != 0) {
@@ -110,14 +110,14 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
         ## Flip query ranges when alignment is in minus orientation
         if (paf.aln$strand == '-') {
           new.query.end <- mirrorRanges(gr = new.query.end, seqlength = paf.aln$q.len)
-        } 
+        }
         ## Update alignment end
         paf[cut.end.idx,]$q.end <- GenomicRanges::start(new.query.end)
         paf[cut.end.idx,]$t.end <- GenomicRanges::start(target.end)
         paf[cut.end.idx,]$n.match <- new.end.n.match
         paf[cut.end.idx,]$aln.len <- new.end.aln.len
         paf[cut.end.idx,]$cg <- new.end.cigar
-      }  
+      }
     } else {
       ## Create PAF alignment object
       paf.aln <- paf
@@ -137,8 +137,8 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
       ## Flip query ranges when alignment is in minus orientation
       if (paf.aln$strand == '-') {
         new.query.coords <- mirrorRanges(gr = new.query.coords, seqlength = paf.aln$q.len)
-      }  
-      
+      }
+
       ## Update PAF coordinates and cigar string ##
       paf$q.start <- GenomicRanges::start(new.query.coords)
       paf$q.end <- GenomicRanges::end(new.query.coords)
@@ -148,7 +148,7 @@ cutPafAlignments <- function(paf.table, target.region=NULL) {
       paf$aln.len <- new.aln.len
       paf$cg <- new.cigar
     }
-  }  
+  }
   stopTimedMessage(ptm)
   return(paf)
 }
