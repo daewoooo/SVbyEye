@@ -12,7 +12,10 @@
 #' @inheritParams syncRangesDir
 #' @importFrom Rsamtools indexFa FaFile scanFa scanFaIndex
 #' @importFrom BSgenome getSeq
-#' @importFrom Biostrings writeXStringSet
+#' @import GenomicRanges
+#' @importFrom Biostrings writeXStringSet reverseComplement DNAStringSet
+#' @importFrom GenomeInfoDb seqnames
+#' @importFrom IRanges subsetByOverlaps
 #' @author David Porubsky
 #' @export
 #'
@@ -111,7 +114,6 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     ## Collapse consecutive alignments coming from the same contig/sequence
     #paf.gr$q.id <- as.character(GenomeInfoDb::seqnames(paf.gr))
     #paf.gr <- primatR::collapseBins(paf.gr, id.field = 3)
-
     ## Extract FASTA sequence
     if (!is.null(bsgenome)) {
       ## Extract FASTA from BSgenome object

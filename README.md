@@ -1,5 +1,8 @@
-<img src="https://github.com/daewoooo/SVbyEye/raw/master/SVbyEye_online.png" />
-=========================================================================
-# SVbyEye
+# SVbyEye <img src="https://github.com/daewoooo/SVbyEye/raw/master/doc/SVbyEye_online.png" align="right"/>
 
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/daewoooo/SVbyEye/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/daewoooo/SVbyEye/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+=========================================================================
 This R package is currently under development and contains unpublished code and data!!!

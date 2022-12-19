@@ -40,8 +40,8 @@ Suggests:
 License: file LICENSE
 Encoding: UTF-8
 LazyData: true
-VignetteBuilder: knitr, rmarkdown
+VignetteBuilder: knitr
 biocViews: Genome, alignment, visualization, ggplot2
 URL: https://github.com/daewoooo/SVbyEye
 BugReports: https://github.com/daewoooo/SVbyEye/issues
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
