@@ -51,11 +51,9 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 
   ## Break PAF at insertion/deletions defined in cigar string
   if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
-    if (min.deletion.size > 0 | min.insertion.size > 0) {
-      paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
-      paf <- paf.l$M
-      paf.svs <- paf.l$SVs
-    }
+    paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+    paf <- paf.l$M
+    paf.svs <- paf.l$SVs
   } else {
     paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL

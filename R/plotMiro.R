@@ -67,14 +67,9 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
 
   ## Break PAF at insertion/deletions defined in cigar string
   if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
-    ## Check user input
-    if (is.null(min.deletion.size)) {min.deletion.size <- 0}
-    if (is.null(min.insertion.size)) {min.insertion.size <- 0}
-    if (min.deletion.size > 0 | min.insertion.size > 0) {
-      paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
-      paf <- paf.l$M
-      paf.svs <- paf.l$SVs
-    }
+    paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+    paf <- paf.l$M
+    paf.svs <- paf.l$SVs
   } else {
     paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
