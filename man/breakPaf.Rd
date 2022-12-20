@@ -2,7 +2,7 @@
 % Please edit documentation in R/breakPafAlignment.R
 \name{breakPaf}
 \alias{breakPaf}
-\title{A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments 
+\title{A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments
 into a set of matching bases between query and target sequence.}
 \usage{
 breakPaf(
@@ -29,7 +29,7 @@ along with CIGAR string defined in 'cg' column.}
 A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 }
 \description{
-A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments 
+A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments
 into a set of matching bases between query and target sequence.
 }
 \author{

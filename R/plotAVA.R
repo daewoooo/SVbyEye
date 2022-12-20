@@ -271,7 +271,9 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
 
   ## Add sequence length lines
   seq.lines <- data.frame(y.breaks=y.breaks, y.labels=y.labels)
-  seq.lines$seq.len <- paf.copy$q.len[match(seq.lines$y.labels, paf.copy$q.name)]
+  seq.lengths <- dplyr::bind_cols('seq.id' = c(paf.copy$q.name, paf.copy$t.name), 'seq.len' = c(paf.copy$q.len, paf.copy$t.len))
+  seq.lengths <- seq.lengths[!duplicated(seq.lengths$seq.id),]
+  seq.lines$seq.len <- seq.lengths$seq.len[match(seq.lines$y.labels, seq.lengths$seq.id)]
   plt <- plt + ggplot2::geom_segment(data = seq.lines, ggplot2::aes(x=1, xend=.data$seq.len, y=y.breaks, yend=y.breaks), linewidth=1)
 
   ## Set the theme and scales

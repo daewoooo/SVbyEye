@@ -9,7 +9,7 @@ Authors@R:
            comment = c(ORCID = "YOUR-ORCID-ID"))
 Description: This R package is currently under development.
 Depends:
-  R (>= 4.2.1)
+  R (>= 4.2.0)
 Imports:
   ggplot2 (>= 3.4.0),
   ggnewscale,

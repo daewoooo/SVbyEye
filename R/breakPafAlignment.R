@@ -5,8 +5,8 @@
 #' along with CIGAR string defined in 'cg' column.
 #' @param report.sv Set to \code{TRUE} if to report also ranges of deleted and inserted bases.
 #' @inheritParams cigar2ranges
-#' @importFrom GenomicRanges GRanges shift reduce width disjoin findOverlaps
-#' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
+#' @import GenomicRanges
+#' @import GenomicAlignments
 #' @importFrom GenomeInfoDb seqlengths seqlevels
 #' @importFrom dplyr tibble bind_rows
 #' @importFrom S4Vectors sapply queryHits
@@ -49,12 +49,12 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     match.gr <- GenomicRanges::GRanges(seqnames = paf.aln$t.name, ranges = t.ranges$match)
   } else {
     match.gr <- GenomicRanges::GRanges()
-  }  
+  }
   if (length(t.ranges$mismatch) > 0) {
     mismatch.gr <- GenomicRanges::GRanges(seqnames = paf.aln$t.name, ranges = t.ranges$mismatch)
   } else {
     mismatch.gr <- GenomicRanges::GRanges()
-  }  
+  }
   if (length(t.ranges$deletion) > 0) {
     ## Get deletion position in reference space
     target.del.gr <- GenomicRanges::GRanges(seqnames = paf.aln$t.name, ranges = t.ranges$deletion)
@@ -69,7 +69,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     del2reduce <- GenomicRanges::GRanges()
     target.del.gr <- GenomicRanges::GRanges()
     query.del.gr <- GenomicRanges::GRanges()
-  } 
+  }
     #del.gr <- GenomicRanges::GRanges(seqnames = paf.aln$t.name, ranges = cg.ranges$deletion)
     ### Filter deletions by size
     #del2reduce <- del.gr[GenomicRanges::width(del.gr) < min.deletion.size]
@@ -77,21 +77,23 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   #} else {
   #  del2reduce <- NULL
   #  del.gr <- NULL
-  #}  
-  if (length(t.ranges$insertion) > 0) { 
+  #}
+  if (length(t.ranges$insertion) > 0) {
     ## Get insertion position in reference space
     target.ins.gr <- GenomicRanges::GRanges(seqnames = paf.aln$t.name, ranges = t.ranges$insertion)
     ## Get insertion ranges in query space
     query.ins.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = q.ranges$insertion)
     ## Filter insertions by size
     ins.mask <- GenomicRanges::width(query.ins.gr) >= min.insertion.size
+    #ins2reduce <- query.ins.gr[!ins.mask]
     target.ins.gr <- target.ins.gr[ins.mask]
     query.ins.gr <- query.ins.gr[ins.mask]
   } else {
+    #ins2reduce <- GenomicRanges::GRanges()
     target.ins.gr <- GenomicRanges::GRanges()
     query.ins.gr <- GenomicRanges::GRanges()
   }
-  
+
   ## Collapse simple mismatches
   if (collapse.mismatches) {
     match.gr <- GenomicRanges::reduce(c(match.gr, mismatch.gr))
@@ -102,7 +104,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   if (!is.null(del2reduce) & length(del2reduce) > 0) {
     match.gr <- GenomicRanges::reduce(c(match.gr, del2reduce))
   }
-  
+
   ## Break alignment [matched bases]
   query.match.gr <- GenomicAlignments::mapToAlignments(match.gr, alignments = alignment)
   GenomeInfoDb::seqlengths(query.match.gr) <- GenomicAlignments::qwidth(alignment)
@@ -117,7 +119,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
       hits <- GenomicRanges::findOverlaps(query.match.gr, query.ins.gr)
       remove.ins <- S4Vectors::queryHits(hits)
   }
-  
+
   ## Convert to target coordinates
   target.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$t.start)
   ## Convert to query coordinates
@@ -126,13 +128,13 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     query.gr <- suppressWarnings( GenomicRanges::shift(query.match.gr, shift = paf.aln$q.start) )
   } else {
     query.gr <- suppressWarnings( GenomicRanges::shift(query.match.gr, shift = paf.aln$q.start) )
-  }  
+  }
 
   # starts <- max(end(query.match.gr)) - cumsum(width(query.match.gr))
   # ends <- starts + width(query.match.gr)
   #test.gr <- GRanges(seqnames = 'test', ranges = IRanges(start=7011, end=7012))
   # GenomicRanges::shift(test.gr, shift = paf.aln$q.start)
-  
+
   # query.aln.widths <- width(query.match.gr)
   # if (paf.aln$strand == '-') {
   #   starts <- cumsum(c(paf.aln$q.end, -query.aln.widths))[-1]
@@ -143,21 +145,31 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
   #   ends <- cumsum(c(paf.aln$q.start, query.aln.widths))[-1]
   #   query.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = IRanges(start = starts, end = ends))
   # }
-  
+
   ## Separate inserted ranges
   if (length(query.ins.gr) > 0) {
     query.ins.gr <- query.gr[remove.ins]
     query.gr <- query.gr[-remove.ins]
   }
-  
+
   ## Adjust ranges start to match initial PAF alignment
   #target.gr <- resize(target.gr, width(target.gr) + 1, fix = 'end')
   #query.gr <- resize(query.gr, width(query.gr) + 1, fix = 'end')
-  
-  ## Subset the cigar string per target region
-  starts <- as.numeric(start(match.gr))
-  ends <- as.numeric(end(match.gr))
-  cigars.region <- S4Vectors::sapply(1:length(starts), function(i) GenomicAlignments::cigarNarrow(cigar = paf.aln$cg, start = starts[i], end = ends[i])[1])
+
+  ## Subset the cigar string per target region ##
+  ## Assign original cg string in case matched ranges are not broken
+  if (length(match.gr) > 1) {
+    starts <- as.numeric(GenomicRanges::start(match.gr))
+    ends <- as.numeric(GenomicRanges::end(match.gr))
+    #cigars.region <- S4Vectors::sapply(1:length(starts), function(i) GenomicAlignments::cigarNarrow(cigar = paf.aln$cg, start = starts[i], end = ends[i])[1])
+    cigars.region <- S4Vectors::sapply(1:length(starts), function(i) tryCatch(
+      {GenomicAlignments::cigarNarrow(cigar = paf.aln$cg, start = starts[i], end = ends[i])[1]}
+      , error = function(e) {return('1=')}
+        )
+      )
+  } else {
+    cigars.region <- paf.aln$cg
+  }
   ## Get alignment length from regional cigars
   aln.len <- S4Vectors::sapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg)[[1]]), USE.NAMES = FALSE)
   ## Get matched bases from regional cigars
@@ -176,8 +188,8 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
                                   aln.len=aln.len,
                                   mapq=paf.aln$mapq,
                                   cg=cigars.region)
-  
-  
+
+
   ## Report SV regions
   sv.paf.aln <- NULL
   if (report.sv) {
@@ -203,7 +215,7 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
                                     mapq=paf.aln$mapq,
                                     cg=ins.cg)
       sv.paf.aln[[length(sv.paf.aln) + 1]] <- ins.paf.aln
-    } 
+    }
     ## Report deletions
     if (length(target.del.gr) > 0) {
       ## Convert to query or target coordinates
@@ -213,9 +225,9 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
       if (paf.aln$strand == '-') {
         query.del.gr <- mirrorRanges(gr = query.del.gr, seqlength = seqlengths(query.match.gr))
         suppressWarnings( query.del.gr <- GenomicRanges::shift(query.del.gr[,0], shift = paf.aln$q.start) )
-      } else {  
+      } else {
         suppressWarnings( query.del.gr <- GenomicRanges::shift(query.del.gr, shift = paf.aln$q.start) )
-      }  
+      }
       ## Create deletion ID
       del.cg <- paste0(width(target.del.gr) - width(query.del.gr), 'D')
       ## Create paf alignment
@@ -236,20 +248,20 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
     }
     if (length(sv.paf.aln) > 0) {
       sv.paf.aln <- dplyr::bind_rows(sv.paf.aln)
-    }  
+    }
   } else {
     sv.paf.aln <- NULL
-  }  
-  
+  }
+
   ## Return broken paf alignments
   if (report.sv) {
     return(list('M' = match.paf.aln, 'SVs' = sv.paf.aln))
   } else {
     return(list('M' = match.paf.aln, 'SVs' = NULL))
-  }  
+  }
 }
 
-#' A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments 
+#' A wrapper function for \code{\link{breakPafAlignment}} expanding multiple PAF alignments
 #' into a set of matching bases between query and target sequence.
 #'
 #' @param paf.table A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
@@ -262,32 +274,32 @@ breakPafAlignment <- function(paf.aln=NULL, min.deletion.size=50, min.insertion.
 #' @export
 #'
 breakPaf <- function(paf.table=NULL, min.deletion.size=50, min.insertion.size=50, collapse.mismatches=TRUE, report.sv=TRUE) {
-  
+
   ptm <- startTimedMessage("[breakPaf] Breaking PAF alignments at indels")
   ## Extract matching bases for each PAF record
   matches <- list()
   svs <- list()
   for (i in 1:nrow(paf.table)) {
     paf.aln <- paf.table[i,]
-    paf.aln.exp <- breakPafAlignment(paf.aln = paf.aln, 
-                      min.deletion.size = min.deletion.size, 
-                      min.insertion.size = min.insertion.size, 
-                      collapse.mismatches = collapse.mismatches, 
+    paf.aln.exp <- breakPafAlignment(paf.aln = paf.aln,
+                      min.deletion.size = min.deletion.size,
+                      min.insertion.size = min.insertion.size,
+                      collapse.mismatches = collapse.mismatches,
                       report.sv = report.sv)
     paf.aln.exp$M$aln.id <- i
     matches[[i]] <- paf.aln.exp$M
     if (!is.null(paf.aln.exp$SVs)) {
       paf.aln.exp$SVs$aln.id <- i
       svs[[length(svs) + 1]] <- paf.aln.exp$SVs
-    }  
+    }
   }
-  
+
   stopTimedMessage(ptm)
   ## Return broken paf alignments
   if (report.sv) {
     return(list('M' = dplyr::bind_rows(matches), 'SVs' = dplyr::bind_rows(svs)))
   } else {
     return(list('M' = dplyr::bind_rows(matches), 'SVs' = NULL))
-  }  
+  }
 }
 
