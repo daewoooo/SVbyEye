@@ -1,4 +1,4 @@
-#' Make sure that directionality of set of ranges reflect desired majority strand
+#' Make sure that directionality of set of ranges reflect desired majority strand.
 #'
 #' @param ranges A \code{\link{GRanges}} object.
 #' @param majority.strand A desired majority strand directionality to be reported.
@@ -37,7 +37,7 @@ syncRangesDir <- function(ranges, majority.strand = '+', strand.only = FALSE) {
     }
   } else if (is(ranges, 'GRanges')) {
     gr <- ranges
-    ## Flip directionality based to make sure majority strand covers the most bases
+    ## Flip directionality to make sure majority strand covers the most bases
     if (sum(GenomicRanges::width(gr[GenomicRanges::strand(gr) == majority.strand])) > sum(GenomicRanges::width(gr[GenomicRanges::strand(gr) == minority.strand]))) {
       if (strand.only) {
         return(as.character(GenomicRanges::strand(gr)))

@@ -26,6 +26,17 @@ maskFasta(
 \description{
 Mask FASTA sequence at defined regions.
 }
+\examples{
+## FASTA sequence to mask
+fasta.file <- system.file("extdata", "test4_query.fasta", package="SVbyEye")
+## Define ranges to mask
+mask.ranges <- IRanges::IRanges(start=c(11, 1981), end=c(20, 1990))
+## Mask FASTA sequence at defined ranges
+maskFasta(fasta.file = fasta.file, mask.ranges = mask.ranges)
+## Mask FASTA sequence except of defined ranges
+maskFasta(fasta.file = fasta.file, mask.ranges = mask.ranges, invert = TRUE)
+
+}
 \author{
 David Porubsky
 }

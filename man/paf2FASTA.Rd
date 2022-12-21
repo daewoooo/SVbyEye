@@ -6,6 +6,7 @@
 \usage{
 paf2FASTA(
   paf.file,
+  alignment.space = "query",
   bsgenome = NULL,
   asm.fasta = NULL,
   majority.strand = "+",
@@ -20,13 +21,15 @@ paf2FASTA(
 \arguments{
 \item{paf.file}{paf.file A path to a PAF file containing alignments to be loaded.}
 
+\item{alignment.space}{What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).}
+
 \item{bsgenome}{A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.}
 
 \item{asm.fasta}{An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.}
 
 \item{majority.strand}{A desired majority strand directionality to be reported.}
 
-\item{revcomp}{If set to \code{TRUE} FASTA sequence will be reverse complemented.}
+\item{revcomp}{If set to \code{TRUE} FASTA sequence will be reverse complemented regardless of value defined in `majority.strand`.}
 
 \item{report.longest.aln}{If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.}
 
@@ -40,6 +43,20 @@ paf2FASTA(
 }
 \description{
 Export FASTA sequences from a set of alignments reported in PAF formatted file.
+}
+\examples{
+## Get PAF to plot ##
+paf.file <- system.file("extdata", "test4.paf", package="SVbyEye")
+## Get FASTA using query alignment coordinates ##
+## Define assembly FASTA to get the sequence from
+asm.fasta <- system.file("extdata", "test4_query.fasta", package="SVbyEye")
+paf2FASTA(paf.file = paf.file, alignment.space = 'query', asm.fasta = asm.fasta)
+\dontrun{
+## Get FASTA using target alignment coordinates ##
+## Define BSgenome object to get the sequence from
+library(BSgenome.Hsapiens.UCSC.hg38)
+paf2FASTA(paf.file = paf.file, alignment.space = 'target', bsgenome = BSgenome.Hsapiens.UCSC.hg38)
+}
 }
 \author{
 David Porubsky

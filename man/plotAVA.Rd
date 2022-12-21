@@ -12,6 +12,7 @@ plotAVA(
   highlight.sv = NULL,
   binsize = NULL,
   color.by = "direction",
+  color.palette = NULL,
   outline.alignments = FALSE
 )
 }
@@ -30,6 +31,9 @@ along with CIGAR string defined in 'cg' column.}
 \item{binsize}{A size of a bin in base pairs to split a PAF alignment into.}
 
 \item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
+
+\item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
+to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
 
 \item{outline.alignments}{Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.}
 }
