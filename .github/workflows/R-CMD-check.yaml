@@ -27,12 +27,13 @@ jobs:
           extra-packages: any::rcmdcheck, any::XML
           needs: check
 
-      - uses: r-lib/actions/setup-tinytex@v2
-      - run: tlmgr --version
-
-      - name: Install additional LaTeX packages
+      - name: Install latex
+      - uses: r-lib/actions/setup-tinytex@v2 
+        env:
+          # install full prebuilt version
+          TINYTEX_INSTALLER: TinyTeX
+          
+      - name: Install additional LaTeX packages (non-Windows)
+        if: inputs.runner_os != 'Windows'
         run: |
-            tlmgr install titlesec
-            tlmgr list --only-installed
-  
-      - uses: r-lib/actions/check-r-package@v2
+          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption
