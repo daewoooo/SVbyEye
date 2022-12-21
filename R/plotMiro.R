@@ -59,6 +59,13 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
+  ## Make sure submitted paf.table contains single query and target sequence id
+  if (length(unique(paf.table$q.name)) > 1) {
+    stop('Currently, function [plotMiro] does not support visualization of more than one query sequence id !!!')
+  }
+  if (length(unique(paf.table$t.name)) > 1) {
+    stop('Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!')
+  }
 
   ## Subset/cut PAF alignments to user defined target region
   if (!is.null(target.region)) {

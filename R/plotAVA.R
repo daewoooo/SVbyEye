@@ -10,7 +10,9 @@
 #' @import ggplot2
 #' @importFrom grid unit
 #' @importFrom scales comma
-#' @importFrom dplyr bind_rows
+#' @importFrom dplyr bind_rows group_by summarise arrange
+#' @importFrom S4Vectors sapply
+#' @importFrom GenomicAlignments explodeCigarOpLengths
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -39,7 +41,7 @@
 # annot.gr <- get(load(annot.file))
 # addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
 
-plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', outline.alignments=FALSE) {
+plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, color.by='direction', color.palette=NULL, outline.alignments=FALSE) {
   ## Check user input
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -118,8 +120,9 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
   if (is.null(seq.ord)) {
     ## Order alignments based on the number of mismatches
-    #paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(n.nm = sum(NM)) %>% dplyr::arrange(n.nm)
-    paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(identity =  sum(n.match) / sum(aln.len)) %>% dplyr::arrange(identity)
+    paf$NM <- S4Vectors::sapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('X'))[[1]]), USE.NAMES = FALSE)
+    paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(n.nm = sum(.data$NM)) %>% dplyr::arrange(.data$n.nm)
+    #paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(identity =  sum(n.match) / sum(aln.len)) %>% dplyr::arrange(identity)
     paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, '__'))
     ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
     seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
@@ -195,11 +198,23 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   y.labels <- unique(coords$seq.name)
   y.breaks <- coords$y[match(y.labels, coords$seq.name)]
 
-  ## Color alignments by variable
+  ## Define color palette
+  if (!is.null(color.palette)) {
+    if (all(c('+', '-') %in% names(color.palette))) {
+      pal <- color.palette
+    } else {
+      pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+      warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
+    }
+  } else {
+    pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+  }
+
+  ## Plot alignments and color by direction or identity
   if (color.by == 'direction') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
       geom_miropeats(ggplot2::aes(x, y, group = group, fill=direction), alpha=0.5) +
-      ggplot2::scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'), name='Alignment\ndirection')
+      ggplot2::scale_fill_manual(values = pal, name='Alignment\ndirection')
   } else if (color.by == 'identity') {
     coords$identity <- (coords$n.match / coords$aln.len) * 100
     coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
