@@ -29,12 +29,10 @@ jobs:
 
       - uses: r-lib/actions/check-r-package@v2
 
-    steps:
-        - uses: actions/checkout@v3
-        - uses: r-lib/actions/setup-tinytex@v2
-        - run: tlmgr --version
+      - uses: r-lib/actions/setup-tinytex@v2
+      - run: tlmgr --version
 
-        - name: Install additional LaTeX packages
+      - name: Install additional LaTeX packages
         run: |
             tlmgr install titlesec
             tlmgr list --only-installed
