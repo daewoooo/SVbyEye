@@ -1,9 +1,10 @@
 #' Export FASTA sequences from a set of alignments reported in PAF formatted file.
 #'
 #' @param paf.file paf.file A path to a PAF file containing alignments to be loaded.
+#' @param alignment.space What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).
 #' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
-#' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented.
+#' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented regardless of value defined in `majority.strand`.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
 #' @param report.query.name A single query (contig) name/id to be reported as FASTA sequence.
 #' @param concatenate.aln Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence (Default : `TRUE`).
@@ -18,8 +19,20 @@
 #' @importFrom IRanges subsetByOverlaps
 #' @author David Porubsky
 #' @export
-#'
-paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=NULL, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
+#' @examples
+#'## Get PAF to plot ##
+#'paf.file <- system.file("extdata", "test4.paf", package="SVbyEye")
+#'## Get FASTA using query alignment coordinates ##
+#'## Define assembly FASTA to get the sequence from
+#'asm.fasta <- system.file("extdata", "test4_query.fasta", package="SVbyEye")
+#'paf2FASTA(paf.file = paf.file, alignment.space = 'query', asm.fasta = asm.fasta)
+#'\dontrun{
+#'## Get FASTA using target alignment coordinates ##
+#'## Define BSgenome object to get the sequence from
+#'library(BSgenome.Hsapiens.UCSC.hg38)
+#'paf2FASTA(paf.file = paf.file, alignment.space = 'target', bsgenome = BSgenome.Hsapiens.UCSC.hg38)
+#'}
+paf2FASTA <- function(paf.file, alignment.space='query', bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=NULL, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
   ## Load BSgenome object
   if (!is(bsgenome, 'BSgenome')) {
     if (is.character(bsgenome)) {
@@ -55,10 +68,15 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
   }
   if (!is.null(paf)) {
-    ## Convert query coordinates to GRanges
-    paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
-    target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end', strand='*')
-    paf.gr$target.gr <- target.gr
+    ## Convert query or target coordinates to GRanges
+    if (alignment.space == 'query') {
+      paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 'q.name', start.field = 'q.start', end.field = 'q.end')
+    } else {
+      paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end')
+    }
+    #target.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = 't.name', start.field = 't.start', end.field = 't.end', strand='*')
+    #paf.gr$target.gr <- target.gr
+
     ## Make sure no genomic region starts with zero
     GenomicRanges::start(paf.gr) <- pmax(GenomicRanges::start(paf.gr), 1)
 
@@ -78,24 +96,22 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
     for (i in seq_along(paf.grl)) {
       gr <- paf.grl[[i]]
       qy.red <- range(gr, ignore.strand=TRUE)
-      tg.red <- range(gr$target.gr, ignore.strand=TRUE)
+      #tg.red <- range(gr$target.gr, ignore.strand=TRUE)
       if (majority.strand %in% c('+', '-')) {
         new.strand <- syncRangesDir(ranges = gr, majority.strand = majority.strand, strand.only = TRUE)
         if (all(new.strand != GenomicRanges::strand(gr))) {
           GenomicRanges::strand(gr) <- new.strand
           gr <- qy.red
-          gr$target.gr <- tg.red
+          #gr$target.gr <- tg.red
           gr$revcomp <- TRUE
-          #reverseComp <- TRUE
         } else {
-          #reverseComp <- FALSE
           gr <- qy.red
-          gr$target.gr <- tg.red
+          #gr$target.gr <- tg.red
           gr$revcomp <- FALSE
         }
       } else {
         gr <- qy.red
-        gr$target.gr <- tg.red
+        #gr$target.gr <- tg.red
         gr$revcomp <- FALSE
         warning("Parameter 'majority.strand' can only takes values '+' or '-'!!!")
       }
@@ -107,15 +123,25 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       paf.gr$revcomp <- revcomp
     }
 
-    ## Order regions by query position
-    #paf.gr <- GenomicRanges::sort(paf.gr, ignore.strand=TRUE)
+    ## Order regions by position
+    paf.gr <- GenomicRanges::sort(paf.gr, ignore.strand=TRUE)
     ## Order regions by target position
-    paf.gr <- paf.gr[GenomicRanges::order(paf.gr$target.gr)]
+    #paf.gr <- paf.gr[GenomicRanges::order(paf.gr$target.gr)]
+
     ## Collapse consecutive alignments coming from the same contig/sequence
     #paf.gr$q.id <- as.character(GenomeInfoDb::seqnames(paf.gr))
     #paf.gr <- primatR::collapseBins(paf.gr, id.field = 3)
+
     ## Extract FASTA sequence
     if (!is.null(bsgenome)) {
+      ## Make sure all sequence ranges are present in defined BSgenome object
+      if (!all(as.character(GenomeInfoDb::seqnames(paf.gr)) %in% as.character(GenomeInfoDb::seqnames(bsgenome)))) {
+        warning('Not all PAF ranges are present in the submitted FASTA file, subsetting !!!')
+        paf.gr <- suppressWarnings( IRanges::subsetByOverlaps(paf.gr, as(seqinfo(bsgenome), 'GRanges')) )
+        if (length(paf.gr) == 0) {
+          stop('None of the PAF ranges present in the submitted FASTA file, likely wrong FASTA file submitted!!!')
+        }
+      }
       ## Extract FASTA from BSgenome object
       gr.seq <- BSgenome::getSeq(bsgenome, paf.gr)
       names(gr.seq) <- as.character(paf.gr)
@@ -125,7 +151,7 @@ paf2FASTA <- function(paf.file, bsgenome=NULL, asm.fasta=NULL, majority.strand='
       ## Remove sequences not present in the FASTA index
       fa.idx <- Rsamtools::scanFaIndex(fa.file)
       ## Make sure all sequence ranges are present in submitted FASTA sequences
-      if(!all(as.character(GenomeInfoDb::seqnames(paf.gr)) %in% as.character(GenomeInfoDb::seqnames(fa.idx)))) {
+      if (!all(as.character(GenomeInfoDb::seqnames(paf.gr)) %in% as.character(GenomeInfoDb::seqnames(fa.idx)))) {
         warning('Not all PAF ranges are present in the submitted FASTA file, subsetting !!!')
         paf.gr <- suppressWarnings( IRanges::subsetByOverlaps(paf.gr, fa.idx) )
         if (length(paf.gr) == 0) {
