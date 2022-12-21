@@ -28,7 +28,7 @@ jobs:
           needs: check
 
       - name: Install latex
-      - uses: r-lib/actions/setup-tinytex@v2 
+        uses: r-lib/actions/setup-tinytex@v2 
         env:
           # install full prebuilt version
           TINYTEX_INSTALLER: TinyTeX
