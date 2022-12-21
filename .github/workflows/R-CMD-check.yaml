@@ -35,5 +35,5 @@ jobs:
           
       - name: Install additional LaTeX packages (non-Windows)
         if: inputs.runner_os != 'Windows'
-        run: |
-          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption
+        - run: |
+            tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption
