@@ -39,3 +39,5 @@ jobs:
           tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools 
           tlmgr list --only-installed
           shell: bash {0}
+      
+      - uses: r-lib/actions/check-r-package@v2
