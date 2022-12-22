@@ -11,6 +11,13 @@
 #' @return  A \code{tibble} object storing binned PAF alignments.
 #' @author David Porubsky
 #' @export
+#' @examples
+#'## Get PAF to bin ##
+#'paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'## Split a single PAF alignment into user defined bins
+#'pafToBins(paf.table = paf.table[1,], binsize = 100)
 #'
 pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
   ## Get target and query ranges
@@ -30,7 +37,7 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
     query.bins.gr <- GenomicAlignments::mapToAlignments(bins.gr, alignments = alignment)
     GenomeInfoDb::seqlengths(query.bins.gr) <- GenomicAlignments::qwidth(alignment)
     GenomeInfoDb::seqlevels(query.bins.gr) <- paf.aln$q.name
-    
+
     ## Convert to target coordinates
     target.bins.gr <- suppressWarnings( GenomicRanges::shift(bins.gr, shift = paf.aln$t.start - 1) )
     ## Convert to query coordinates
@@ -39,8 +46,8 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
       query.bins.gr <- suppressWarnings( GenomicRanges::shift(query.bins.gr, shift = paf.aln$q.start) )
     } else {
       query.bins.gr <- suppressWarnings( GenomicRanges::shift(query.bins.gr, shift = paf.aln$q.start) )
-    }  
-    
+    }
+
     ## Subset the cigar string per target region
     starts <- as.numeric(GenomicRanges::start(bins.gr))
     ends <- as.numeric(GenomicRanges::end(bins.gr))
@@ -74,11 +81,11 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
     return(binned.paf.aln)
   } else {
     return(paf.aln)
-  }  
+  }
 }
 
 
-#' A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments 
+#' A wrapper function for \code{\link{pafAlignmentToBins}} binning multiple PAF alignments
 #' into a set of binned alignments between query and target sequence.
 #'
 #' @inheritParams breakPaf
@@ -87,9 +94,16 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
 #' @return A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 #' @author David Porubsky
 #' @export
+#' @examples
+#'## Get PAF to bin ##
+#'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'## Split multiple PAF alignments into user defined bins
+#'pafToBins(paf.table = paf.table, binsize = 10000)
 #'
 pafToBins <- function(paf.table=NULL, binsize=10000) {
-  
+
   ptm <- startTimedMessage(paste0("[pafToBins] Binning PAF alignments, binsize=", binsize, "bp"))
   ## Split each PAF record into user defined bins
   binned <- list()
@@ -99,7 +113,7 @@ pafToBins <- function(paf.table=NULL, binsize=10000) {
     paf.aln.binned$aln.id <- i
     binned[[i]] <- paf.aln.binned
   }
-  
+
   stopTimedMessage(ptm)
   ## Return binned paf alignments
   return(dplyr::bind_rows(binned))
