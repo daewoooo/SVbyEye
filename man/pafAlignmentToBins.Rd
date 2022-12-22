@@ -20,6 +20,15 @@ A \code{tibble} object storing binned PAF alignments.
 Function to break PAF alignment into matching bases between query and target sequence.
 In addition, locations of inserted bases in query and target sequence can be reported as well.
 }
+\examples{
+## Get PAF to bin ##
+paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+## Split a single PAF alignment into user defined bins
+pafToBins(paf.table = paf.table[1,], binsize = 100)
+
+}
 \author{
 David Porubsky
 }

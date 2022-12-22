@@ -18,11 +18,11 @@
 #'## Define ranges to mask
 #'mask.ranges <- IRanges::IRanges(start=c(11, 1981), end=c(20, 1990))
 #'## Mask FASTA sequence at defined ranges
-#'maskFasta(fasta.file = fasta.file, mask.ranges = mask.ranges)
+#'maskFASTA(fasta.file = fasta.file, mask.ranges = mask.ranges)
 #'## Mask FASTA sequence except of defined ranges
-#'maskFasta(fasta.file = fasta.file, mask.ranges = mask.ranges, invert = TRUE)
+#'maskFASTA(fasta.file = fasta.file, mask.ranges = mask.ranges, invert = TRUE)
 #'
-maskFasta <- function(fasta.file, mask.ranges=NULL, invert=FALSE, mask.character='N', fasta.save=NULL) {
+maskFASTA <- function(fasta.file, mask.ranges=NULL, invert=FALSE, mask.character='N', fasta.save=NULL) {
   if (file.exists(fasta.file)) {
     ## Read in FASTA sequence
     seq <- Rsamtools::scanFa(file = fasta.file, as = "DNAStringSet")

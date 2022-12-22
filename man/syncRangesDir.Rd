@@ -2,7 +2,7 @@
 % Please edit documentation in R/syncRangesDir.R
 \name{syncRangesDir}
 \alias{syncRangesDir}
-\title{Make sure that directionality of set of ranges reflect desired majority strand}
+\title{Make sure that directionality of set of ranges reflect desired majority strand.}
 \usage{
 syncRangesDir(ranges, majority.strand = "+", strand.only = FALSE)
 }
@@ -14,7 +14,7 @@ syncRangesDir(ranges, majority.strand = "+", strand.only = FALSE)
 \item{strand.only}{If set to \code{TRUE} simple character string of strand directionality ('+', '-') is reported.}
 }
 \description{
-Make sure that directionality of set of ranges reflect desired majority strand
+Make sure that directionality of set of ranges reflect desired majority strand.
 }
 \author{
 David Porubsky
