@@ -5,7 +5,7 @@
 \title{Export FASTA sequences from a set of alignments reported in PAF formatted file.}
 \usage{
 paf2FASTA(
-  paf.file,
+  paf.table,
   alignment.space = "query",
   bsgenome = NULL,
   asm.fasta = NULL,
@@ -19,7 +19,8 @@ paf2FASTA(
 )
 }
 \arguments{
-\item{paf.file}{paf.file A path to a PAF file containing alignments to be loaded.}
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
 
 \item{alignment.space}{What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).}
 
@@ -45,17 +46,19 @@ paf2FASTA(
 Export FASTA sequences from a set of alignments reported in PAF formatted file.
 }
 \examples{
-## Get PAF to plot ##
+## Get PAF to process ##
 paf.file <- system.file("extdata", "test4.paf", package="SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 ## Get FASTA using query alignment coordinates ##
 ## Define assembly FASTA to get the sequence from
 asm.fasta <- system.file("extdata", "test4_query.fasta", package="SVbyEye")
-paf2FASTA(paf.file = paf.file, alignment.space = 'query', asm.fasta = asm.fasta)
+paf2FASTA(paf.table = paf.table, alignment.space = 'query', asm.fasta = asm.fasta)
 \dontrun{
 ## Get FASTA using target alignment coordinates ##
 ## Define BSgenome object to get the sequence from
 library(BSgenome.Hsapiens.UCSC.hg38)
-paf2FASTA(paf.file = paf.file, alignment.space = 'target', bsgenome = BSgenome.Hsapiens.UCSC.hg38)
+paf2FASTA(paf.table = paf.table, alignment.space = 'target', bsgenome = BSgenome.Hsapiens.UCSC.hg38)
 }
 }
 \author{

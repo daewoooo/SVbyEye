@@ -1,6 +1,5 @@
 #' Export FASTA sequences from a set of alignments reported in PAF formatted file.
 #'
-#' @param paf.file paf.file A path to a PAF file containing alignments to be loaded.
 #' @param alignment.space What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).
 #' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
@@ -10,6 +9,7 @@
 #' @param concatenate.aln Set to \code{TRUE} if multiple aligned contigs should be concatenated by 100 N's in to a single FASTA sequence (Default : `TRUE`).
 #' @param fasta.save A path to a filename where to store final FASTA file.
 #' @param return Set to either 'fasta' or 'index' to return either FASTA in \code{\link{DNAStringSet-class}} object or region index in \code{\link{GRanges-class}} object is returned.
+#' @inheritParams breakPaf
 #' @inheritParams syncRangesDir
 #' @importFrom Rsamtools indexFa FaFile scanFa scanFaIndex
 #' @importFrom BSgenome getSeq
@@ -20,19 +20,29 @@
 #' @author David Porubsky
 #' @export
 #' @examples
-#'## Get PAF to plot ##
+#'## Get PAF to process ##
 #'paf.file <- system.file("extdata", "test4.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
 #'## Get FASTA using query alignment coordinates ##
 #'## Define assembly FASTA to get the sequence from
 #'asm.fasta <- system.file("extdata", "test4_query.fasta", package="SVbyEye")
-#'paf2FASTA(paf.file = paf.file, alignment.space = 'query', asm.fasta = asm.fasta)
+#'paf2FASTA(paf.table = paf.table, alignment.space = 'query', asm.fasta = asm.fasta)
 #'\dontrun{
 #'## Get FASTA using target alignment coordinates ##
 #'## Define BSgenome object to get the sequence from
 #'library(BSgenome.Hsapiens.UCSC.hg38)
-#'paf2FASTA(paf.file = paf.file, alignment.space = 'target', bsgenome = BSgenome.Hsapiens.UCSC.hg38)
+#'paf2FASTA(paf.table = paf.table, alignment.space = 'target', bsgenome = BSgenome.Hsapiens.UCSC.hg38)
 #'}
-paf2FASTA <- function(paf.file, alignment.space='query', bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=NULL, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
+paf2FASTA <- function(paf.table, alignment.space='query', bsgenome=NULL, asm.fasta=NULL, majority.strand='+', revcomp=NULL, report.longest.aln=FALSE, report.query.name=NULL, concatenate.aln=TRUE, fasta.save=NULL, return='fasta') {
+  ## Check user input ##
+  ## Make sure submitted paf.table has at least 12 mandatory fields
+  if (ncol(paf.table) >= 12) {
+    paf <- paf.table
+    paf$direction.flip <- FALSE
+  } else {
+    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
+  }
   ## Load BSgenome object
   if (!is(bsgenome, 'BSgenome')) {
     if (is.character(bsgenome)) {
@@ -50,23 +60,6 @@ paf2FASTA <- function(paf.file, alignment.space='query', bsgenome=NULL, asm.fast
     }
   }
 
-  ## Read in PAF file
-  if (file.exists(paf.file)) {
-    #message("Loading PAF file: ", paf.file)
-    paf <- tryCatch(
-      #utils::read.table(paf.file, stringsAsFactors = FALSE, comment.char = '&', fill = TRUE), error = function(e) NULL
-      readPaf(paf.file = paf.file, include.paf.tags = FALSE), error = function(e) NULL
-      )
-    # if (!is.null(paf)) {
-    #   ## Keep only first 12 columns
-    #   paf <- paf[,c(1:12)]
-    #   ## Add header
-    #   header <- c('q.name', 'q.len', 'q.start', 'q.end', 'strand', 't.name', 't.len', 't.start', 't.end', 'n.match', 'aln.len', 'mapq')
-    #   colnames(paf) <- header
-    # }
-  } else {
-    stop(paste0("PAF file ", paf.file, " doesn't exists !!!"))
-  }
   if (!is.null(paf)) {
     ## Convert query or target coordinates to GRanges
     if (alignment.space == 'query') {
@@ -92,10 +85,10 @@ paf2FASTA <- function(paf.file, alignment.space='query', bsgenome=NULL, asm.fast
     }
 
     ## Sync alignment directionality based on preferred majority strand
-    paf.grl <- split(paf.gr, seqnames(paf.gr))
+    paf.grl <- GenomicRanges::split(paf.gr, as.character(GenomeInfoDb::seqnames(paf.gr)))
     for (i in seq_along(paf.grl)) {
       gr <- paf.grl[[i]]
-      qy.red <- range(gr, ignore.strand=TRUE)
+      qy.red <- base::range(gr, ignore.strand=TRUE)
       #tg.red <- range(gr$target.gr, ignore.strand=TRUE)
       if (majority.strand %in% c('+', '-')) {
         new.strand <- syncRangesDir(ranges = gr, majority.strand = majority.strand, strand.only = TRUE)
