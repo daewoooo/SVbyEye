@@ -30,7 +30,8 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{binsize}{A size of a bin in base pairs to split a PAF alignment into.}
 
-\item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
+\item{color.by}{Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
+mapping quality ('mapq') or a custom column name ('custom').}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
@@ -50,7 +51,7 @@ A \code{ggplot2} object.
 }
 \description{
 This function takes PAF output file from minimap2 alignments, and visualize the alignments
-in miropeat style.
+in a miropeat style.
 }
 \examples{
 ## Get PAF to plot ##

@@ -2,7 +2,7 @@
 #'
 #' @param alignment.space What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).
 #' @param bsgenome A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.
-#' @param asm.fasta An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.
+#' @param asm.fasta An assembly FASTA file to extract DNA sequence from defined PAF alignments.
 #' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented regardless of value defined in `majority.strand`.
 #' @param report.longest.aln If set to \code{TRUE} only the sequence with the most aligned bases will be reported in final FASTA file.
 #' @param report.query.name A single query (contig) name/id to be reported as FASTA sequence.

@@ -26,7 +26,7 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{bsgenome}{A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.}
 
-\item{asm.fasta}{An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.}
+\item{asm.fasta}{An assembly FASTA file to extract DNA sequence from defined PAF alignments.}
 
 \item{majority.strand}{A desired majority strand directionality to be reported.}
 

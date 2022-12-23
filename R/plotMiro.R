@@ -1,10 +1,11 @@
 #' Visualize PAF alignments.
 #'
 #' This function takes PAF output file from minimap2 alignments, and visualize the alignments
-#' in miropeat style.
+#' in a miropeat style.
 #'
 #' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats.
-#' @param color.by Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').
+#' @param color.by Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
+#' mapping quality ('mapq') or a custom column name ('custom').
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 #' to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.
 #' @param outline.alignments Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.
@@ -55,7 +56,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
     paf <- paf.table
-    paf$direction.flip <- FALSE
+    #paf$direction.flip <- FALSE
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
@@ -160,7 +161,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
     pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
   }
 
-  ## Plot alignments and color by direction or identity
+  ## Plot alignments and color by a user defined variable
   if (color.by == 'direction') {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
       geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$direction), alpha = 0.5) +
@@ -188,7 +189,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Add alignment outlines
   if (outline.alignments) {
     plt <- plt +
-      geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group),  fill=NA, color='gray', size=0.25)
+      geom_miropeats(data=coords[coords$ID == 'M',], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group),  fill=NA, color='gray', linewidth=0.25)
   }
 
   ## Add indels

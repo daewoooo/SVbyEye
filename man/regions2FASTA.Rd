@@ -18,7 +18,7 @@ regions2FASTA(
 
 \item{bsgenome}{A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.}
 
-\item{asm.fasta}{An assembly FASTA file to extract DNA sequence determined by 'gr' parameter.}
+\item{asm.fasta}{An assembly FASTA file to extract DNA sequence from defined PAF alignments.}
 
 \item{index.field}{A user defined column number to be used as a sequence ID for the exported FASTA.}
 

@@ -35,7 +35,8 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{sort.by}{Order PAF alignments by relative left-most coordinates ('position') or by the alignment length ('length').}
 
-\item{color.by}{Color alignments either by directionality ('direction') or fraction of matched base pairs ('identity').}
+\item{color.by}{Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
+mapping quality ('mapq') or a custom column name ('custom').}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
