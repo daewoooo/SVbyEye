@@ -130,7 +130,8 @@ fasta2nucleotideContent <- function(fasta.seq, sequence.pattern=NULL, nucleotide
     # binned.counts <- countOverlaps(seq.bins, pattern.pos.gr)
 
     ## Report counts and frequencies
-    seq.content <- dplyr::bind_cols('ID' = names(fasta.seq), 'seq.count' = as.numeric(pattern.counts), 'seq.freq' = pattern.freq)
+    seq.content <- suppressMessages( dplyr::bind_cols(names(fasta.seq), as.numeric(pattern.counts), pattern.freq) )
+    colnames(seq.content) <- c('ID', paste0(sequence.pattern, '_seq.count'), paste0(sequence.pattern, '_seq.freq'))
     fasta.content <- dplyr::bind_cols(fasta.content, seq.content)
   }
 
@@ -144,7 +145,8 @@ fasta2nucleotideContent <- function(fasta.seq, sequence.pattern=NULL, nucleotide
     bases.freq <- rowSums(base.freq[,bases, drop=FALSE]) / rowSums(base.freq)
 
     ## Report counts and frequencies
-    nuc.content <- dplyr::bind_cols('ID' = names(fasta.seq), 'nuc.count' = as.numeric(bases.counts), 'nuc.freq' = bases.freq)
+    nuc.content <- suppressMessages( dplyr::bind_cols(names(fasta.seq), as.numeric(bases.counts), bases.freq) )
+    colnames(nuc.content) <- c('ID', paste0(nucleotide.content, '_nuc.count'), paste0(nucleotide.content, '_nuc.freq'))
     fasta.content <- dplyr::right_join(x = fasta.content, y = nuc.content, by = c('ID' = 'ID'))
   }
   ## Return sequence content table
