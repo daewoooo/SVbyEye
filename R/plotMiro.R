@@ -5,7 +5,7 @@
 #'
 #' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats.
 #' @param color.by Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
-#' mapping quality ('mapq') or a custom column name ('custom').
+#' or a custom column name present in submitted `paf.table`.
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 #' to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.
 #' @param outline.alignments Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.
@@ -20,8 +20,8 @@
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom gggenes geom_gene_arrow
-#' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @importFrom GenomicRanges start end
+#' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -56,7 +56,10 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
     paf <- paf.table
-    #paf$direction.flip <- FALSE
+    ## Add PAF alignment IDs if it doesn't exists
+    if (!'aln.id' %in% colnames(paf)) {
+      paf$aln.id <- 1:nrow(paf)
+    }
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
@@ -79,7 +82,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
     paf <- paf.l$M
     paf.svs <- paf.l$SVs
   } else {
-    paf$aln.id <- 1:nrow(paf)
+    #paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
     if (!is.null(highlight.sv)) {
       highlight.sv <- NULL
@@ -115,7 +118,11 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   }
 
   ## Convert PAF alignments to plotting coordinates
-  coords <- paf2coords(paf.table = paf, offset.alignments = offset.alignments)
+  if (color.by %in% colnames(paf)) {
+    coords <- paf2coords(paf.table = paf, offset.alignments = offset.alignments, add.col = color.by)
+  } else {
+    coords <- paf2coords(paf.table = paf, offset.alignments = offset.alignments)
+  }
 
   ## Prepare data for plotting
   target.seqname <- unique(coords$seq.name[coords$seq.id == 'target'])
@@ -149,7 +156,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   seq.labels <- c(unique(coords$seq.name[coords$seq.id == 'query']),
                   unique(coords$seq.name[coords$seq.id == 'target']))
 
-  ## Define color palette
+  ## Define color palette for alignment directionality
   if (!is.null(color.palette)) {
     if (all(c('+', '-') %in% names(color.palette))) {
       pal <- color.palette
@@ -177,10 +184,15 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
       geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
       ggplot2::scale_fill_manual(values = colors, drop=FALSE, name='Identity')
-  } else if (color.by == 'mapq') {
+  } else if (color.by %in% colnames(paf)) {
+    ## Define color scheme
+    coords.l <- getColorScheme(data.table = coords, value.field = color.by)
+    coords <- coords.l$data
+    colors <- coords.l$colors
+
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
-      geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$mapq), alpha=0.5) +
-      ggplot2::scale_fill_gradient(low = 'gray', high = 'red')
+      geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
+      ggplot2::scale_fill_manual(values = colors, drop=FALSE, name=eval(color.by))
   } else {
     plt <- ggplot2::ggplot(coords[coords$ID == 'M',]) +
       geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), alpha=0.5, fill='gray')
@@ -236,8 +248,12 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
     }
   }
 
-  ## Add arrows to mark start and end of each alignment
-  ## Always used unbinned version of PAF alignments
+  ## Add arrows to mark start and end of each alignment ##
+  ## Use an un-binned version of PAF alignments (group by bin ID if present)
+  if ('bin.id' %in% colnames(paf.copy)) {
+    paf.copy <- collapsePaf(paf.table = paf.copy, collapse.by = 'bin.id')
+  }
+  ## Convert to plotting coordinates
   coords.arrow <- paf2coords(paf.table = paf.copy, offset.alignments = offset.alignments)
   start <- coords.arrow$x[c(T, T, F, F)]
   end <- coords.arrow$x[c(F, F, T, T)]
@@ -245,7 +261,7 @@ plotMiro <- function(paf.table, min.deletion.size=NULL, min.insertion.size=NULL,
   group <- coords.arrow$group[c(T, T, F, F)]
   plt.df <- data.frame(start=start, end=end, y=y, group=group)
   plt.df$direction <- ifelse(plt.df$start < plt.df$end, '+', '-')
-
+  ## Add arrows to the plot
   plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
     gggenes::geom_gene_arrow(data=plt.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, color = .data$direction, fill = .data$direction), arrowhead_height = grid::unit(3, 'mm')) +
     ggplot2::scale_fill_manual(values = pal, name='Alignment\ndirection') +

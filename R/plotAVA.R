@@ -46,7 +46,10 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
     paf <- paf.table
-    paf$direction.flip <- FALSE
+    ## Add PAF alignment IDs if it doesn't exists
+    if (!'aln.id' %in% colnames(paf)) {
+      paf$aln.id <- 1:nrow(paf)
+    }
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
@@ -57,7 +60,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
     paf <- paf.l$M
     paf.svs <- paf.l$SVs
   } else {
-    paf$aln.id <- 1:nrow(paf)
+    #paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
     if (!is.null(highlight.sv)) {
       highlight.sv <- NULL
@@ -173,7 +176,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
   n.match <- rep(paf$n.match, each=4)
   aln.len <- rep(paf$aln.len, each=4)
   mapq <- rep(paf$mapq, each=4)
-  aln.id <- rep(paf$aln.id, each=4)
+  #aln.id <- rep(paf$aln.id, each=4)
   ID <- rep(paf$ID, each=4)
   seq.pair <- rep(paf$seq.pair, each=4)
   direction <- rep(paf$strand, each=4)
@@ -188,7 +191,7 @@ plotAVA <- function(paf.table, seqnames.order=NULL, min.deletion.size=NULL, min.
                        n.match=n.match,
                        aln.len=aln.len,
                        mapq=mapq,
-                       aln.id=aln.id,
+                       #aln.id=aln.id,
                        ID=ID,
                        #direction.flip=direction.flip,
                        seq.pair=seq.pair,

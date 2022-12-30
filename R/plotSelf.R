@@ -55,7 +55,10 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
     paf <- paf.table
-    paf$direction.flip <- FALSE
+    ## Add PAF alignment IDs if it doesn't exists
+    if (!'aln.id' %in% colnames(paf)) {
+      paf$aln.id <- 1:nrow(paf)
+    }
   } else {
     stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
   }
@@ -76,7 +79,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
       paf.svs <- paf.l$SVs
     }
   } else {
-    paf$aln.id <- 1:nrow(paf)
+    #paf$aln.id <- 1:nrow(paf)
     paf.svs <- NULL
     if (!is.null(highlight.sv)) {
       highlight.sv <- NULL
@@ -111,7 +114,8 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     }
   }
 
-  ## Prepare data for plotting
+  ## Prepare data for plotting ##
+  ## When dealing with self-alignments query (left-most) sequence is denoted as s1 and target (right-most) sequence is s2
   paf <- paf[paf$ID == 'M',]
   coords <- data.frame(s1.start = paf$q.start,
                        s1.end = paf$q.end,
@@ -146,7 +150,6 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     coords <- coords %>%
       dplyr::group_by(.data$aln.id) %>%
       dplyr::arrange(.data$s1.start, .by_group = TRUE)
-
   } else if (sort.by == 'length') {
     ## Order alignments by alignment length
     coords <- coords %>%
@@ -158,21 +161,23 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     coords <- coords %>% dplyr::arrange(.data$aln.id, .data$s1.start)
   }
 
-
   ## Make self-dotplot ##
   #######################
-  ## Define color palette
-  if (color.by == 'direction') {
-    if (!is.null(color.palette)) {
-      if (all(c('+', '-') %in% names(color.palette))) {
-        colors <- color.palette
-      } else {
-        colors <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
-        warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
-      }
+  ## Define color palette for alignment directionality
+  if (!is.null(color.palette)) {
+    if (all(c('+', '-') %in% names(color.palette))) {
+      pal <- color.palette
     } else {
-      colors <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+      pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+      warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
     }
+  } else {
+    pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
+  }
+
+  ## Define discrete color palettes
+  if (color.by == 'direction') {
+    coords$col.levels <- factor(coords$dir, levels = c('+', '-'))
   } else if (color.by == 'identity') {
     coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
     ## Define color scheme
@@ -180,10 +185,16 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     coords <- coords.l$data
     coords$identity <- coords$col.levels
     colors <- coords.l$colors
+  } else if (color.by %in% colnames(paf)) {
+    ## Define color scheme
+    coords.l <- getColorScheme(data.table = coords, value.field = color.by)
+    coords <- coords.l$data
+    colors <- coords.l$colors
   } else {
     color.by <- 'direction'
   }
 
+  ## Define plotting coordinates
   if (shape == 'segment') {
     coords$y1 <- 0
     coords$y1end <- 0
@@ -215,28 +226,32 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
                                 #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
                                 y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
                                 group=rep(1:nrow(plt.dir.df), each=4),
-                                direction=rep(plt.dir.df$dir, each=4),
-                                identity=rep(plt.dir.df$identity, each=4))
+                                col.levels=rep(plt.dir.df$col.levels, each=4))
+                                #direction=rep(plt.dir.df$dir, each=4),
+                                #identity=rep(plt.dir.df$identity, each=4))
     } else {
       poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
                                 y=c(rbind(NaN, NaN, NaN, NaN)),
                                 group=rep(1, each=4),
-                                direction=rep('+', each=4),
-                                identity=rep(NA, each=4))
+                                col.levels=factor(NA, levels(coords$col.levels)))
+                                #direction=rep('+', each=4),
+                                #identity=rep(NA, each=4))
     }
 
     if (nrow(plt.rev.df) > 0) {
       poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
                                 y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
                                 group=rep(1:nrow(plt.rev.df), each=4),
-                                direction=rep(plt.rev.df$dir, each=4),
-                                identity=rep(plt.rev.df$identity, each=4))
+                                col.levels=rep(plt.rev.df$col.levels, each=4))
+                                #direction=rep(plt.rev.df$dir, each=4),
+                                #identity=rep(plt.rev.df$identity, each=4))
     } else {
       poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
                                 y=c(rbind(NaN, NaN, NaN, NaN)),
                                 group=rep(1, each=4),
-                                direction=rep('-', each=4),
-                                identity=rep(NA, each=4))
+                                col.levels=factor(NA, levels(coords$col.levels)))
+                                #direction=rep('-', each=4),
+                                #identity=rep(NA, each=4))
     }
 
     ## Make segment dotplot
@@ -245,14 +260,19 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     plt <- ggplot2::ggplot(coords) +
       ggplot2::geom_segment(ggplot2::aes(x = .data$s1.start, xend = .data$s1.end, y = .data$y1, yend = .data$y1end)) +
       ggplot2::geom_segment(ggplot2::aes(x = .data$s2.start, xend = .data$s2.end, y = .data$y2, yend = .data$y2end)) +
-      ggplot2::geom_polygon(data=poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
-      ggplot2::geom_polygon(data=poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha=0.5, inherit.aes=FALSE) +
+      ggplot2::geom_polygon(data=poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
+      ggplot2::geom_polygon(data=poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
       ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
       ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
       ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
       ggplot2::ylab('Self-alignments') +
-      ggplot2::xlab('Contig position (bp)') +
-      ggplot2::scale_fill_manual(values = colors, drop=FALSE)
+      ggplot2::xlab('Contig position (bp)')
+    ## Define alignment color scheme
+    if (color.by == 'direction') {
+      plt <- plt + ggplot2::scale_fill_manual(values = pal, drop=FALSE, name='Alignment\ndirection')
+    } else {
+      plt <- plt + ggplot2::scale_fill_manual(values = colors, drop=FALSE, name=eval(color.by))
+    }
       #coord_fixed(ratio = 1) +
 
     ## Add indels
@@ -289,23 +309,30 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
     x <- c(rbind(coords$s1.start, coords$s2.start, coords$s1.end, coords$s2.end))
     group <- rep(1:nrow(coords), each=4)
     seq.id <- c(rbind('s1', 's2', 's1', 's2'))
-    direction <- rep(coords$dir, each=4)
-    identity <- rep(coords$identity, each=4)
+    col.levels <- rep(coords$col.levels, each=4)
+    #direction <- rep(coords$dir, each=4)
+    #identity <- rep(coords$identity, each=4)
 
     plt.df <- data.frame(x=x,
                          y=0,
                          group=group,
                          seq.id=seq.id,
-                         direction=direction,
-                         identity=identity)
+                         col.levels=col.levels)
+                         #direction=direction,
+                         #identity=identity)
 
     plt <- ggplot2::ggplot(plt.df) +
-      geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha = 0.5) +
+      geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
       ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
       ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
       ggplot2::ylab('Self-alignments') +
-      ggplot2::xlab('Contig position (bp)') +
-      ggplot2::scale_fill_manual(values = colors, drop=FALSE)
+      ggplot2::xlab('Contig position (bp)')
+    ## Define alignment color scheme
+    if (color.by == 'direction') {
+      plt <- plt + ggplot2::scale_fill_manual(values = pal, drop=FALSE, name='Alignment\ndirection')
+    } else {
+      plt <- plt + ggplot2::scale_fill_manual(values = colors, drop=FALSE, name=eval(color.by))
+    }
 
     ## Add indels
     if (!is.null(highlight.sv)) {
@@ -345,7 +372,7 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   } else {
     warning("Paremeter shape can only take values 'segment' or 'arc' !!!")
     plt <- ggplot() +
-      scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen')) +
+      scale_fill_manual(values = pal) +
       ylab('Self-alignments') +
       xlab('Contig position (bp)') +
       theme_minimal() +
@@ -357,14 +384,14 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   if (add.alignment.arrows) {
     arrow.df <- data.frame('xmin' = c(rbind(paf.copy$q.start, paf.copy$t.start)),
                            'xmax' = c(rbind(paf.copy$q.end, paf.copy$t.end)),
-                           'dir' = c(rbind('+', paf.copy$strand))) # to make sure s1 is always forward
-    arrow.df$direction <- ifelse(arrow.df$dir == '+', 1, -1)
+                           'col.levels' = factor(c(rbind('+', paf.copy$strand)), levels = c('+', '-'))) # to make sure s1 is always forward
+    arrow.df$dir <- ifelse(arrow.df$col.levels == '+', 1, -1)
     ## Make sure start is always smaller than end of the alignment
     arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
     ## Plot arrows
     plt <- plt + ggnewscale::new_scale_fill() +
-      gggenes::geom_gene_arrow(data=arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = 0, forward = .data$direction, fill = .data$dir), arrowhead_height = grid::unit(3, 'mm'), inherit.aes = FALSE) +
-      ggplot2::scale_fill_manual(values = c('-' = 'cornflowerblue', '+' = 'forestgreen'))
+      gggenes::geom_gene_arrow(data=arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = 0, forward = .data$dir, fill = .data$col.levels), arrowhead_height = grid::unit(3, 'mm')) +
+      ggplot2::scale_fill_manual(values = pal, name='Alignment\ndirection')
   }
 
   ## Highlight user defined positions
@@ -399,3 +426,4 @@ plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=
   ## Return final plot
   return(plt)
 }
+
