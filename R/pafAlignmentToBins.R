@@ -6,7 +6,7 @@
 #' @importFrom GenomicRanges GRanges shift width start end strand
 #' @importFrom GenomicAlignments GAlignments mapToAlignments qwidth cigarNarrow explodeCigarOpLengths
 #' @importFrom GenomeInfoDb seqlengths seqlevels seqnames
-#' @importFrom dplyr tibble
+#' @importFrom tibble tibble
 #' @importFrom S4Vectors sapply
 #' @return  A \code{tibble} object storing binned PAF alignments.
 #' @author David Porubsky
@@ -43,9 +43,9 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
     ## Convert to query coordinates
     if (paf.aln$strand == '-') {
       query.bins.gr <- mirrorRanges(gr = query.bins.gr)
-      query.bins.gr <- suppressWarnings( GenomicRanges::shift(query.bins.gr, shift = paf.aln$q.start) )
+      query.bins.gr <- suppressWarnings( GenomicRanges::shift(query.bins.gr, shift = paf.aln$q.start - 1) )
     } else {
-      query.bins.gr <- suppressWarnings( GenomicRanges::shift(query.bins.gr, shift = paf.aln$q.start) )
+      query.bins.gr <- suppressWarnings( GenomicRanges::shift(query.bins.gr, shift = paf.aln$q.start - 1) )
     }
 
     ## Subset the cigar string per target region
@@ -62,21 +62,27 @@ pafAlignmentToBins <- function(paf.aln=NULL, binsize=10000) {
     ## Get matched bases from regional cigars
     n.match <- S4Vectors::sapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('=','M'))[[1]]), USE.NAMES = FALSE)
     ## Create binned paf alignment
-    binned.paf.aln <- dplyr::tibble(q.name=as.character(GenomeInfoDb::seqnames(query.bins.gr)),
-                                    q.len=paf.aln$q.len,
-                                    q.start=as.numeric(GenomicRanges::start(query.bins.gr)),
-                                    q.end=as.numeric(GenomicRanges::end(query.bins.gr)),
-                                    strand=paf.aln$strand,
-                                    t.name=as.character(GenomeInfoDb::seqnames(target.bins.gr)),
-                                    t.len=paf.aln$t.len,
-                                    t.start=as.numeric(GenomicRanges::start(target.bins.gr)),
-                                    t.end=as.numeric(GenomicRanges::end(target.bins.gr)),
-                                    n.match=n.match,
-                                    aln.len=aln.len,
-                                    mapq=paf.aln$mapq,
-                                    cg=cigars.region)
+    binned.paf.aln <- tibble::tibble(q.name = as.character(GenomeInfoDb::seqnames(query.bins.gr)),
+                                     q.len = paf.aln$q.len,
+                                     q.start = as.numeric(GenomicRanges::start(query.bins.gr)),
+                                     q.end = as.numeric(GenomicRanges::end(query.bins.gr)),
+                                     strand = paf.aln$strand,
+                                     t.name = as.character(GenomeInfoDb::seqnames(target.bins.gr)),
+                                     t.len = paf.aln$t.len,
+                                     t.start = as.numeric(GenomicRanges::start(target.bins.gr)),
+                                     t.end = as.numeric(GenomicRanges::end(target.bins.gr)),
+                                     n.match = n.match,
+                                     aln.len = aln.len,
+                                     mapq = paf.aln$mapq,
+                                     cg = cigars.region)
+
     ## Remove alignments set to size 1 due to 'CIGAR is empty after narrowing' error message
     binned.paf.aln <- binned.paf.aln[binned.paf.aln$aln.len > 1,]
+    ## Make sure alignment ID ('aln.id') is exported if defined
+    if ('aln.id' %in% colnames(paf.aln)) {
+      binned.paf.aln$aln.id <- paf.aln$aln.id
+    }
+
     ## Return binned paf alignments
     return(binned.paf.aln)
   } else {
@@ -110,7 +116,8 @@ pafToBins <- function(paf.table=NULL, binsize=10000) {
   for (i in 1:nrow(paf.table)) {
     paf.aln <- paf.table[i,]
     paf.aln.binned <- pafAlignmentToBins(paf.aln = paf.aln, binsize = binsize)
-    paf.aln.binned$aln.id <- i
+    paf.aln.binned$bin.id <- i
+    #paf.aln.binned$aln.id <- i
     binned[[i]] <- paf.aln.binned
   }
 
