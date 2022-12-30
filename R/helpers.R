@@ -18,7 +18,7 @@ add.control.points <- function(data=NULL, strength=0.5) {
 
 #' Function to convert between different coordinate scales
 #'
-#' This function takes as input query coordinates and a query range and convert them into 
+#' This function takes as input query coordinates and a query range and convert them into
 #' coordinate scale defined by a target range.
 #'
 #' @param x A \code{vector} of coordinate values to be rescaled.
@@ -32,7 +32,7 @@ q2t <- function(x, q.range, t.range) {
     coord.factor <- (t.range[2] - t.range[1]) / (q.range[2] - q.range[1])
     return(t.range[1] + (x - q.range[1]) * coord.factor)
   }
-} 
+}
 
 #' Mirror/reflect genomic ranges given the sequence length.
 #'
@@ -58,11 +58,11 @@ mirrorRanges <- function(gr, seqlength=NULL) {
     stop("One or all submitted ranges are outside of defined seqlength!!!")
   }
   starts <- gr.len - GenomicRanges::end(gr)
-  ends <- gr.len - GenomicRanges::start(gr) 
+  ends <- gr.len - GenomicRanges::start(gr)
   #starts <- gr.len - cumsum(width(gr))
   #ends <- starts + width(gr)
-  new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr), 
-                                   ranges = IRanges::IRanges(start=starts, end=ends), 
+  new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr),
+                                   ranges = IRanges::IRanges(start=starts, end=ends),
                                    strand = GenomicRanges::strand(gr))
   suppressWarnings( GenomeInfoDb::seqlengths(new.gr) <- gr.len )
   return(new.gr)
@@ -71,20 +71,22 @@ mirrorRanges <- function(gr, seqlength=NULL) {
 
 #' Add color scheme based on certain values and defined breaks.
 #'
-#' This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into 
+#' This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into
 #' chunks based on defined breaks. Each chunk has assigned unique color on a gradient scale.
 #'
 #' @param data.table A \code{data.frame} or \code{tibble} object to be processed.
-#' @param value.field Either a column index or a column name present in submitted 'data.table'  
-#' @param breaks User defined breaks in defined 'value.field' in order to split these values into chunks.
+#' @param value.field Either a column index or a column name present in submitted 'data.table'
+#' @param breaks User defined breaks in defined 'value.field' in order to split these values into chunks
+#' (Default : `5` roughly equally sized chunks).
 #' @return A \code{\link{list}} containing original 'data.table' with extra column adding 'col.levels' based on defined 'breaks'.
 #' List also contains element 'color' with a gradient color assigned to each 'col.level'.
 #' @importFrom wesanderson wes_palette
 #' @importFrom dplyr pull
 #' @importFrom stats setNames
+#' @importFrom ggplot2 cut_number
 #' @author David Porubsky
 #' @export
-getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=c(90, 95, 96, 97, 98, 99, 99.5, 99.9)) {
+getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=NULL) {
   ## Check user input
   if (is.null(data.table)) {
     stop("No data submitted, please define 'data.table' parameter !!!")
@@ -100,17 +102,80 @@ getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=c(90, 95, 9
   } else {
     stop("No 'value.field' defined, please define 'value.field' either as column index or column name !!!")
   }
-  
-  ## Define break ranges
-  levels <- c(paste0('<', breaks[1]), 
-              paste(breaks[-length(breaks)], breaks[-1], sep = ':'), 
-              paste0('>', breaks[length(breaks)]))
-  ## Get break intervals
+
+  ## Define break ranges ##
   vals <- data.table %>% dplyr::pull(eval(value.field))
-  ids <- findInterval(vals, vec = breaks) + 1
-  data.table$col.levels <- factor(levels[ids], levels = levels)
-  colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = 'continuous')
-  colors <- stats::setNames(as.list(colors), levels)
+  if (!is.null(breaks)) {
+    levels <- c(paste0('<', breaks[1]),
+                paste(breaks[-length(breaks)], breaks[-1], sep = ':'),
+                paste0('>', breaks[length(breaks)]))
+    ## Get break intervals
+    ids <- findInterval(vals, vec = breaks) + 1
+    data.table$col.levels <- factor(levels[ids], levels = levels)
+    colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = 'continuous')
+    colors <- stats::setNames(as.list(colors), levels)
+  } else {
+    ## If breaks are not defined split data into 5 chunks
+    data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
+    colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = 'continuous')
+    colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
+  }
   ## Return color scheme
   return(list(data=data.table, colors=colors))
+}
+
+
+#' Collapse PAF query and target ranges based withing a group
+#'
+#' This function takes PAF alignments stored in using \code{tibble} object and collapse them
+#' based on grouping variable defined in `collapse.by` that have to be a valid column name
+#' present in `paf.table`.
+#'
+#' @param collapse.by A user defined column name present in `paf.table` to serve as grouping variable.
+#' @inheritParams breakPaf
+#' @return A \code{tibble} of collapsed PAF alignments
+#' @importFrom dplyr group_by across all_of summarise relocate last_col
+#' @author David Porubsky
+#' @export
+#' @examples
+#'## Get PAF to plot ##
+#'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+#'## Read in PAF
+#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+#'## Split PAF alignments into user defined bins
+#'paf.table <- pafToBins(paf.table = paf.table, binsize = 1000)
+#'## Collapse PAF alignments by bin id
+#'collapsePaf(paf.table = paf.table, collapse.by = 'bin.id')
+#'
+collapsePaf <- function(paf.table, collapse.by=NULL) {
+  ## Check user input ##
+  ## Make sure PAF has at least 12 mandatory fields
+  if (ncol(paf.table) >= 12) {
+    paf <- paf.table
+  } else {
+    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
+  }
+  ## Make sure parameter collapse.by is defined and present as column in paf.table
+  if (!is.null(collapse.by)) {
+    if (!(nchar(collapse.by) > 0 & collapse.by %in% colnames(paf.table))) {
+      stop("User defined parameter 'collapse.by' is not a valid column in submitted 'paf.table' !!!")
+    }
+  }
+  ## Take minimum (start) and maximum (end) position for query and target coordinates grouped by 'collapse.by' variable
+  paf <- paf %>% dplyr::group_by(dplyr::across(dplyr::all_of(collapse.by))) %>%
+    dplyr::summarise(q.name = paste(unique(q.name), collapse = ';'),
+                     q.len = paste(unique(q.len), collapse = ';'),
+                     q.start = min(q.start),
+                     q.end = max(q.end),
+                     strand = paste(unique(strand), collapse = ';'),
+                     t.name = paste(unique(t.name), collapse = ';'),
+                     t.len = paste(unique(t.len), collapse = ';'),
+                     t.start = min(t.start),
+                     t.end = max(t.end),
+                     n.match = 0, ## Try to calculate this
+                     aln.len = 0, ## Try to calculate this
+                     mapq = paste(unique(mapq), collapse = ';')) %>%
+    dplyr::relocate(!!collapse.by, .after = dplyr::last_col())
+  ## Return collapsed PAF
+  return(paf)
 }
