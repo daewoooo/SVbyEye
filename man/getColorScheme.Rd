@@ -4,25 +4,22 @@
 \alias{getColorScheme}
 \title{Add color scheme based on certain values and defined breaks.}
 \usage{
-getColorScheme(
-  data.table = NULL,
-  value.field = NULL,
-  breaks = c(90, 95, 96, 97, 98, 99, 99.5, 99.9)
-)
+getColorScheme(data.table = NULL, value.field = NULL, breaks = NULL)
 }
 \arguments{
 \item{data.table}{A \code{data.frame} or \code{tibble} object to be processed.}
 
 \item{value.field}{Either a column index or a column name present in submitted 'data.table'}
 
-\item{breaks}{User defined breaks in defined 'value.field' in order to split these values into chunks.}
+\item{breaks}{User defined breaks in defined 'value.field' in order to split these values into chunks
+(Default : `5` roughly equally sized chunks).}
 }
 \value{
 A \code{\link{list}} containing original 'data.table' with extra column adding 'col.levels' based on defined 'breaks'.
 List also contains element 'color' with a gradient color assigned to each 'col.level'.
 }
 \description{
-This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into 
+This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into
 chunks based on defined breaks. Each chunk has assigned unique color on a gradient scale.
 }
 \author{

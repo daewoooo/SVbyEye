@@ -4,21 +4,35 @@
 \alias{paf2coords}
 \title{Prepare PAF alignments for plotting.}
 \usage{
-paf2coords(paf.table, offset.alignments = FALSE)
+paf2coords(paf.table, offset.alignments = FALSE, add.col = NULL)
 }
 \arguments{
 \item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
 along with CIGAR string defined in 'cg' column.}
 
 \item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.}
+
+\item{add.col}{A user defined column name present in `paf.table` to be added in returned coordinates table.}
 }
 \value{
-A \code{data.frame} of PAF alignments reported as x and y coordinate values.
+A \code{tibble} of PAF alignments reported as x and y coordinate values.
 }
 \description{
 This function takes loaded PAF alignments using \code{\link{readPaf}} function. Such alignment could be post-processed
 using \code{\link{filterPaf}}, \code{\link{breakPaf}} and \code{\link{flipPaf}} functions. Subsequently such alignments are
 expanded in a set of x and y coordinates ready to be plotted by \code{\link{geom_miropeats}} function.
+}
+\examples{
+## Get PAF to process ##
+paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+## Convert PAF alignments to x and y coordinates needed for plotting
+paf2coords(paf.table = paf.table)
+## Include optional an column to be exported as well (e.g. alignment specific GC content)
+paf.table$GC.content <- round(runif(nrow(paf.table), min = 30, max = 60), digits = 2)
+paf2coords(paf.table = paf.table, add.col = 'GC.content')
+
 }
 \author{
 David Porubsky

@@ -17,7 +17,7 @@ q2t(x, q.range, t.range)
 A \code{vector} of rescaled coordinate values.
 }
 \description{
-This function takes as input query coordinates and a query range and convert them into 
+This function takes as input query coordinates and a query range and convert them into
 coordinate scale defined by a target range.
 }
 \author{

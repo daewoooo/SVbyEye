@@ -31,7 +31,7 @@ along with CIGAR string defined in 'cg' column.}
 \item{binsize}{A size of a bin in base pairs to split a PAF alignment into.}
 
 \item{color.by}{Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
-mapping quality ('mapq') or a custom column name ('custom').}
+or a custom column name present in submitted `paf.table`.}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
