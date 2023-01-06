@@ -41,16 +41,16 @@ construct a simple dot plot.
 }
 \examples{
 ## Get NUCmer alignment coordinates to plot
-nucmer.coords <- system.file("extdata", "HG00438_1_nucmer.coords", package="SVbyEye")
+nucmer.coords <- system.file("extdata", "HG00438_1_nucmer.coords", package = "SVbyEye")
 ## Make a dotplot
-simpledotplot(coords.file = nucmer.coords, format = 'nucmer')
+simpledotplot(coords.file = nucmer.coords, format = "nucmer")
 ## Get minimap2 alignments to plot
-mm2.coords <- system.file("extdata", "HG01071_2_mm2.paf", package="SVbyEye")
+mm2.coords <- system.file("extdata", "HG01071_2_mm2.paf", package = "SVbyEye")
 ## Make a dotplot
-simpledotplot(coords.file = mm2.coords, format = 'mm2')
+simpledotplot(coords.file = mm2.coords, format = "mm2")
 ## Highlight desired genomic positions
 highlight.pos <- c(330000, 560000)
-simpledotplot(coords.file = mm2.coords, format = 'mm2', highlight.pos = highlight.pos)
+simpledotplot(coords.file = mm2.coords, format = "mm2", highlight.pos = highlight.pos)
 
 }
 \author{

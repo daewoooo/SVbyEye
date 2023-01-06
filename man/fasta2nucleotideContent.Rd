@@ -25,15 +25,15 @@ This function with take a single or set of FASTA sequences and for each sequence
 }
 \examples{
 ## Get PAF to process ##
-paf.file <- system.file("extdata", "test_getFASTA.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test_getFASTA.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Get FASTA to process
-asm.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package="SVbyEye")
+asm.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package = "SVbyEye")
 ## Read in FASTA sequence
 fasta.seq <- paf2FASTA(paf.table = paf.table, asm.fasta = asm.fasta)
 ## Report sequence and nucleotide content for a given FASTA sequence
-fasta2nucleotideContent(fasta.seq = fasta.seq, sequence.pattern = 'AT', nucleotide.content = 'GC')
+fasta2nucleotideContent(fasta.seq = fasta.seq, sequence.pattern = "AT", nucleotide.content = "GC")
 
 }
 \author{

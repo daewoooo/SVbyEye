@@ -23,17 +23,17 @@ will be flipped accordingly to match query coordinates defined in 'paf.table'.
 }
 \examples{
 ## Get PAF to process
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Flip PAF alignments
-paf.table <- flipPaf(paf.table = paf.table, force=TRUE)
+paf.table <- flipPaf(paf.table = paf.table, force = TRUE)
 ## Load query annotation file
-query.annot <- system.file("extdata", "test1_query_annot.txt", package="SVbyEye")
-query.annot.df <- read.table(query.annot, header = TRUE, sep = '\t', stringsAsFactors = FALSE)
+query.annot <- system.file("extdata", "test1_query_annot.txt", package = "SVbyEye")
+query.annot.df <- read.table(query.annot, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 query.annot.gr <- GenomicRanges::makeGRangesFromDataFrame(query.annot.df)
 ## Synchronize orientation of query annotation file with flipped PAF alignments
-flipQueryAnnotation(paf.table = paf.table, query.annot.gr=query.annot.gr)
+flipQueryAnnotation(paf.table = paf.table, query.annot.gr = query.annot.gr)
 
 }
 \author{

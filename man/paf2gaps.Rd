@@ -22,9 +22,9 @@ in subsequent target and query alignments and classify them as either deletions 
 }
 \examples{
 ## Get PAF to process ##
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Report gaps between PAF alignments
 paf2gaps(paf.table = paf.table)
 

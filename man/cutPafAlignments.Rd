@@ -23,11 +23,11 @@ as well as cuts PAF alignments at desired target coordinates.
 }
 \examples{
 ## Get PAF to plot
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Filter PAF alignments based on desired target region
-cutPafAlignments(paf.table = paf.table, target.region = 'target.region:19050000-19200000')
+cutPafAlignments(paf.table = paf.table, target.region = "target.region:19050000-19200000")
 
 }
 \author{

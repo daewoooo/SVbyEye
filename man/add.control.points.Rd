@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{add.control.points}
 \alias{add.control.points}
-\title{Function to add bezier control points for horizontal layout}
+\title{Function to add bezier control points for horizontal layout.}
 \usage{
 add.control.points(data = NULL, strength = 0.5)
 }
@@ -15,7 +15,7 @@ add.control.points(data = NULL, strength = 0.5)
 A \code{vector} of rescaled coordinate values.
 }
 \description{
-Function to add bezier control points for horizontal layout
+Function to add bezier control points for horizontal layout.
 }
 \author{
 David Porubsky

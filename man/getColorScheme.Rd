@@ -22,6 +22,20 @@ List also contains element 'color' with a gradient color assigned to each 'col.l
 This function takes a \code{data.frame} or \code{tibble} object and given the defined value field split this field into
 chunks based on defined breaks. Each chunk has assigned unique color on a gradient scale.
 }
+\examples{
+## Define a data table with column containig 100 random values
+data.t <- data.frame("Identity" = runif(100, min = 0, max = 1) * 100)
+## By default value column is divided into 5 equally sized chunks
+## Each chunk has assigned unique gradient color
+colorScheme.l <- getColorScheme(data.table = data.t, value.field = "Identity")
+## Function returns a list containing original data table with extra color levels column
+colorScheme.l$data
+## as well as corresponding color scheme
+colorScheme.l$colors
+## User can also define custom breaks used to divide value.field into chunks.
+getColorScheme(data.table = data.t, value.field = "Identity", breaks = c(0.25, 0.5, 0.75))
+
+}
 \author{
 David Porubsky
 }

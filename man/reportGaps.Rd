@@ -24,12 +24,20 @@ Note that target and query ranges are expected to be 1-to-1 alignments as report
 }
 \examples{
 ## Define target and query ranges to process
-target.ranges <- GenomicRanges::GRanges(seqnames = 'target',
-                                       IRanges::IRanges(start = c(1, 111, 150),
-                                                        end = c(100, 150, 200)))
-query.ranges <- GenomicRanges::GRanges(seqnames = 'query',
-                                      IRanges::IRanges(start = c(1000, 1100, 1301),
-                                                       end = c(1100, 1200, 1500)))
+target.ranges <- GenomicRanges::GRanges(
+    seqnames = "target",
+    IRanges::IRanges(
+        start = c(1, 111, 150),
+        end = c(100, 150, 200)
+    )
+)
+query.ranges <- GenomicRanges::GRanges(
+    seqnames = "query",
+    IRanges::IRanges(
+        start = c(1000, 1100, 1301),
+        end = c(1100, 1200, 1500)
+    )
+)
 ## Report gaps within target ranges
 reportGaps(t.ranges = target.ranges, q.ranges = query.ranges)
 ## Report gaps within query ranges

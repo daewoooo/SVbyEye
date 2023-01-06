@@ -2,9 +2,9 @@ message("============================")
 message("Check PAF breaking at indels")
 
 ## Test sample with no strand state changes
-paf.file <- system.file("extdata", "test2.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test2.paf", package = "SVbyEye")
 ## Read in PAF alignment
-paf.aln <- readPaf(paf.file=paf.file)
+paf.aln <- readPaf(paf.file = paf.file)
 ## Break PAF alignment at indels of 1 kbp and longer
 paf.broken <- breakPafAlignment(paf.aln = paf.aln, min.deletion.size = 1000, min.insertion.size = 1000)
 paf.aln <- paf.broken$M
@@ -18,4 +18,4 @@ expect_that(paf.aln$t.end, equals(c(1019110, 1107668)))
 expect_that(paf.aln$t.end, equals(c(1019110, 1107668)))
 expect_that(paf.indels$q.start, equals(343761))
 expect_that(paf.indels$t.start, equals(1019111))
-expect_that(paf.indels$cg, equals('33794D'))
+expect_that(paf.indels$cg, equals("33794D"))

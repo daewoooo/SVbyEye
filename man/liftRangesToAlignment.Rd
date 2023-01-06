@@ -21,11 +21,11 @@ Function to lift coordinates to the alignment in PAF format.
 }
 \examples{
 ## Define range(s) to lift
-roi.gr <- as('chr17:46645907-46697277', 'GRanges')
+roi.gr <- as("chr17:46645907-46697277", "GRanges")
 ## Get PAF alignment to lift to
-paf.file <- system.file("extdata", "test_lift1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test_lift1.paf", package = "SVbyEye")
 ## Lift target range to query coordinates
-liftRangesToAlignment(gr = roi.gr, paf.file = paf.file, direction = 'target2query')
+liftRangesToAlignment(gr = roi.gr, paf.file = paf.file, direction = "target2query")
 
 }
 \author{

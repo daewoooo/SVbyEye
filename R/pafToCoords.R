@@ -14,122 +14,124 @@
 #' @author David Porubsky
 #' @export
 #' @examples
-#'## Get PAF to process ##
-#'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
-#'## Read in PAF
-#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
-#'## Convert PAF alignments to x and y coordinates needed for plotting
-#'paf2coords(paf.table = paf.table)
-#'## Include optional an column to be exported as well (e.g. alignment specific GC content)
-#'paf.table$GC.content <- round(runif(nrow(paf.table), min = 30, max = 60), digits = 2)
-#'paf2coords(paf.table = paf.table, add.col = 'GC.content')
+#' ## Get PAF to process ##
+#' paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+#' ## Read in PAF
+#' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+#' ## Convert PAF alignments to x and y coordinates needed for plotting
+#' paf2coords(paf.table = paf.table)
+#' ## Include optional an column to be exported as well (e.g. alignment specific GC content)
+#' paf.table$GC.content <- round(runif(nrow(paf.table), min = 30, max = 60), digits = 2)
+#' paf2coords(paf.table = paf.table, add.col = "GC.content")
 #'
-paf2coords <- function(paf.table, offset.alignments=FALSE, add.col=NULL) {
-  ## Check user input ##
-  ## Make sure PAF has at least 12 mandatory fields
-  if (ncol(paf.table) >= 12) {
-    paf <- paf.table
-  } else {
-    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
-  }
-  ## Set required fields with default values if not defined
-  if (!'aln.id' %in% colnames(paf)) {
-    paf$aln.id <- 1:nrow(paf)
-  }
-  if (!'ID' %in% colnames(paf)) {
-    paf$ID <- 'M'
-  }
+paf2coords <- function(paf.table, offset.alignments = FALSE, add.col = NULL) {
+    ## Check user input ##
+    ## Make sure PAF has at least 12 mandatory fields
+    if (ncol(paf.table) >= 12) {
+        paf <- paf.table
+    } else {
+        stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
+    }
+    ## Set required fields with default values if not defined
+    if (!"aln.id" %in% colnames(paf)) {
+        paf$aln.id <- seq_len(nrow(paf))
+    }
+    if (!"ID" %in% colnames(paf)) {
+        paf$ID <- "M"
+    }
 
-  ## Flip start-end if strand == '-'
-  paf[paf$strand == '-', c('t.start','t.end')] <- rev(paf[paf$strand == '-', c('t.start','t.end')])
-  #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
+    ## Flip start-end if strand == '-'
+    paf[paf$strand == "-", c("t.start", "t.end")] <- rev(paf[paf$strand == "-", c("t.start", "t.end")])
+    # paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
 
-  ## Get unique alignment ID
-  if (!'seq.pair' %in% colnames(paf)) {
-    paf$seq.pair <- paste0(paf$q.name, '__', paf$t.name)
-  }
+    ## Get unique alignment ID
+    if (!"seq.pair" %in% colnames(paf)) {
+        paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
+    }
 
-  ## Sync scales between alignments [per region id]
-  paf.l <- split(paf, paf$seq.pair)
-  for (i in seq_along(paf.l)) {
-    paf.sub <- paf.l[[i]]
-    q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
-    t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
-    ## Adjust target ranges given the size difference with respect to query ranges
-    range.offset <- diff(q.range) - diff(t.range)
-    t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
-    ## Covert query to target coordinates
-    paf.sub$q.start.trans <- q2t(x = paf.sub$q.start, q.range = q.range, t.range = t.range)
-    paf.sub$q.end.trans <- q2t(x = paf.sub$q.end, q.range = q.range, t.range = t.range)
-    # q.range <- range(c(paf$q.start, paf$q.end))
-    # t.range <- range(c(paf$t.start, paf$t.end))
-    # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
-    # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
-    paf.l[[i]] <- paf.sub
-  }
-  paf <- do.call(rbind, paf.l)
+    ## Sync scales between alignments [per region id]
+    paf.l <- split(paf, paf$seq.pair)
+    for (i in seq_along(paf.l)) {
+        paf.sub <- paf.l[[i]]
+        q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
+        t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
+        ## Adjust target ranges given the size difference with respect to query ranges
+        range.offset <- diff(q.range) - diff(t.range)
+        t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+        ## Covert query to target coordinates
+        paf.sub$q.start.trans <- q2t(x = paf.sub$q.start, q.range = q.range, t.range = t.range)
+        paf.sub$q.end.trans <- q2t(x = paf.sub$q.end, q.range = q.range, t.range = t.range)
+        # q.range <- range(c(paf$q.start, paf$q.end))
+        # t.range <- range(c(paf$t.start, paf$t.end))
+        # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
+        # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
+        paf.l[[i]] <- paf.sub
+    }
+    paf <- do.call(rbind, paf.l)
 
-  ## Vectorize data transformation ##
-  x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
-  y <- rep(c(1,2,1,2), times=nrow(paf))
+    ## Vectorize data transformation ##
+    x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
+    y <- rep(c(1, 2, 1, 2), times = nrow(paf))
 
-  ## Offset overlapping target alignments up&down based on start position
-  if (offset.alignments) {
-    if ('bin.id' %in% colnames(paf)) {
-      ## Use an un-binned version of PAF alignments (group by bin ID if present)
-      to.rep <- table(paf$bin.id)
-      offset.l <- list()
-      for (i in seq_along(to.rep)) {
-        if (i %% 2 == 0) {
-          offset.l[[i]] <- rep(x = c(0,0.05,0,0.05), times = to.rep[i])
+    ## Offset overlapping target alignments up&down based on start position
+    if (offset.alignments) {
+        if ("bin.id" %in% colnames(paf)) {
+            ## Use an un-binned version of PAF alignments (group by bin ID if present)
+            to.rep <- table(paf$bin.id)
+            offset.l <- list()
+            for (i in seq_along(to.rep)) {
+                if (i %% 2 == 0) {
+                    offset.l[[i]] <- rep(x = c(0, 0.05, 0, 0.05), times = to.rep[i])
+                } else {
+                    offset.l[[i]] <- rep(x = c(0, 0, 0, 0), times = to.rep[i])
+                }
+            }
+            offset <- do.call(c, offset.l)
         } else {
-          offset.l[[i]] <- rep(x = c(0,0,0,0), times = to.rep[i])
+            offset <- rep(c(0, 0, 0, 0, 0, 0.05, 0, 0.05), times = ceiling(nrow(paf) / 2))[seq_along(y)]
         }
-      }
-      offset <- do.call(c, offset.l)
-    } else {
-      offset <- rep(c(0,0,0,0,0,0.05,0,0.05), times=ceiling(nrow(paf) / 2))[1:length(y)]
+        ## Add offset value to y-axis positions
+        y <- y + offset
     }
-    ## Add offset value to y-axis positions
-    y <- y + offset
-  }
 
-  group <- rep(1:nrow(paf), each=4)
-  seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
-  seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
-  seq.id <- rep(c('query', 'target', 'query', 'target'), times=nrow(paf))
-  n.match <- rep(paf$n.match, each=4)
-  aln.len <- rep(paf$aln.len, each=4)
-  mapq <- rep(paf$mapq, each=4)
-  aln.id <- rep(paf$aln.id, each=4)
-  ID <- rep(paf$ID, each=4)
-  seq.pair <- rep(paf$seq.pair, each=4)
-  direction <- rep(paf$strand, each=4)
+    group <- rep(seq_len(nrow(paf)), each = 4)
+    seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
+    seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
+    seq.id <- rep(c("query", "target", "query", "target"), times = nrow(paf))
+    n.match <- rep(paf$n.match, each = 4)
+    aln.len <- rep(paf$aln.len, each = 4)
+    mapq <- rep(paf$mapq, each = 4)
+    aln.id <- rep(paf$aln.id, each = 4)
+    ID <- rep(paf$ID, each = 4)
+    seq.pair <- rep(paf$seq.pair, each = 4)
+    direction <- rep(paf$strand, each = 4)
 
-  ## Create coordinates table (for plotting)
-  coords <- dplyr::bind_cols(x = x,
-                             y = y,
-                             group = group,
-                             seq.pos = seq.pos,
-                             direction = direction,
-                             seq.name = seq.name,
-                             seq.id = seq.id,
-                             n.match = n.match,
-                             aln.len = aln.len,
-                             mapq = mapq,
-                             aln.id = aln.id,
-                             ID = ID,
-                             seq.pair = seq.pair)
+    ## Create coordinates table (for plotting)
+    coords <- dplyr::bind_cols(
+        x = x,
+        y = y,
+        group = group,
+        seq.pos = seq.pos,
+        direction = direction,
+        seq.name = seq.name,
+        seq.id = seq.id,
+        n.match = n.match,
+        aln.len = aln.len,
+        mapq = mapq,
+        aln.id = aln.id,
+        ID = ID,
+        seq.pair = seq.pair
+    )
 
-  ## Add user defined column name if defined
-  if (!is.null(add.col)) {
-    if (nchar(add.col) > 0 & add.col %in% colnames(paf)) {
-      new.col <- rep(paf[,eval(add.col), drop=TRUE], each=4)
-      coords <- coords %>% tibble::add_column(!!add.col := new.col)
-    } else {
-      warning("User defined column name in 'add.column' is not present in submitted 'paf.table', skipping !!!")
+    ## Add user defined column name if defined
+    if (!is.null(add.col)) {
+        if (nchar(add.col) > 0 & add.col %in% colnames(paf)) {
+            new.col <- rep(paf[, eval(add.col), drop = TRUE], each = 4)
+            coords <- coords %>% tibble::add_column(!!add.col := new.col)
+        } else {
+            warning("User defined column name in 'add.column' is not present in submitted 'paf.table', skipping !!!")
+        }
     }
-  }
 
-  return(coords)
+    return(coords)
 }

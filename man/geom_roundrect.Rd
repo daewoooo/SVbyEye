@@ -28,7 +28,7 @@ geom_roundrect(
 `geom_roundrect()` draws ranges defined by `xmin` and `xmax` coordinates with rounded edges.
 }
 \details{
-This geom draws rectangle with round or sharp edges between defined start and end coordinates. 
+This geom draws rectangle with round or sharp edges between defined start and end coordinates.
 Intended application of this geom is to visualize genomic coordinates defined by start and end
 position. Rounded edges will help to observe boundaries between closely positioned genomic ranges.
 }
@@ -50,15 +50,16 @@ position. Rounded edges will help to observe boundaries between closely position
 
 \examples{
 ## Create example data.frame to plot
-plt.df <- data.frame(xmin=c(10, 100, 200),
-                    xmax=c(100, 190, 400)
-                    )
+plt.df <- data.frame(
+    xmin = c(10, 100, 200),
+    xmax = c(100, 190, 400)
+)
 ## Plot rectangles with rounded edges
-ggplot2::ggplot(plt.df) + 
- geom_roundrect(ggplot2::aes(xmin=xmin, xmax=xmax, y=1))
+ggplot2::ggplot(plt.df) +
+    geom_roundrect(ggplot2::aes(xmin = xmin, xmax = xmax, y = 1))
 ## Plot rectangles without rounded edges
-ggplot2::ggplot(plt.df) + 
- geom_roundrect(ggplot2::aes(xmin=xmin, xmax=xmax, y=1), radius=grid::unit(0, "mm"))
+ggplot2::ggplot(plt.df) +
+    geom_roundrect(ggplot2::aes(xmin = xmin, xmax = xmax, y = 1), radius = grid::unit(0, "mm"))
 
 }
 \author{

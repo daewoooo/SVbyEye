@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{q2t}
 \alias{q2t}
-\title{Function to convert between different coordinate scales}
+\title{Function to convert coordinates between different coordinate scales.}
 \usage{
 q2t(x, q.range, t.range)
 }
@@ -19,6 +19,11 @@ A \code{vector} of rescaled coordinate values.
 \description{
 This function takes as input query coordinates and a query range and convert them into
 coordinate scale defined by a target range.
+}
+\examples{
+## Convert query coordinates (x) from query range (q.range) to target range (t.range)
+q2t(x = c(100, 1000), q.range = c(1, 2000), t.range = c(1, 100))
+
 }
 \author{
 David Porubsky

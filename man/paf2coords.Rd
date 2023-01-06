@@ -24,14 +24,14 @@ expanded in a set of x and y coordinates ready to be plotted by \code{\link{geom
 }
 \examples{
 ## Get PAF to process ##
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Convert PAF alignments to x and y coordinates needed for plotting
 paf2coords(paf.table = paf.table)
 ## Include optional an column to be exported as well (e.g. alignment specific GC content)
 paf.table$GC.content <- round(runif(nrow(paf.table), min = 30, max = 60), digits = 2)
-paf2coords(paf.table = paf.table, add.col = 'GC.content')
+paf2coords(paf.table = paf.table, add.col = "GC.content")
 
 }
 \author{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/flipPaf.R
 \name{flipPaf}
 \alias{flipPaf}
-\title{Flip PAF alignments}
+\title{Flip orientation of PAF alignments.}
 \usage{
 flipPaf(paf.table, majority.strand = NULL, force = FALSE)
 }
@@ -18,8 +18,17 @@ along with CIGAR string defined in 'cg' column.}
 A \code{tibble} of PAF alignments flipped based on desired majority strand orientation.
 }
 \description{
-This function takes loaded PAF alignments using \code{\link{readPaf}} function and flips 
-the alignments given the desired majority strand orientation (Either '+' or '-').
+This function takes loaded PAF alignments using \code{\link{readPaf}} function and flips
+the orientation of PAF alignments given the desired majority strand orientation (Either '+' or '-').
+}
+\examples{
+## Get PAF to process
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+## Force to flip PAF alignments
+flipPaf(paf.table = paf.table, force = TRUE)
+
 }
 \author{
 David Porubsky

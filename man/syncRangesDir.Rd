@@ -2,7 +2,7 @@
 % Please edit documentation in R/syncRangesDir.R
 \name{syncRangesDir}
 \alias{syncRangesDir}
-\title{Make sure that directionality of set of ranges reflect desired majority strand.}
+\title{Synchronize orientation of genomic ranges given the desired majority direction.}
 \usage{
 syncRangesDir(ranges, majority.strand = "+", strand.only = FALSE)
 }
@@ -14,7 +14,9 @@ syncRangesDir(ranges, majority.strand = "+", strand.only = FALSE)
 \item{strand.only}{If set to \code{TRUE} simple character string of strand directionality ('+', '-') is reported.}
 }
 \description{
-Make sure that directionality of set of ranges reflect desired majority strand.
+This function takes a set of ranges in \code{\link{GRanges-class}} object and return the same ranges
+as \code{\link{GRanges-class}} object such that total length of plus (direct, '+') and minus (minus, '-') .
+oriented ranges meet the user defined `majority.strand` orientation.
 }
 \author{
 David Porubsky

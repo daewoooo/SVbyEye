@@ -31,7 +31,7 @@ Function to load CIGAR string reported in PAF alignments into a set of genomic r
 }
 \examples{
 ## Get PAF to process
-paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test3.paf", package = "SVbyEye")
 ## Parse CIGAR into a set of genomic ranges
 cigar2ranges(paf.file = paf.file)
 

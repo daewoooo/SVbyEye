@@ -32,7 +32,7 @@ geom_wide_arc(
 \details{
 This geom is intended to draws wide arc polygons between self-alignments defined in PAF format.
 Such alignments can be directly visualized using a wrapper function \code{\link{plotSelf}}.
-Input data is a \code{data.frame} object that contains required aesthetics `x` and `y` coordinates as well as 
+Input data is a \code{data.frame} object that contains required aesthetics `x` and `y` coordinates as well as
 `group` field that is required in order to determine which coordinates represent a single alignment.
 }
 \section{Aesthetics}{
@@ -53,12 +53,14 @@ Input data is a \code{data.frame} object that contains required aesthetics `x` a
 
 \examples{
 ## Create example data.frame to plot
-plt.df <- data.frame(x=c(100, 500, 200, 1000),
-                    y=0,
-                    group=1)
-## Make a plot 
-ggplot2::ggplot(plt.df) + 
- geom_wide_arc(ggplot2::aes(x=x, y=y, group=group), alpha=0.5)
+plt.df <- data.frame(
+    x = c(100, 500, 200, 1000),
+    y = 0,
+    group = 1
+)
+## Make a plot
+ggplot2::ggplot(plt.df) +
+    geom_wide_arc(ggplot2::aes(x = x, y = y, group = group), alpha = 0.5)
 
 }
 \seealso{

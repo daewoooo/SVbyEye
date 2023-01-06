@@ -22,13 +22,13 @@ present in `paf.table`.
 }
 \examples{
 ## Get PAF to plot ##
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Split PAF alignments into user defined bins
 paf.table <- pafToBins(paf.table = paf.table, binsize = 1000)
 ## Collapse PAF alignments by bin id
-collapsePaf(paf.table = paf.table, collapse.by = 'bin.id')
+collapsePaf(paf.table = paf.table, collapse.by = "bin.id")
 
 }
 \author{

@@ -37,7 +37,7 @@ towards the other end of the alignment polygon (Default : `0.5`).}
 This geom draws polygons between query to target alignments defined in PAF format.
 Such alignments are first loaded using \code{\link{readPaf}} function into a \code{tibble} object.
 Then loaded alignments are converted into the plotting coordinates using \code{\link{paf2coords}} function.
-molecule. Resulting \code{data.frame} object contains required aesthetics `x` and `y` coordinates as well as 
+molecule. Resulting \code{data.frame} object contains required aesthetics `x` and `y` coordinates as well as
 `group` field that is required in order to determine which coordinates represent a single alignment.
 }
 \section{Aesthetics}{
@@ -58,14 +58,14 @@ molecule. Resulting \code{data.frame} object contains required aesthetics `x` an
 
 \examples{
 ## Get PAF to plot
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
-## Read in PAF 
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Convert PAF alignments to plotting coordinates
 coords <- paf2coords(paf.table = paf.table)
-## Make a plot 
+## Make a plot
 ggplot2::ggplot(coords) +
- geom_miropeats(ggplot2::aes(x, y, group = group, fill = direction), alpha = 0.5)
+    geom_miropeats(ggplot2::aes(x, y, group = group, fill = direction), alpha = 0.5)
 
 }
 \seealso{

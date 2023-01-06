@@ -20,410 +20,440 @@
 #' @author David Porubsky
 #' @export
 #' @examples
-#'## Get PAF to plot
-#'paf.file <- system.file("extdata", "test2.paf", package="SVbyEye")
-#'## Read in PAF
-#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
-#'## Make a plot
-#'## Plot alignment as horizontal dotplots and color by alignment directionality
-#'plotSelf(paf.table = paf.table, color.by = 'direction', shape='segment')
-#'## Plot alignment as arcs and color by alignment directionality
-#'plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc')
-#'## Highlight structural variants
-#'plotSelf(paf.table = paf.table, min.deletion.size=50, min.insertion.size=50,
-#'         highlight.sv='outline')
-#'## Highlight structural variants and visualize as arcs
-#'plotSelf(paf.table = paf.table, min.deletion.size=50, min.insertion.size=50,
-#'         highlight.sv='outline', shape='arc')
-#'## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
-#'plotSelf(paf.table = paf.table, binsize=1000)
-#'plotSelf(paf.table = paf.table, binsize=1000, shape='arc')
-#'## Add annotation to self-alignments ##
-#'annot.file <- system.file("extdata", "test2.sd.annot.RData", package="SVbyEye")
-#'annot.gr <- get(load(annot.file))
-#'plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc')
-#'## Add annotation to a new level
-#'addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
-#'## Add annotation to the alignment level
-#'plt <- plotSelf(paf.table = paf.table, color.by = 'direction', shape='arc',
-#'                add.alignment.arrows=FALSE)
-#'addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self',
-#'              new.annotation.level=FALSE)
+#' ## Get PAF to plot
+#' paf.file <- system.file("extdata", "test2.paf", package = "SVbyEye")
+#' ## Read in PAF
+#' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+#' ## Make a plot
+#' ## Plot alignment as horizontal dotplots and color by alignment directionality
+#' plotSelf(paf.table = paf.table, color.by = "direction", shape = "segment")
+#' ## Plot alignment as arcs and color by alignment directionality
+#' plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
+#' ## Highlight structural variants
+#' plotSelf(
+#'     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
+#'     highlight.sv = "outline"
+#' )
+#' ## Highlight structural variants and visualize as arcs
+#' plotSelf(
+#'     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
+#'     highlight.sv = "outline", shape = "arc"
+#' )
+#' ## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
+#' plotSelf(paf.table = paf.table, binsize = 1000)
+#' plotSelf(paf.table = paf.table, binsize = 1000, shape = "arc")
+#' ## Add annotation to self-alignments ##
+#' annot.file <- system.file("extdata", "test2.sd.annot.RData", package = "SVbyEye")
+#' annot.gr <- get(load(annot.file))
+#' plt <- plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
+#' ## Add annotation to a new level
+#' addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = "self")
+#' ## Add annotation to the alignment level
+#' plt <- plotSelf(
+#'     paf.table = paf.table, color.by = "direction", shape = "arc",
+#'     add.alignment.arrows = FALSE
+#' )
+#' addAnnotation(
+#'     ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = "self",
+#'     new.annotation.level = FALSE
+#' )
 #'
-plotSelf <- function(paf.table=NULL, min.deletion.size=NULL, min.insertion.size=NULL, highlight.sv=NULL, binsize=NULL, shape='segment', sort.by='position', color.by='direction', color.palette=NULL, add.alignment.arrows=TRUE, highlight.pos=NULL, highlight.region=NULL) {
-  ## Check user input
-  ## Make sure submitted paf.table has at least 12 mandatory fields
-  if (ncol(paf.table) >= 12) {
-    paf <- paf.table
-    ## Add PAF alignment IDs if it doesn't exists
-    if (!'aln.id' %in% colnames(paf)) {
-      paf$aln.id <- 1:nrow(paf)
-    }
-  } else {
-    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
-  }
-  ## Keep only self-alignments (query and target names have to be the same)
-  paf <- paf[paf$q.name == paf$t.name,]
-  if (nrow(paf) == 0) {
-    stop("No self-alignments present in submitted 'paf.table', self-alignments are expected to have the same value in 'q.name' and 't.name' field !!!")
-  }
-
-  ## Break PAF at insertion/deletions defined in cigar string
-  if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
+plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, shape = "segment", sort.by = "position", color.by = "direction", color.palette = NULL, add.alignment.arrows = TRUE, highlight.pos = NULL, highlight.region = NULL) {
     ## Check user input
-    if (is.null(min.deletion.size)) {min.deletion.size <- 0}
-    if (is.null(min.insertion.size)) {min.insertion.size <- 0}
-    if (min.deletion.size > 0 | min.insertion.size > 0) {
-      paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
-      paf <- paf.l$M
-      paf.svs <- paf.l$SVs
-    }
-  } else {
-    #paf$aln.id <- 1:nrow(paf)
-    paf.svs <- NULL
-    if (!is.null(highlight.sv)) {
-      highlight.sv <- NULL
-      warning("Please specify 'min.deletion.size' and 'min.insertion.size' in order to make parameter 'highlight.sv' to work !!!")
-    }
-  }
-  ## Store PAF alignments for later addition of 'geom_gene_arrow'
-  paf.copy <- paf
-  paf.copy$ID <- 'M'
-
-  ## Bin PAF alignments
-  if (!is.null(binsize)) {
-    if (binsize > 0) {
-      if (binsize < 10) {
-        binsize <- 10
-        warning('Minimum allowed bin size is 10, forced binsize=10!!!')
-      }
-      paf <- pafToBins(paf.table = paf, binsize = binsize)
-      ## If the PAF alignments are binned only color.by = 'fraction.matches' is allowed
-      color.by <- 'identity'
-    }
-  }
-  ## Mark alignments ranges by 'M' (matches)
-  paf$ID <- 'M'
-
-  ## Add SVs to the alignment table
-  if (!is.null(paf.svs)) {
-    if (nrow(paf.svs) > 0) {
-      paf.svs$ID <- 'INS'
-      paf.svs$ID[grep(paf.svs$cg, pattern = 'D', ignore.case = TRUE)] <- 'DEL'
-      paf <- dplyr::bind_rows(paf, paf.svs)
-    }
-  }
-
-  ## Prepare data for plotting ##
-  ## When dealing with self-alignments query (left-most) sequence is denoted as s1 and target (right-most) sequence is s2
-  paf <- paf[paf$ID == 'M',]
-  coords <- data.frame(s1.start = paf$q.start,
-                       s1.end = paf$q.end,
-                       s2.start = paf$t.start,
-                       s2.end = paf$t.end,
-                       s1.width = (paf$q.end - paf$q.start) + 1,
-                       s2.width = (paf$t.end - paf$t.start) + 1,
-                       s1.id = paf$q.name,
-                       s2.id = paf$t.name,
-                       dir = paf$strand,
-                       n.match = paf$n.match,
-                       aln.len = paf$aln.len,
-                       identity = (paf$n.match / paf$aln.len) * 100,
-                       aln.id = paf$aln.id,
-                       stringsAsFactors = FALSE)
-
-  ## Get max position (for x-axis plotting)
-  max.pos <- unique(paf$q.len)
-  ## Flip start and end for reverse oriented alignments
-  coords[coords$dir == '-',] <- transform(coords[coords$dir == '-',],
-                                          's2.start' = coords[coords$dir == '-',]$s2.end,
-                                          's2.end' = coords[coords$dir == '-',]$s2.start)
-  ## Sort alignments
-  if (sort.by == 'position') {
-    ## Order alignments by query position
-    ord.aln.id <- coords %>%
-      dplyr::group_by(.data$aln.id) %>%
-      dplyr::summarise(start.id = min(.data$s1.start)) %>%
-      dplyr::arrange(.data$start.id)
-    coords$aln.id <- factor(coords$aln.id, levels = ord.aln.id$aln.id)
-
-    coords <- coords %>%
-      dplyr::group_by(.data$aln.id) %>%
-      dplyr::arrange(.data$s1.start, .by_group = TRUE)
-  } else if (sort.by == 'length') {
-    ## Order alignments by alignment length
-    coords <- coords %>%
-      dplyr::group_by(.data$aln.id) %>%
-      dplyr::mutate(length.id = sum(.data$aln.len)) %>%
-      dplyr::arrange(dplyr::desc(.data$length.id), .data$s1.start)
-  } else {
-    ## Order by alignment id
-    coords <- coords %>% dplyr::arrange(.data$aln.id, .data$s1.start)
-  }
-
-  ## Make self-dotplot ##
-  #######################
-  ## Define color palette for alignment directionality
-  if (!is.null(color.palette)) {
-    if (all(c('+', '-') %in% names(color.palette))) {
-      pal <- color.palette
-    } else {
-      pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
-      warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
-    }
-  } else {
-    pal <- c('-' = 'cornflowerblue', '+' = 'forestgreen')
-  }
-
-  ## Define discrete color palettes
-  if (color.by == 'direction') {
-    coords$col.levels <- factor(coords$dir, levels = c('+', '-'))
-  } else if (color.by == 'identity') {
-    coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
-    ## Define color scheme
-    coords.l <- getColorScheme(data.table = coords, value.field = 'identity', breaks=c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9))
-    coords <- coords.l$data
-    coords$identity <- coords$col.levels
-    colors <- coords.l$colors
-  } else if (color.by %in% colnames(paf)) {
-    ## Define color scheme
-    coords.l <- getColorScheme(data.table = coords, value.field = color.by)
-    coords <- coords.l$data
-    colors <- coords.l$colors
-  } else {
-    color.by <- 'direction'
-  }
-
-  ## Define plotting coordinates
-  if (shape == 'segment') {
-    coords$y1 <- 0
-    coords$y1end <- 0
-    coords$y2 <- 0
-    coords$y2end <- 0
-    for (i in 1:nrow(coords)) {
-      row.df <- coords[i,]
-      if (i == 1) {
-        row.df$y1 <- 1
-        row.df$y2 <- 1
-        row.df$y1end <- row.df$s1.width
-        row.df$y2end <- row.df$s2.width
-        offset <- max(row.df$y1end, row.df$y2end)
-      } else {
-        row.df$y1 <- offset
-        row.df$y2 <- offset
-        row.df$y1end <- offset + row.df$s1.width
-        row.df$y2end <- offset + row.df$s2.width
-        offset <- max(row.df$y1end, row.df$y2end)
-      }
-      coords[i,] <- row.df
-    }
-
-    ## Get polygon coordinates
-    plt.dir.df <- coords[coords$dir == '+',]
-    plt.rev.df <- coords[coords$dir == '-',]
-    if (nrow(plt.dir.df) > 0) {
-      poly.dir.df <- data.frame(x=c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
-                                #y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
-                                y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
-                                group=rep(1:nrow(plt.dir.df), each=4),
-                                col.levels=rep(plt.dir.df$col.levels, each=4))
-                                #direction=rep(plt.dir.df$dir, each=4),
-                                #identity=rep(plt.dir.df$identity, each=4))
-    } else {
-      poly.dir.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                                y=c(rbind(NaN, NaN, NaN, NaN)),
-                                group=rep(1, each=4),
-                                col.levels=factor(NA, levels(coords$col.levels)))
-                                #direction=rep('+', each=4),
-                                #identity=rep(NA, each=4))
-    }
-
-    if (nrow(plt.rev.df) > 0) {
-      poly.rev.df <- data.frame(x=c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
-                                y=c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
-                                group=rep(1:nrow(plt.rev.df), each=4),
-                                col.levels=rep(plt.rev.df$col.levels, each=4))
-                                #direction=rep(plt.rev.df$dir, each=4),
-                                #identity=rep(plt.rev.df$identity, each=4))
-    } else {
-      poly.rev.df <- data.frame(x=c(rbind(NaN, NaN, NaN, NaN)),
-                                y=c(rbind(NaN, NaN, NaN, NaN)),
-                                group=rep(1, each=4),
-                                col.levels=factor(NA, levels(coords$col.levels)))
-                                #direction=rep('-', each=4),
-                                #identity=rep(NA, each=4))
-    }
-
-    ## Make segment dotplot
-    y.limit <- max(c(coords$y1end, coords$y2end))
-    ## Plot alignment pairs
-    plt <- ggplot2::ggplot(coords) +
-      ggplot2::geom_segment(ggplot2::aes(x = .data$s1.start, xend = .data$s1.end, y = .data$y1, yend = .data$y1end)) +
-      ggplot2::geom_segment(ggplot2::aes(x = .data$s2.start, xend = .data$s2.end, y = .data$y2, yend = .data$y2end)) +
-      ggplot2::geom_polygon(data=poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
-      ggplot2::geom_polygon(data=poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha=0.5) +
-      ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
-      ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
-      ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
-      ggplot2::ylab('Self-alignments') +
-      ggplot2::xlab('Contig position (bp)')
-    ## Define alignment color scheme
-    if (color.by == 'direction') {
-      plt <- plt + ggplot2::scale_fill_manual(values = pal, drop=FALSE, name='Alignment\ndirection')
-    } else {
-      plt <- plt + ggplot2::scale_fill_manual(values = colors, drop=FALSE, name=eval(color.by))
-    }
-      #coord_fixed(ratio = 1) +
-
-    ## Add indels
-    if (!is.null(highlight.sv)) {
-      if (nrow(paf.svs) > 0) {
-        ## Define SV ranges
-        ## Insertions belong to query coordinates and deletions to target coordinates
-        ins <- paf.svs[paf.svs$ID == 'INS', c('q.name', 'q.start', 'q.end', 'ID')]
-        colnames(ins) <- c('seqnames', 'start', 'end', 'ID')
-        del <- paf.svs[paf.svs$ID == 'DEL', c('t.name', 't.start', 't.end', 'ID')]
-        colnames(del) <- c('seqnames', 'start', 'end', 'ID')
-        coords.svs <- dplyr::bind_rows(ins, del)
-
-        ## Add SVs to the plot
-        if (highlight.sv == 'outline') {
-          plt <- plt + ggnewscale::new_scale_color() +
-            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, ymin = -Inf, ymax = Inf, color = .data$ID), fill = NA, alpha = 0.5, inherit.aes = FALSE) +
-            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
-        } else if (highlight.sv == 'fill') {
-          plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-            ggplot2::geom_rect(data=coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, ymin = -Inf, ymax = Inf, fill = .data$ID, color = .data$ID), size = 0.2, alpha = 0.5, inherit.aes = FALSE) +
-            ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
-            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
-        } else {
-          warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+    ## Make sure submitted paf.table has at least 12 mandatory fields
+    if (ncol(paf.table) >= 12) {
+        paf <- paf.table
+        ## Add PAF alignment IDs if it doesn't exists
+        if (!"aln.id" %in% colnames(paf)) {
+            paf$aln.id <- seq_len(nrow(paf))
         }
-      } else {
-        warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
-      }
-    }
-
-  } else if (shape == 'arc') {
-    ## Make Arc plot
-    x <- c(rbind(coords$s1.start, coords$s2.start, coords$s1.end, coords$s2.end))
-    group <- rep(1:nrow(coords), each=4)
-    seq.id <- c(rbind('s1', 's2', 's1', 's2'))
-    col.levels <- rep(coords$col.levels, each=4)
-    #direction <- rep(coords$dir, each=4)
-    #identity <- rep(coords$identity, each=4)
-
-    plt.df <- data.frame(x=x,
-                         y=0,
-                         group=group,
-                         seq.id=seq.id,
-                         col.levels=col.levels)
-                         #direction=direction,
-                         #identity=identity)
-
-    plt <- ggplot2::ggplot(plt.df) +
-      geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
-      ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
-      ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
-      ggplot2::ylab('Self-alignments') +
-      ggplot2::xlab('Contig position (bp)')
-    ## Define alignment color scheme
-    if (color.by == 'direction') {
-      plt <- plt + ggplot2::scale_fill_manual(values = pal, drop=FALSE, name='Alignment\ndirection')
     } else {
-      plt <- plt + ggplot2::scale_fill_manual(values = colors, drop=FALSE, name=eval(color.by))
+        stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
+    }
+    ## Keep only self-alignments (query and target names have to be the same)
+    paf <- paf[paf$q.name == paf$t.name, ]
+    if (nrow(paf) == 0) {
+        stop("No self-alignments present in submitted 'paf.table', self-alignments are expected to have the same value in 'q.name' and 't.name' field !!!")
     }
 
-    ## Add indels
-    if (!is.null(highlight.sv)) {
-      if (nrow(paf.svs) > 0) {
-        ## Define SV ranges
-        x <- c(rbind(paf.svs$q.start, paf.svs$t.start, paf.svs$q.end, paf.svs$t.end))
-        group <- rep(1:nrow(paf.svs), each=4)
-        seq.id <- c(rbind('s1', 's2', 's1', 's2'))
-        direction <- rep(paf.svs$strand, each=4)
-        ID <- rep(paf.svs$ID, each=4)
-
-        svs.df <- data.frame(x=x,
-                             y=0,
-                             group=group,
-                             seq.id=seq.id,
-                             direction=direction,
-                             ID=ID)
-
-        ## Add SVs to the plot
-        if (highlight.sv == 'outline') {
-          plt <- plt + ggnewscale::new_scale_color() +
-            geom_wide_arc(data=svs.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, color = .data$ID), fill=NA, alpha=0.5, inherit.aes = FALSE) +
-            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
-        } else if (highlight.sv == 'fill') {
-          plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-            geom_wide_arc(data=svs.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$ID, color = .data$ID), size=0.2, alpha=0.5, inherit.aes = FALSE) +
-            ggplot2::scale_fill_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class') +
-            ggplot2::scale_color_manual(values = c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3'), name='SV class')
-        } else {
-          warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+    ## Break PAF at insertion/deletions defined in cigar string
+    if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
+        ## Check user input
+        if (is.null(min.deletion.size)) {
+            min.deletion.size <- 0
         }
-      } else {
-        warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
-      }
+        if (is.null(min.insertion.size)) {
+            min.insertion.size <- 0
+        }
+        if (min.deletion.size > 0 | min.insertion.size > 0) {
+            paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+            paf <- paf.l$M
+            paf.svs <- paf.l$SVs
+        }
+    } else {
+        # paf$aln.id <- 1:nrow(paf)
+        paf.svs <- NULL
+        if (!is.null(highlight.sv)) {
+            highlight.sv <- NULL
+            warning("Please specify 'min.deletion.size' and 'min.insertion.size' in order to make parameter 'highlight.sv' to work !!!")
+        }
+    }
+    ## Store PAF alignments for later addition of 'geom_gene_arrow'
+    paf.copy <- paf
+    paf.copy$ID <- "M"
+
+    ## Bin PAF alignments
+    if (!is.null(binsize)) {
+        if (binsize > 0) {
+            if (binsize < 10) {
+                binsize <- 10
+                warning("Minimum allowed bin size is 10, forced binsize=10!!!")
+            }
+            paf <- pafToBins(paf.table = paf, binsize = binsize)
+            ## If the PAF alignments are binned only color.by = 'fraction.matches' is allowed
+            color.by <- "identity"
+        }
+    }
+    ## Mark alignments ranges by 'M' (matches)
+    paf$ID <- "M"
+
+    ## Add SVs to the alignment table
+    if (!is.null(paf.svs)) {
+        if (nrow(paf.svs) > 0) {
+            paf.svs$ID <- "INS"
+            paf.svs$ID[grep(paf.svs$cg, pattern = "D", ignore.case = TRUE)] <- "DEL"
+            paf <- dplyr::bind_rows(paf, paf.svs)
+        }
     }
 
-  } else {
-    warning("Paremeter shape can only take values 'segment' or 'arc' !!!")
-    plt <- ggplot() +
-      scale_fill_manual(values = pal) +
-      ylab('Self-alignments') +
-      xlab('Contig position (bp)') +
-      theme_minimal() +
-      theme(axis.text.y = element_blank(),
-            axis.ticks.y = element_blank())
-  }
+    ## Prepare data for plotting ##
+    ## When dealing with self-alignments query (left-most) sequence is denoted as s1 and target (right-most) sequence is s2
+    paf <- paf[paf$ID == "M", ]
+    coords <- data.frame(
+        s1.start = paf$q.start,
+        s1.end = paf$q.end,
+        s2.start = paf$t.start,
+        s2.end = paf$t.end,
+        s1.width = (paf$q.end - paf$q.start) + 1,
+        s2.width = (paf$t.end - paf$t.start) + 1,
+        s1.id = paf$q.name,
+        s2.id = paf$t.name,
+        dir = paf$strand,
+        n.match = paf$n.match,
+        aln.len = paf$aln.len,
+        identity = (paf$n.match / paf$aln.len) * 100,
+        aln.id = paf$aln.id,
+        stringsAsFactors = FALSE
+    )
 
-  ## Add alignment arrows
-  if (add.alignment.arrows) {
-    arrow.df <- data.frame('xmin' = c(rbind(paf.copy$q.start, paf.copy$t.start)),
-                           'xmax' = c(rbind(paf.copy$q.end, paf.copy$t.end)),
-                           'col.levels' = factor(c(rbind('+', paf.copy$strand)), levels = c('+', '-'))) # to make sure s1 is always forward
-    arrow.df$dir <- ifelse(arrow.df$col.levels == '+', 1, -1)
-    ## Make sure start is always smaller than end of the alignment
-    arrow.df[,c('xmin', 'xmax')] <- t(apply(arrow.df[,c('xmin', 'xmax')], 1, sort))
-    ## Plot arrows
-    plt <- plt + ggnewscale::new_scale_fill() +
-      gggenes::geom_gene_arrow(data=arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = 0, forward = .data$dir, fill = .data$col.levels), arrowhead_height = grid::unit(3, 'mm')) +
-      ggplot2::scale_fill_manual(values = pal, name='Alignment\ndirection')
-  }
+    ## Get max position (for x-axis plotting)
+    max.pos <- unique(paf$q.len)
+    ## Flip start and end for reverse oriented alignments
+    coords[coords$dir == "-", ] <- transform(coords[coords$dir == "-", ],
+        "s2.start" = coords[coords$dir == "-", ]$s2.end,
+        "s2.end" = coords[coords$dir == "-", ]$s2.start
+    )
+    ## Sort alignments
+    if (sort.by == "position") {
+        ## Order alignments by query position
+        ord.aln.id <- coords %>%
+            dplyr::group_by(.data$aln.id) %>%
+            dplyr::summarise(start.id = min(.data$s1.start)) %>%
+            dplyr::arrange(.data$start.id)
+        coords$aln.id <- factor(coords$aln.id, levels = ord.aln.id$aln.id)
 
-  ## Highlight user defined positions
-  if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
-    highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
-
-    if (length(highlight.pos) > 0) {
-      plt <- plt + ggplot2::geom_vline(xintercept = highlight.pos)
+        coords <- coords %>%
+            dplyr::group_by(.data$aln.id) %>%
+            dplyr::arrange(.data$s1.start, .by_group = TRUE)
+    } else if (sort.by == "length") {
+        ## Order alignments by alignment length
+        coords <- coords %>%
+            dplyr::group_by(.data$aln.id) %>%
+            dplyr::mutate(length.id = sum(.data$aln.len)) %>%
+            dplyr::arrange(dplyr::desc(.data$length.id), .data$s1.start)
+    } else {
+        ## Order by alignment id
+        coords <- coords %>% dplyr::arrange(.data$aln.id, .data$s1.start)
     }
-  }
 
-  ## Highlight user defined region
-  if (!is.null(highlight.region)) {
-    highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos,]
-
-    if (nrow(highlight.region) > 0) {
-      plt <- plt + ggplot2::geom_rect(data = highlight.region, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = 0, ymax = Inf), color = 'red', alpha = 0.25)
+    ## Make self-dotplot ##
+    #######################
+    ## Define color palette for alignment directionality
+    if (!is.null(color.palette)) {
+        if (all(c("+", "-") %in% names(color.palette))) {
+            pal <- color.palette
+        } else {
+            pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
+            warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
+        }
+    } else {
+        pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
     }
-  }
 
-  ## Set the theme
-  theme_self <- ggplot2::theme(panel.grid.major = ggplot2::element_blank(),
-                               panel.grid.minor = ggplot2::element_blank(),
-                               panel.background = ggplot2::element_blank(),
-                               axis.line.x = ggplot2::element_line(linewidth = 1),
-                               axis.ticks.x = ggplot2::element_line(linewidth = 1),
-                               axis.ticks.length.x = grid::unit(2, 'mm'),
-                               axis.text.y = ggplot2::element_blank(),
-                               axis.ticks.y = ggplot2::element_blank())
-  plt <- plt + theme_self
+    ## Define discrete color palettes
+    if (color.by == "direction") {
+        coords$col.levels <- factor(coords$dir, levels = c("+", "-"))
+    } else if (color.by == "identity") {
+        coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
+        ## Define color scheme
+        coords.l <- getColorScheme(data.table = coords, value.field = "identity", breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9))
+        coords <- coords.l$data
+        coords$identity <- coords$col.levels
+        colors <- coords.l$colors
+    } else if (color.by %in% colnames(paf)) {
+        ## Define color scheme
+        coords.l <- getColorScheme(data.table = coords, value.field = color.by)
+        coords <- coords.l$data
+        colors <- coords.l$colors
+    } else {
+        color.by <- "direction"
+    }
 
-  ## Return final plot
-  return(plt)
+    ## Define plotting coordinates
+    if (shape == "segment") {
+        coords$y1 <- 0
+        coords$y1end <- 0
+        coords$y2 <- 0
+        coords$y2end <- 0
+        for (i in seq_len(nrow(coords))) {
+            row.df <- coords[i, ]
+            if (i == 1) {
+                row.df$y1 <- 1
+                row.df$y2 <- 1
+                row.df$y1end <- row.df$s1.width
+                row.df$y2end <- row.df$s2.width
+                offset <- max(row.df$y1end, row.df$y2end)
+            } else {
+                row.df$y1 <- offset
+                row.df$y2 <- offset
+                row.df$y1end <- offset + row.df$s1.width
+                row.df$y2end <- offset + row.df$s2.width
+                offset <- max(row.df$y1end, row.df$y2end)
+            }
+            coords[i, ] <- row.df
+        }
+
+        ## Get polygon coordinates
+        plt.dir.df <- coords[coords$dir == "+", ]
+        plt.rev.df <- coords[coords$dir == "-", ]
+        if (nrow(plt.dir.df) > 0) {
+            poly.dir.df <- data.frame(
+                x = c(rbind(plt.dir.df$s1.start, plt.dir.df$s2.start, plt.dir.df$s2.end, plt.dir.df$s1.end)),
+                # y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
+                y = c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
+                group = rep(seq_len(nrow(plt.dir.df)), each = 4),
+                col.levels = rep(plt.dir.df$col.levels, each = 4)
+            )
+            # direction=rep(plt.dir.df$dir, each=4),
+            # identity=rep(plt.dir.df$identity, each=4))
+        } else {
+            poly.dir.df <- data.frame(
+                x = c(rbind(NaN, NaN, NaN, NaN)),
+                y = c(rbind(NaN, NaN, NaN, NaN)),
+                group = rep(1, each = 4),
+                col.levels = factor(NA, levels(coords$col.levels))
+            )
+            # direction=rep('+', each=4),
+            # identity=rep(NA, each=4))
+        }
+
+        if (nrow(plt.rev.df) > 0) {
+            poly.rev.df <- data.frame(
+                x = c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
+                y = c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
+                group = rep(seq_len(nrow(plt.rev.df)), each = 4),
+                col.levels = rep(plt.rev.df$col.levels, each = 4)
+            )
+            # direction=rep(plt.rev.df$dir, each=4),
+            # identity=rep(plt.rev.df$identity, each=4))
+        } else {
+            poly.rev.df <- data.frame(
+                x = c(rbind(NaN, NaN, NaN, NaN)),
+                y = c(rbind(NaN, NaN, NaN, NaN)),
+                group = rep(1, each = 4),
+                col.levels = factor(NA, levels(coords$col.levels))
+            )
+            # direction=rep('-', each=4),
+            # identity=rep(NA, each=4))
+        }
+
+        ## Make segment dotplot
+        y.limit <- max(c(coords$y1end, coords$y2end))
+        ## Plot alignment pairs
+        plt <- ggplot2::ggplot(coords) +
+            ggplot2::geom_segment(ggplot2::aes(x = .data$s1.start, xend = .data$s1.end, y = .data$y1, yend = .data$y1end)) +
+            ggplot2::geom_segment(ggplot2::aes(x = .data$s2.start, xend = .data$s2.end, y = .data$y2, yend = .data$y2end)) +
+            ggplot2::geom_polygon(data = poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
+            ggplot2::geom_polygon(data = poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
+            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+            ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+            ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            ggplot2::ylab("Self-alignments") +
+            ggplot2::xlab("Contig position (bp)")
+        ## Define alignment color scheme
+        if (color.by == "direction") {
+            plt <- plt + ggplot2::scale_fill_manual(values = pal, drop = FALSE, name = "Alignment\ndirection")
+        } else {
+            plt <- plt + ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = eval(color.by))
+        }
+        # coord_fixed(ratio = 1) +
+
+        ## Add indels
+        if (!is.null(highlight.sv)) {
+            if (nrow(paf.svs) > 0) {
+                ## Define SV ranges
+                ## Insertions belong to query coordinates and deletions to target coordinates
+                ins <- paf.svs[paf.svs$ID == "INS", c("q.name", "q.start", "q.end", "ID")]
+                colnames(ins) <- c("seqnames", "start", "end", "ID")
+                del <- paf.svs[paf.svs$ID == "DEL", c("t.name", "t.start", "t.end", "ID")]
+                colnames(del) <- c("seqnames", "start", "end", "ID")
+                coords.svs <- dplyr::bind_rows(ins, del)
+
+                ## Add SVs to the plot
+                if (highlight.sv == "outline") {
+                    plt <- plt + ggnewscale::new_scale_color() +
+                        ggplot2::geom_rect(data = coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, ymin = -Inf, ymax = Inf, color = .data$ID), fill = NA, alpha = 0.5, inherit.aes = FALSE) +
+                        ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                } else if (highlight.sv == "fill") {
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                        ggplot2::geom_rect(data = coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, ymin = -Inf, ymax = Inf, fill = .data$ID, color = .data$ID), size = 0.2, alpha = 0.5, inherit.aes = FALSE) +
+                        ggplot2::scale_fill_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class") +
+                        ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                } else {
+                    warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+                }
+            } else {
+                warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+            }
+        }
+    } else if (shape == "arc") {
+        ## Make Arc plot
+        x <- c(rbind(coords$s1.start, coords$s2.start, coords$s1.end, coords$s2.end))
+        group <- rep(seq_len(nrow(coords)), each = 4)
+        seq.id <- c(rbind("s1", "s2", "s1", "s2"))
+        col.levels <- rep(coords$col.levels, each = 4)
+        # direction <- rep(coords$dir, each=4)
+        # identity <- rep(coords$identity, each=4)
+
+        plt.df <- data.frame(
+            x = x,
+            y = 0,
+            group = group,
+            seq.id = seq.id,
+            col.levels = col.levels
+        )
+        # direction=direction,
+        # identity=identity)
+
+        plt <- ggplot2::ggplot(plt.df) +
+            geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
+            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+            ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            ggplot2::ylab("Self-alignments") +
+            ggplot2::xlab("Contig position (bp)")
+        ## Define alignment color scheme
+        if (color.by == "direction") {
+            plt <- plt + ggplot2::scale_fill_manual(values = pal, drop = FALSE, name = "Alignment\ndirection")
+        } else {
+            plt <- plt + ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = eval(color.by))
+        }
+
+        ## Add indels
+        if (!is.null(highlight.sv)) {
+            if (nrow(paf.svs) > 0) {
+                ## Define SV ranges
+                x <- c(rbind(paf.svs$q.start, paf.svs$t.start, paf.svs$q.end, paf.svs$t.end))
+                group <- rep(seq_len(nrow(paf.svs)), each = 4)
+                seq.id <- c(rbind("s1", "s2", "s1", "s2"))
+                direction <- rep(paf.svs$strand, each = 4)
+                ID <- rep(paf.svs$ID, each = 4)
+
+                svs.df <- data.frame(
+                    x = x,
+                    y = 0,
+                    group = group,
+                    seq.id = seq.id,
+                    direction = direction,
+                    ID = ID
+                )
+
+                ## Add SVs to the plot
+                if (highlight.sv == "outline") {
+                    plt <- plt + ggnewscale::new_scale_color() +
+                        geom_wide_arc(data = svs.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, color = .data$ID), fill = NA, alpha = 0.5, inherit.aes = FALSE) +
+                        ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                } else if (highlight.sv == "fill") {
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                        geom_wide_arc(data = svs.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$ID, color = .data$ID), size = 0.2, alpha = 0.5, inherit.aes = FALSE) +
+                        ggplot2::scale_fill_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class") +
+                        ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                } else {
+                    warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+                }
+            } else {
+                warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+            }
+        }
+    } else {
+        warning("Paremeter shape can only take values 'segment' or 'arc' !!!")
+        plt <- ggplot() +
+            scale_fill_manual(values = pal) +
+            ylab("Self-alignments") +
+            xlab("Contig position (bp)") +
+            theme_minimal() +
+            theme(
+                axis.text.y = element_blank(),
+                axis.ticks.y = element_blank()
+            )
+    }
+
+    ## Add alignment arrows
+    if (add.alignment.arrows) {
+        arrow.df <- data.frame(
+            "xmin" = c(rbind(paf.copy$q.start, paf.copy$t.start)),
+            "xmax" = c(rbind(paf.copy$q.end, paf.copy$t.end)),
+            "col.levels" = factor(c(rbind("+", paf.copy$strand)), levels = c("+", "-"))
+        ) # to make sure s1 is always forward
+        arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, -1)
+        ## Make sure start is always smaller than end of the alignment
+        arrow.df[, c("xmin", "xmax")] <- t(apply(arrow.df[, c("xmin", "xmax")], 1, sort))
+        ## Plot arrows
+        plt <- plt + ggnewscale::new_scale_fill() +
+            gggenes::geom_gene_arrow(data = arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = 0, forward = .data$dir, fill = .data$col.levels), arrowhead_height = grid::unit(3, "mm")) +
+            ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection")
+    }
+
+    ## Highlight user defined positions
+    if (!is.null(highlight.pos) & is.numeric(highlight.pos)) {
+        highlight.pos <- highlight.pos[highlight.pos > 0 & highlight.pos <= max.pos]
+
+        if (length(highlight.pos) > 0) {
+            plt <- plt + ggplot2::geom_vline(xintercept = highlight.pos)
+        }
+    }
+
+    ## Highlight user defined region
+    if (!is.null(highlight.region)) {
+        highlight.region <- highlight.region[highlight.region$xmin > 0 & highlight.region$xmax <= max.pos, ]
+
+        if (nrow(highlight.region) > 0) {
+            plt <- plt + ggplot2::geom_rect(data = highlight.region, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, ymin = 0, ymax = Inf), color = "red", alpha = 0.25)
+        }
+    }
+
+    ## Set the theme
+    theme_self <- ggplot2::theme(
+        panel.grid.major = ggplot2::element_blank(),
+        panel.grid.minor = ggplot2::element_blank(),
+        panel.background = ggplot2::element_blank(),
+        axis.line.x = ggplot2::element_line(linewidth = 1),
+        axis.ticks.x = ggplot2::element_line(linewidth = 1),
+        axis.ticks.length.x = grid::unit(2, "mm"),
+        axis.text.y = ggplot2::element_blank(),
+        axis.ticks.y = ggplot2::element_blank()
+    )
+    plt <- plt + theme_self
+
+    ## Return final plot
+    return(plt)
 }
-

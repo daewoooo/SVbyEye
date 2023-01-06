@@ -19,13 +19,13 @@ Function to parse CIGAR string into a set interval ranges.
 }
 \examples{
 ## Get PAF to process
-paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test3.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Parse CIGAR in reference (target) space
 parseCigarString(cigar.str = paf.table$cg)
 ## Parse CIGAR in query space
-parseCigarString(cigar.str = paf.table$cg, coordinate.space = 'query')
+parseCigarString(cigar.str = paf.table$cg, coordinate.space = "query")
 
 }
 \author{

@@ -32,16 +32,18 @@ This function with take a PAF table and for each alignment (rows) will report co
 }
 \examples{
 ## Get PAF to process ##
-paf.file <- system.file("extdata", "test_getFASTA.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test_getFASTA.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Split PAF alignments into user defined bins
 paf.table <- pafToBins(paf.table = paf.table, binsize = 10000)
 ## Get FASTA to process
-asm.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package="SVbyEye")
+asm.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package = "SVbyEye")
 ## Add sequence and nucleotide content to submitted paf.table
-paf2nucleotideContent(paf.table = paf.table, asm.fasta = asm.fasta,
-                     alignment.space = 'query', sequence.pattern = 'GA')
+paf2nucleotideContent(
+    paf.table = paf.table, asm.fasta = asm.fasta,
+    alignment.space = "query", sequence.pattern = "GA"
+)
 
 }
 \author{

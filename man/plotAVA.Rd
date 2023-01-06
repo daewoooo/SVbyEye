@@ -47,24 +47,27 @@ and visualize the alignments in a miropeat style.
 }
 \examples{
 ## Get PAF to plot
-paf.file <- system.file("extdata", "test_ava.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test_ava.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Make a plot
 ## Color by alignment directionality
-plotAVA(paf.table = paf.table, color.by = 'direction')
+plotAVA(paf.table = paf.table, color.by = "direction")
 ## Color by fraction of matched bases in each alignment
-plotAVA(paf.table = paf.table, color.by = 'identity')
+plotAVA(paf.table = paf.table, color.by = "identity")
 ## Define custom sample order
-seqnames.order <- c('HG00438_2', 'HG01358_2',  'HG02630_2', 'HG03453_2')
-plotAVA(paf.table = paf.table, color.by = 'direction', seqnames.order = seqnames.order)
+seqnames.order <- c("HG00438_2", "HG01358_2", "HG02630_2", "HG03453_2")
+plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames.order)
 ## Outline PAF alignments
 plotAVA(paf.table = paf.table, outline.alignments = TRUE)
 ## Highlight structural variants
-plotAVA(paf.table = paf.table, min.deletion.size=1000, min.insertion.size=1000,
-       highlight.sv='outline')
+plotAVA(
+    paf.table = paf.table, min.deletion.size = 1000, min.insertion.size = 1000,
+    highlight.sv = "outline"
+)
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
-plotAVA(paf.table = paf.table, binsize=10000)
+plotAVA(paf.table = paf.table, binsize = 10000)
+# Add annotation to self-alignments ##
 }
 \author{
 David Porubsky

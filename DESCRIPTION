@@ -1,13 +1,16 @@
 Package: SVbyEye
 Title: Visualization of genomic structural variants
-Version: 0.0.0.9000
+Version: 0.99.0
 Authors@R: 
     person(given = "David",
            family = "Porubsky",
            role = c("aut", "cre"),
            email = "david.porubsky@gmail.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: This R package is currently under development.
+           comment = c(ORCID = "0000-0001-8414-8966"))                 
+Description: SVbyEye is an implements functions to detect and visualize genomic structural variation between two and multiple sequences.
+  To achieve this, SVbyEye introduces 4 new ggplot2 geoms (geom_miropeats(), geom_arrowhead(), geom_roundrect(), and geom_wide_arc()) together
+  with a number of other functions simplify oparations on FASTA alignments reported PAF format. A number of wrapper functions allows user to
+  produce near publication ready figures.
 Depends:
   R (>= 4.2.0)
 Imports:
@@ -16,6 +19,7 @@ Imports:
   ggforce,
   gggenes,
   scales,
+  grid,
   stats,
   dplyr,
   stringr,
@@ -41,9 +45,9 @@ Suggests:
   rmarkdown
 License: file LICENSE
 Encoding: UTF-8
-LazyData: true
+LazyLoad: yes
 VignetteBuilder: knitr
-biocViews: Genome, alignment, visualization, ggplot2
+biocViews: Software, GenomicVariation, StructuralVariation, VariantDetection, GenomeAnnotation, ComparativeGenomics, Sequencing, WholeGenome
 URL: https://github.com/daewoooo/SVbyEye
 BugReports: https://github.com/daewoooo/SVbyEye/issues
 RoxygenNote: 7.2.3

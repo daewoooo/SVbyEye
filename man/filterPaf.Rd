@@ -34,9 +34,9 @@ minimum alignments between target and query.
 }
 \examples{
 ## Get PAF to plot
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Filter PAF alignments based on desired target region
 filterPaf(paf.table = paf.table, min.align.len = 50000)
 

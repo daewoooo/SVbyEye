@@ -47,21 +47,23 @@ alignment gaps reported by the \code{\link{paf2gaps}} function.
 }
 \examples{
 ## Get PAF to process ##
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Make a plot
 plt <- plotMiro(paf.table = paf.table)
 ## Report gaps between PAF alignments
 paf.gaps <- paf2gaps(paf.table = paf.table)
 ## Add annotation field for plotting
-paf.gaps$SV <- 'INS'
-paf.gaps$SV[grep(paf.gaps$cg, pattern = 'D', ignore.case = TRUE)] <- 'DEL'
+paf.gaps$SV <- "INS"
+paf.gaps$SV[grep(paf.gaps$cg, pattern = "D", ignore.case = TRUE)] <- "DEL"
 ## Define color palette for plotting
-color.palette <- c('DEL' = 'firebrick3', 'INS' = 'dodgerblue3')
+color.palette <- c("DEL" = "firebrick3", "INS" = "dodgerblue3")
 ## Add gap position to the plot as extra PAF alignmetns
-addAlignments(ggplot.obj = plt, paf.table = paf.gaps,
-             color.by = 'SV', color.palette = color.palette, linetype = 'dashed')
+addAlignments(
+    ggplot.obj = plt, paf.table = paf.gaps,
+    color.by = "SV", color.palette = color.palette, linetype = "dashed"
+)
 
 }
 \author{

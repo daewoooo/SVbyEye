@@ -22,9 +22,9 @@ into a set of binned alignments between query and target sequence.
 }
 \examples{
 ## Get PAF to bin ##
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Split multiple PAF alignments into user defined bins
 pafToBins(paf.table = paf.table, binsize = 10000)
 

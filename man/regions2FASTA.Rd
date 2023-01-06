@@ -16,7 +16,7 @@ regions2FASTA(
 \arguments{
 \item{gr}{A \code{\link{GRanges-class}} object of genomic regions to extract genomic sequence from.}
 
-\item{bsgenome}{A \code{\link{BSgenome-class}} object of reference genome to get the genomic sequence from.}
+\item{bsgenome}{A \pkg{\link[BSgenome]{BSgenome-class}} object of reference genome to get the genomic sequence from.}
 
 \item{asm.fasta}{An assembly FASTA file to extract DNA sequence from defined PAF alignments.}
 
@@ -27,21 +27,24 @@ regions2FASTA(
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 }
 \description{
-This function takes a \code{\link{GRanges-class}} object and extracts a genomic sequence 
+This function takes a \code{\link{GRanges-class}} object and extracts a genomic sequence
 from these regions either from an original range or a range expanded on each side by
 defined number of bases.
 }
 \examples{
 ## Get PAF to process ##
-paf.file <- system.file("extdata", "test_getFASTA.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test_getFASTA.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Get FASTA sequence from a defined genomic region ##
-query.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package="SVbyEye")
+query.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package = "SVbyEye")
 ## Define genomic ranges to export FASTA sequence from
-query.gr <- GenomicRanges::GRanges(seqnames = unique(paf.table$q.name),
-                                   ranges = IRanges::IRanges(start = paf.table$q.start, 
-                                                           end = paf.table$q.end)
+query.gr <- GenomicRanges::GRanges(
+    seqnames = unique(paf.table$q.name),
+    ranges = IRanges::IRanges(
+        start = paf.table$q.start,
+        end = paf.table$q.end
+    )
 )
 ## Extract FASTA
 regions2FASTA(gr = query.gr, asm.fasta = query.fasta)
@@ -50,11 +53,14 @@ regions2FASTA(gr = query.gr, asm.fasta = query.fasta)
 paf.table <- breakPaf(paf.table = paf.table, min.deletion.size = 10000, min.insertion.size = 10000)
 paf.svs <- paf.table$SVs
 ## Define breakpoint positions of detected indels
-sv.bps.gr <- GenomicRanges::GRanges(seqnames = unique(paf.svs$q.name),
-                                   ranges = IRanges::IRanges(start = paf.svs$q.start, 
-                                                           end = paf.svs$q.start),
-                                   bp.index = paste0(paf.svs$q.name, '-left_bp-', 1:nrow(paf.svs))
-                                   )
+sv.bps.gr <- GenomicRanges::GRanges(
+    seqnames = unique(paf.svs$q.name),
+    ranges = IRanges::IRanges(
+        start = paf.svs$q.start,
+        end = paf.svs$q.start
+    ),
+    bp.index = paste0(paf.svs$q.name, "-left_bp-", 1:nrow(paf.svs))
+)
 ## Extract FASTA
 regions2FASTA(gr = sv.bps.gr, asm.fasta = query.fasta, expand = 10, index = 1)
 

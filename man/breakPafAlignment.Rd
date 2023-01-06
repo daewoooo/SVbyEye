@@ -34,11 +34,11 @@ In addition, locations of inserted bases in query and target sequence can be rep
 }
 \examples{
 ## Get PAF to break
-paf.file <- system.file("extdata", "test2.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test2.paf", package = "SVbyEye")
 ## Read in PAF alignment
-paf.aln <- readPaf(paf.file=paf.file)
+paf.aln <- readPaf(paf.file = paf.file)
 ## Break PAF alignment at indels of 1 kbp and longer
-breakPafAlignment(paf.aln = paf.aln, min.deletion.size=1000, min.insertion.size=1000)
+breakPafAlignment(paf.aln = paf.aln, min.deletion.size = 1000, min.insertion.size = 1000)
 
 }
 \author{

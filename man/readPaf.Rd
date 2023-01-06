@@ -21,6 +21,17 @@ readPaf(
 This function takes an PAF output file from minimap2 and loads the file along
 with user defined set of additional alignment tags (see PAF specification).
 }
+\examples{
+## Get PAF to read in ##
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file)
+## Read in PAF including all tags
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE)
+## Read in PAF including CIGAR string only
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+
+}
 \author{
 David Porubsky
 }

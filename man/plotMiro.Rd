@@ -55,30 +55,30 @@ in a miropeat style.
 }
 \examples{
 ## Get PAF to plot ##
-paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Optional steps include PAF filtering and flipping query coordinates
 ## (see filterPaf and flipPaf function documentation)
 ## Make a plot ##
 ## Color by alignment directionality
-plotMiro(paf.table = paf.table, color.by = 'direction')
+plotMiro(paf.table = paf.table, color.by = "direction")
 ## Color by fraction of matched bases in each alignment
-plotMiro(paf.table = paf.table, color.by = 'identity')
+plotMiro(paf.table = paf.table, color.by = "identity")
 ## Use custom color palette to color alignment directionality
-plotMiro(paf.table = paf.table, color.palette = c('+' = 'azure3', '-' = 'yellow3'))
+plotMiro(paf.table = paf.table, color.palette = c("+" = "azure3", "-" = "yellow3"))
 ## Change genomic scale to megabase pairs
-plotMiro(paf.table = paf.table, genomic.scale='Mbp')
+plotMiro(paf.table = paf.table, genomic.scale = "Mbp")
 ## Outline PAF alignments
 plotMiro(paf.table = paf.table, outline.alignments = TRUE)
 ## Offset target PAF alignments
 plotMiro(paf.table = paf.table, offset.alignments = TRUE)
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
-plotMiro(paf.table = paf.table, binsize=10000)
+plotMiro(paf.table = paf.table, binsize = 10000)
 ## Highlight structural variants
-paf.file <- system.file("extdata", "test3.paf", package="SVbyEye")
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
-plotMiro(paf.table = paf.table, min.deletion.size=50, highlight.sv='outline')
+paf.file <- system.file("extdata", "test3.paf", package = "SVbyEye")
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+plotMiro(paf.table = paf.table, min.deletion.size = 50, highlight.sv = "outline")
 
 }
 \author{

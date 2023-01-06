@@ -1,22 +1,22 @@
-#' Function to add bezier control points for horizontal layout
+#' Function to add bezier control points for horizontal layout.
 #'
 #' @param data A \code{data.frame} containing x and y coordinates.
 #' @param strength The proportion to move the control point along the y-axis towards the other end of the bezier curve.
 #' @return A \code{vector} of rescaled coordinate values.
 #' @author David Porubsky
-#' @export
-add.control.points <- function(data=NULL, strength=0.5) {
-  start <- data[c(TRUE, FALSE), ]
-  end <- data[c(FALSE, TRUE), ]
-  y_diff <- (end$y - start$y) * strength
-  mid1 <- start
-  mid1$y <- mid1$y + y_diff
-  mid2 <- end
-  mid2$y <- mid2$y - y_diff
-  rbind(start, mid1, mid2, end)
+#'
+add.control.points <- function(data = NULL, strength = 0.5) {
+    start <- data[c(TRUE, FALSE), ]
+    end <- data[c(FALSE, TRUE), ]
+    y_diff <- (end$y - start$y) * strength
+    mid1 <- start
+    mid1$y <- mid1$y + y_diff
+    mid2 <- end
+    mid2$y <- mid2$y - y_diff
+    rbind(start, mid1, mid2, end)
 }
 
-#' Function to convert between different coordinate scales
+#' Function to convert coordinates between different coordinate scales.
 #'
 #' This function takes as input query coordinates and a query range and convert them into
 #' coordinate scale defined by a target range.
@@ -27,11 +27,15 @@ add.control.points <- function(data=NULL, strength=0.5) {
 #' @return A \code{vector} of rescaled coordinate values.
 #' @author David Porubsky
 #' @export
+#' @examples
+#' ## Convert query coordinates (x) from query range (q.range) to target range (t.range)
+#' q2t(x = c(100, 1000), q.range = c(1, 2000), t.range = c(1, 100))
+#'
 q2t <- function(x, q.range, t.range) {
-  if (is.numeric(x) && is.numeric(q.range) && is.numeric(t.range)) {
-    coord.factor <- (t.range[2] - t.range[1]) / (q.range[2] - q.range[1])
-    return(t.range[1] + (x - q.range[1]) * coord.factor)
-  }
+    if (is.numeric(x) && is.numeric(q.range) && is.numeric(t.range)) {
+        coord.factor <- (t.range[2] - t.range[1]) / (q.range[2] - q.range[1])
+        return(t.range[1] + (x - q.range[1]) * coord.factor)
+    }
 }
 
 #' Mirror/reflect genomic ranges given the sequence length.
@@ -45,27 +49,29 @@ q2t <- function(x, q.range, t.range) {
 #' @importFrom IRanges IRanges
 #' @return A \code{\link{GRanges-class}} object with mirrored coordinates.
 #' @author David Porubsky
-#' @export
-mirrorRanges <- function(gr, seqlength=NULL) {
-  if (!is.null(seqlength)) {
-    gr.len <- seqlength
-  } else if (!is.na(GenomeInfoDb::seqlengths(gr))) {
-    gr.len <- GenomeInfoDb::seqlengths(gr)
-  } else {
-    stop('No seglength provided!!!')
-  }
-  if (!all(GenomicRanges::end(gr) <= gr.len)) {
-    stop("One or all submitted ranges are outside of defined seqlength!!!")
-  }
-  starts <- gr.len - GenomicRanges::end(gr)
-  ends <- gr.len - GenomicRanges::start(gr)
-  #starts <- gr.len - cumsum(width(gr))
-  #ends <- starts + width(gr)
-  new.gr <- GenomicRanges::GRanges(seqnames = seqnames(gr),
-                                   ranges = IRanges::IRanges(start=starts, end=ends),
-                                   strand = GenomicRanges::strand(gr))
-  suppressWarnings( GenomeInfoDb::seqlengths(new.gr) <- gr.len )
-  return(new.gr)
+#'
+mirrorRanges <- function(gr, seqlength = NULL) {
+    if (!is.null(seqlength)) {
+        gr.len <- seqlength
+    } else if (!is.na(GenomeInfoDb::seqlengths(gr))) {
+        gr.len <- GenomeInfoDb::seqlengths(gr)
+    } else {
+        stop("No seglength provided!!!")
+    }
+    if (!all(GenomicRanges::end(gr) <= gr.len)) {
+        stop("One or all submitted ranges are outside of defined seqlength!!!")
+    }
+    starts <- gr.len - GenomicRanges::end(gr)
+    ends <- gr.len - GenomicRanges::start(gr)
+    # starts <- gr.len - cumsum(width(gr))
+    # ends <- starts + width(gr)
+    new.gr <- GenomicRanges::GRanges(
+        seqnames = seqnames(gr),
+        ranges = IRanges::IRanges(start = starts, end = ends),
+        strand = GenomicRanges::strand(gr)
+    )
+    suppressWarnings(GenomeInfoDb::seqlengths(new.gr) <- gr.len)
+    return(new.gr)
 }
 
 
@@ -86,42 +92,57 @@ mirrorRanges <- function(gr, seqlength=NULL) {
 #' @importFrom ggplot2 cut_number
 #' @author David Porubsky
 #' @export
-getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=NULL) {
-  ## Check user input
-  if (is.null(data.table)) {
-    stop("No data submitted, please define 'data.table' parameter !!!")
-  }
-  if (is.numeric(value.field)) {
-    if (ncol(data.table) < value.field) {
-      stop("Defined value field index is larger than number of columns in submitted 'data.table' !!!")
+#' @examples
+#' ## Define a data table with column containig 100 random values
+#' data.t <- data.frame("Identity" = runif(100, min = 0, max = 1) * 100)
+#' ## By default value column is divided into 5 equally sized chunks
+#' ## Each chunk has assigned unique gradient color
+#' colorScheme.l <- getColorScheme(data.table = data.t, value.field = "Identity")
+#' ## Function returns a list containing original data table with extra color levels column
+#' colorScheme.l$data
+#' ## as well as corresponding color scheme
+#' colorScheme.l$colors
+#' ## User can also define custom breaks used to divide value.field into chunks.
+#' getColorScheme(data.table = data.t, value.field = "Identity", breaks = c(0.25, 0.5, 0.75))
+#'
+getColorScheme <- function(data.table = NULL, value.field = NULL, breaks = NULL) {
+    ## Check user input
+    if (is.null(data.table)) {
+        stop("No data submitted, please define 'data.table' parameter !!!")
     }
-  } else if (is.character(value.field)) {
-    if (!value.field %in% colnames(data.table)) {
-      stop("Defined field name does not match any column name in submitted 'data.table' !!!")
+    if (is.numeric(value.field)) {
+        if (ncol(data.table) < value.field) {
+            stop("Defined value field index is larger than number of columns in submitted 'data.table' !!!")
+        }
+    } else if (is.character(value.field)) {
+        if (!value.field %in% colnames(data.table)) {
+            stop("Defined field name does not match any column name in submitted 'data.table' !!!")
+        }
+    } else {
+        stop("No 'value.field' defined, please define 'value.field' either as column index or column name !!!")
     }
-  } else {
-    stop("No 'value.field' defined, please define 'value.field' either as column index or column name !!!")
-  }
 
-  ## Define break ranges ##
-  vals <- data.table %>% dplyr::pull(eval(value.field))
-  if (!is.null(breaks)) {
-    levels <- c(paste0('<', breaks[1]),
-                paste(breaks[-length(breaks)], breaks[-1], sep = ':'),
-                paste0('>', breaks[length(breaks)]))
-    ## Get break intervals
-    ids <- findInterval(vals, vec = breaks) + 1
-    data.table$col.levels <- factor(levels[ids], levels = levels)
-    colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = 'continuous')
-    colors <- stats::setNames(as.list(colors), levels)
-  } else {
-    ## If breaks are not defined split data into 5 chunks
-    data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
-    colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = 'continuous')
-    colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
-  }
-  ## Return color scheme
-  return(list(data=data.table, colors=colors))
+    ## Define break ranges ##
+    vals <- data.table %>% dplyr::pull(eval(value.field))
+    if (!is.null(breaks)) {
+        levels <- c(
+            paste0("<", breaks[1]),
+            paste(breaks[-length(breaks)], breaks[-1], sep = ":"),
+            paste0(">", breaks[length(breaks)])
+        )
+        ## Get break intervals
+        ids <- findInterval(vals, vec = breaks) + 1
+        data.table$col.levels <- factor(levels[ids], levels = levels)
+        colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = "continuous")
+        colors <- stats::setNames(as.list(colors), levels)
+    } else {
+        ## If breaks are not defined split data into 5 chunks
+        data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
+        colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = "continuous")
+        colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
+    }
+    ## Return color scheme
+    return(list(data = data.table, colors = colors))
 }
 
 
@@ -138,44 +159,47 @@ getColorScheme <- function(data.table=NULL, value.field=NULL, breaks=NULL) {
 #' @author David Porubsky
 #' @export
 #' @examples
-#'## Get PAF to plot ##
-#'paf.file <- system.file("extdata", "test1.paf", package="SVbyEye")
-#'## Read in PAF
-#'paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = 'cg')
-#'## Split PAF alignments into user defined bins
-#'paf.table <- pafToBins(paf.table = paf.table, binsize = 1000)
-#'## Collapse PAF alignments by bin id
-#'collapsePaf(paf.table = paf.table, collapse.by = 'bin.id')
+#' ## Get PAF to plot ##
+#' paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+#' ## Read in PAF
+#' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+#' ## Split PAF alignments into user defined bins
+#' paf.table <- pafToBins(paf.table = paf.table, binsize = 1000)
+#' ## Collapse PAF alignments by bin id
+#' collapsePaf(paf.table = paf.table, collapse.by = "bin.id")
 #'
-collapsePaf <- function(paf.table, collapse.by=NULL) {
-  ## Check user input ##
-  ## Make sure PAF has at least 12 mandatory fields
-  if (ncol(paf.table) >= 12) {
-    paf <- paf.table
-  } else {
-    stop('Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!')
-  }
-  ## Make sure parameter collapse.by is defined and present as column in paf.table
-  if (!is.null(collapse.by)) {
-    if (!(nchar(collapse.by) > 0 & collapse.by %in% colnames(paf.table))) {
-      stop("User defined parameter 'collapse.by' is not a valid column in submitted 'paf.table' !!!")
+collapsePaf <- function(paf.table, collapse.by = NULL) {
+    ## Check user input ##
+    ## Make sure PAF has at least 12 mandatory fields
+    if (ncol(paf.table) >= 12) {
+        paf <- paf.table
+    } else {
+        stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
     }
-  }
-  ## Take minimum (start) and maximum (end) position for query and target coordinates grouped by 'collapse.by' variable
-  paf <- paf %>% dplyr::group_by(dplyr::across(dplyr::all_of(collapse.by))) %>%
-    dplyr::summarise(q.name = paste(unique(q.name), collapse = ';'),
-                     q.len = paste(unique(q.len), collapse = ';'),
-                     q.start = min(q.start),
-                     q.end = max(q.end),
-                     strand = paste(unique(strand), collapse = ';'),
-                     t.name = paste(unique(t.name), collapse = ';'),
-                     t.len = paste(unique(t.len), collapse = ';'),
-                     t.start = min(t.start),
-                     t.end = max(t.end),
-                     n.match = 0, ## Try to calculate this
-                     aln.len = 0, ## Try to calculate this
-                     mapq = paste(unique(mapq), collapse = ';')) %>%
-    dplyr::relocate(!!collapse.by, .after = dplyr::last_col())
-  ## Return collapsed PAF
-  return(paf)
+    ## Make sure parameter collapse.by is defined and present as column in paf.table
+    if (!is.null(collapse.by)) {
+        if (!(nchar(collapse.by) > 0 & collapse.by %in% colnames(paf.table))) {
+            stop("User defined parameter 'collapse.by' is not a valid column in submitted 'paf.table' !!!")
+        }
+    }
+    ## Take minimum (start) and maximum (end) position for query and target coordinates grouped by 'collapse.by' variable
+    paf <- paf %>%
+        dplyr::group_by(dplyr::across(dplyr::all_of(collapse.by))) %>%
+        dplyr::summarise(
+            q.name = paste(unique(q.name), collapse = ";"),
+            q.len = paste(unique(q.len), collapse = ";"),
+            q.start = min(q.start),
+            q.end = max(q.end),
+            strand = paste(unique(strand), collapse = ";"),
+            t.name = paste(unique(t.name), collapse = ";"),
+            t.len = paste(unique(t.len), collapse = ";"),
+            t.start = min(t.start),
+            t.end = max(t.end),
+            n.match = 0, ## Try to calculate this
+            aln.len = 0, ## Try to calculate this
+            mapq = paste(unique(mapq), collapse = ";")
+        ) %>%
+        dplyr::relocate(!!collapse.by, .after = dplyr::last_col())
+    ## Return collapsed PAF
+    return(paf)
 }

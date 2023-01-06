@@ -27,7 +27,7 @@ draws genomic ranges as arrowheads, allowing to draw for instance segmental
 duplication maps.
 }
 \details{
-This geom draws triangular polygons as arrowheads between defined start and end coordinates. 
+This geom draws triangular polygons as arrowheads between defined start and end coordinates.
 Intended application of this geom is to visualize genomic coordinates defined by start and end
 position.
 }
@@ -49,12 +49,13 @@ position.
 
 \examples{
 ## Create example data.frame to plot
-plt.df <- data.frame(xmin=c(10, 100, 200),
-                    xmax=c(100, 190, 400)
-                    )
+plt.df <- data.frame(
+    xmin = c(10, 100, 200),
+    xmax = c(100, 190, 400)
+)
 ## Plot rectangles with rounded edges
-ggplot2::ggplot(plt.df) + 
- geom_arrowhead(ggplot2::aes(xmin=xmin, xmax=xmax, y=1))
+ggplot2::ggplot(plt.df) +
+    geom_arrowhead(ggplot2::aes(xmin = xmin, xmax = xmax, y = 1))
 
 }
 \author{

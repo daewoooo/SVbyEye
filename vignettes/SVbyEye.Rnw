@@ -15,7 +15,7 @@ BiocStyle::latex()
 \clearpage
 <<options, results='hide', message=FALSE, eval=TRUE, echo=FALSE>>=
 library(SVbyEye)
-options(width=90)
+options(width = 90)
 @
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
@@ -30,13 +30,16 @@ The main function of this package is called \Rfunction{plotMiro()} and performs 
 <<eval=TRUE, message=FALSE>>==
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test1.paf",
-                        package="SVbyEye")
+    package = "SVbyEye"
+)
 ## Read in PAF
-paf.table <- readPaf(paf.file = paf.file,
-                     include.paf.tags = TRUE, restrict.paf.tags = 'cg')
+paf.table <- readPaf(
+    paf.file = paf.file,
+    include.paf.tags = TRUE, restrict.paf.tags = "cg"
+)
 ## Make a plot
 ## Color by alignment directionality
-plotMiro(paf.table = paf.table, color.by = 'direction')
+plotMiro(paf.table = paf.table, color.by = "direction")
 @
 
 \newpage
