@@ -89,13 +89,6 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           pak-version: devel
-      
-      ## Install LateX	
-      - name: Install latex
-        uses: r-lib/actions/setup-tinytex@v2
-        env:
-          # install full prebuilt version
-          TINYTEX_INSTALLER: TinyTeX
 
       - name: Install additional LaTeX packages (non-Windows)
         if: inputs.runner_os != 'Windows'
