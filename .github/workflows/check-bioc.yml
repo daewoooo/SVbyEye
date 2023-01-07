@@ -90,12 +90,6 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           pak-version: devel
 
-      - name: Install additional LaTeX packages (non-Windows)
-        if: inputs.runner_os != 'Windows'
-        run: |
-          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools
-          tlmgr list --only-installed
-
       ## pandoc is already included in the Bioconductor docker images
       - name: Setup pandoc from r-lib
         if: runner.os != 'Linux'
