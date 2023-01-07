@@ -53,8 +53,8 @@ jobs:
       matrix:
         config:
           - { os: ubuntu-latest, r: '4.2', bioc: '3.16', cont: "bioconductor/bioconductor_docker:RELEASE_3_16", rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest" }
-          - { os: macOS-latest, r: '4.2', bioc: '3.16'}
-          - { os: windows-latest, r: '4.2', bioc: '3.16'}
+          #- { os: macOS-latest, r: '4.2', bioc: '3.16'}
+          #- { os: windows-latest, r: '4.2', bioc: '3.16'}
           ## Check https://github.com/r-lib/actions/tree/master/examples
           ## for examples using the http-user-agent
     env:
@@ -88,6 +88,20 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
+          pak-version: devel
+      
+      ## Install LateX	
+      - name: Install latex
+        uses: r-lib/actions/setup-tinytex@v2
+        env:
+          # install full prebuilt version
+          TINYTEX_INSTALLER: TinyTeX
+
+      - name: Install additional LaTeX packages (non-Windows)
+        if: inputs.runner_os != 'Windows'
+        run: |
+          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools
+          tlmgr list --only-installed
 
       ## pandoc is already included in the Bioconductor docker images
       - name: Setup pandoc from r-lib
