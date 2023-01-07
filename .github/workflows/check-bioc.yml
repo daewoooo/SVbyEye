@@ -123,8 +123,9 @@ jobs:
           sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04")), collapse = " "))')
           echo $sysreqs
           sudo -s eval "$sysreqs"
-          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools
+          tlmgr install bera
           tlmgr list --only-installed
+          shell: bash {0}
 
       - name: Install macOS system dependencies
         if: matrix.config.os == 'macOS-latest'
