@@ -40,3 +40,9 @@ jobs:
           tlmgr list --only-installed
       
       - uses: r-lib/actions/check-r-package@v2
+
+      - name: BiocCheck
+        run: |
+          BiocManager::install("BiocCheck")
+          BiocCheck::BiocCheck(".")
+        shell: Rscript {0}
