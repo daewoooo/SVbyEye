@@ -51,18 +51,12 @@
 #'
 regions2FASTA <- function(gr, bsgenome = NULL, asm.fasta = NULL, index.field = NULL, expand = 0, fasta.save = NULL) {
     ## Load BSgenome object
-    if (!is(bsgenome, "BSgenome")) {
-        if (is.character(bsgenome)) {
-            bsgenome <- tryCatch(
-                {
-                    suppressPackageStartupMessages(library(bsgenome, character.only = TRUE))
-                    bsgenome <- eval(parse(text = bsgenome)) ## replacing string by object
-                },
-                error = function(e) {
-                    return(NULL)
-                }
-            )
-        }
+   if (!is(bsgenome, "BSgenome")) {
+       if (is.character(bsgenome)) {
+          warning("Parameter 'bsgenome' has to be a valid bsgenome class object !!!")
+       } else {
+          bsgenome <- NULL
+       }
     }
     ## Check if submitted fasta file is indexed
     if (!is.null(asm.fasta)) {
