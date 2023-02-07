@@ -9,7 +9,8 @@ filterPaf(
   min.mapq = 10,
   min.align.len = 1000,
   min.align.n = 1,
-  drop.self.align = TRUE
+  is.selfaln = FALSE,
+  min.selfaln.dist = 0
 )
 }
 \arguments{
@@ -22,7 +23,9 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{min.align.n}{Minimum number of alignments between a pair of sequences/regions.}
 
-\item{drop.self.align}{Remove alignments of a given sequence to itself.}
+\item{is.selfaln}{Set to \code{TRUE} if processing alignments of a given sequence to itself.}
+
+\item{min.selfaln.dist}{Keep alignment pairs with this or larger distance from each other (Applied only to FASTA self-alignments).}
 }
 \value{
 A \code{tibble} of filtered PAF alignments.

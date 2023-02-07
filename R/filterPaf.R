@@ -7,7 +7,8 @@
 #' @param min.mapq Minimum mapping quality to retain.
 #' @param min.align.len Minimum alignment length to retain.
 #' @param min.align.n Minimum number of alignments between a pair of sequences/regions.
-#' @param drop.self.align Remove alignments of a given sequence to itself.
+#' @param is.selfaln Set to \code{TRUE} if processing alignments of a given sequence to itself.
+#' @param min.selfaln.dist Keep alignment pairs with this or larger distance from each other (Applied only to FASTA self-alignments).
 #' @inheritParams breakPaf
 #' @return A \code{tibble} of filtered PAF alignments.
 #' @importFrom dplyr group_by mutate n
@@ -25,7 +26,7 @@
 #' ## Filter PAF alignments based on desired target region
 #' filterPaf(paf.table = paf.table, min.align.len = 50000)
 #'
-filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.n = 1, drop.self.align = TRUE) {
+filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.n = 1, is.selfaln = FALSE, min.selfaln.dist = 0) {
     ## Check user input ##
     ## Make sure PAF has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -99,7 +100,7 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
 
     ## Filter by mapping quality
     ## Make sure mapping quality is defined
-    if (all(is.na(paf$mapq))) {
+    if (all(!is.na(paf$mapq))) {
         paf$mapq[is.na(paf$mapq)] <- min.mapq
         if (min.mapq > 0 & is.numeric(paf$mapq)) {
             paf <- paf[paf$mapq >= min.mapq, ]
@@ -114,9 +115,20 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
         }
     }
 
-    ## Filter out self-alignments
-    if (drop.self.align) {
-        paf <- paf[!(paf$q.name == paf$t.name), ]
+    ## When processing self-alignments apply separate set of filters
+    if (is.selfaln) {
+      ## Remove diagonals (self-alignments) with the same start and end position
+      paf <- paf[!(paf$q.start == paf$t.start & paf$q.end == paf$t.end),]
+      ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than the target start
+      paf <- paf[paf$q.start < paf$t.start,]
+      ## Filter by alignment distance [self-alignments only]
+      aln.dist <- pmin(paf$t.start, paf$t.end) - pmax(paf$q.start, paf$q.end)
+      if (min.selfaln.dist > 0) {
+        paf <- paf[aln.dist >= min.selfaln.dist,]
+      }
+    } else {
+      ## Filter out self-alignments
+      paf <- paf[!(paf$q.name == paf$t.name), ]
     }
 
     stopTimedMessage(ptm)
