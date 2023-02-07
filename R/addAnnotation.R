@@ -99,6 +99,9 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
     xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
     ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
     ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
+    ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+    ylabels <- ylabels[order(ylabels.ord)]
+
 
     ## Define the offset value to be 5% of the y axis range
     if (new.annotation.level) {

@@ -36,11 +36,12 @@
 #' )
 #' ## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #' plotAVA(paf.table = paf.table, binsize = 10000)
-#' # Add annotation to self-alignments ##
-# plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
-# annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
-# annot.gr <- get(load(annot.file))
-# addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self')
+#' ## Add annotation to self-alignments ##
+#' plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
+#' annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
+#' annot.gr <- get(load(annot.file))
+#' addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', y.label.id = 'ID')
+#'
 plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE) {
     ## Check user input
     ## Make sure submitted paf.table has at least 12 mandatory fields
@@ -56,7 +57,7 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
 
     ## Break PAF at insertion/deletions defined in cigar string
     if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
-        paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+        paf.l <- breakPaf(paf.table = paf, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
         paf <- paf.l$M
         paf.svs <- paf.l$SVs
     } else {

@@ -59,7 +59,7 @@
 #' )
 #'
 plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, shape = "segment", sort.by = "position", color.by = "direction", color.palette = NULL, add.alignment.arrows = TRUE, highlight.pos = NULL, highlight.region = NULL) {
-    ## Check user input
+    ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
         paf <- paf.table
@@ -70,11 +70,16 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
     } else {
         stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
     }
+    ## Apply self-alignment specific set of filters
     ## Keep only self-alignments (query and target names have to be the same)
-    paf <- paf[paf$q.name == paf$t.name, ]
+    paf <- paf[paf$q.name == paf$t.name,]
     if (nrow(paf) == 0) {
         stop("No self-alignments present in submitted 'paf.table', self-alignments are expected to have the same value in 'q.name' and 't.name' field !!!")
     }
+    ## Remove diagonals (self-alignments) with the same start and end position
+    paf <- paf[!(paf$q.start == paf$t.start & paf$q.end == paf$t.end),]
+    ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than the target start
+    paf <- paf[paf$q.start < paf$t.start,]
 
     ## Break PAF at insertion/deletions defined in cigar string
     if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
@@ -86,7 +91,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             min.insertion.size <- 0
         }
         if (min.deletion.size > 0 | min.insertion.size > 0) {
-            paf.l <- breakPaf(paf.table = paf.table, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
+            paf.l <- breakPaf(paf.table = paf, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
             paf <- paf.l$M
             paf.svs <- paf.l$SVs
         }
