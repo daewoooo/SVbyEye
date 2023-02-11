@@ -150,6 +150,10 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         aln.id = paf$aln.id,
         stringsAsFactors = FALSE
     )
+    ## Add color.by column if defined
+    if (color.by %in% colnames(paf)) {
+      coords[,color.by] <- paf[,color.by]
+    }
 
     ## Get max position (for x-axis plotting)
     max.pos <- unique(paf$q.len)
@@ -291,7 +295,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             ggplot2::geom_polygon(data = poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::geom_polygon(data = poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
-            ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+            #ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+            ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
             ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
             ggplot2::ylab("Self-alignments") +
             ggplot2::xlab("Contig position (bp)")

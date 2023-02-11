@@ -90,18 +90,26 @@
 addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, coordinate.space = "target", new.annotation.level = TRUE, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
     ## Get plotted data
     gg.data <- ggplot.obj$data
-    target.id <- unique(gg.data$seq.name[gg.data$seq.id == "target"])
-    query.id <- unique(gg.data$seq.name[gg.data$seq.id == "query"])
+    if (coordinate.space != 'self') {
+      target.id <- unique(gg.data$seq.name[gg.data$seq.id == "target"])
+      query.id <- unique(gg.data$seq.name[gg.data$seq.id == "query"])
+    }
 
     ## Get x and y-axis limits
     # xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
     ## For x-axis range also consider user defined cartesian coordinates for target region
-    xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
+    if (coordinate.space != 'self') {
+      xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
+    } else {
+      xlim <- ggplot.obj$coordinates$limits$x
+    }
     ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
     ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
-    ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
-    ylabels <- ylabels[order(ylabels.ord)]
-
+    ybreaks <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+    if (length(ylabels) == 0) {ylabels <- ''}
+    if (length(ybreaks) == 0) {ybreaks <- 0}
+    #ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+    ylabels <- ylabels[order(ybreaks)]
 
     ## Define the offset value to be 5% of the y axis range
     if (new.annotation.level) {
@@ -244,10 +252,16 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                 if (nchar(annotation.label) > 0) {
                     annot.yrange <- range(annot.df$y.offset)
                     annot.break <- annot.yrange[1] + (diff(annot.yrange) / 2)
-                    y.breaks <- c(ylim, annot.break)
-                    y.labels <- c(ylabels, annotation.label)
+                    if (coordinate.space == "target") {
+                      y.breaks <- c(ybreaks, annot.break)
+                      y.labels <- c(ylabels, annotation.label)
+                    } else {
+                      y.breaks <- c(annot.break, ybreaks)
+                      y.labels <- c(annotation.label, ylabels)
+                    }
                     suppressMessages(
-                        plt <- plt + ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels)
+                        plt <- plt + ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels) +
+                          theme(axis.text.y = element_text(), axis.ticks.y = element_line())
                     )
                 }
             }

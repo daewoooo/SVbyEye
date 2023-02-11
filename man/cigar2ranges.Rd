@@ -5,7 +5,7 @@
 \title{Function to load CIGAR string reported in PAF alignments into a set of genomic ranges.}
 \usage{
 cigar2ranges(
-  paf.file = NULL,
+  paf.table = NULL,
   coordinate.space = "reference",
   min.insertion.size = 50,
   min.deletion.size = 50,
@@ -13,7 +13,8 @@ cigar2ranges(
 )
 }
 \arguments{
-\item{paf.file}{A character string containing alignment represented as a CIGAR string.}
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
 
 \item{coordinate.space}{A used defined coordinate space given CIGAR should be parsed against, either 'reference' or 'query'.}
 
@@ -33,7 +34,8 @@ Function to load CIGAR string reported in PAF alignments into a set of genomic r
 ## Get PAF to process
 paf.file <- system.file("extdata", "test3.paf", package = "SVbyEye")
 ## Parse CIGAR into a set of genomic ranges
-cigar2ranges(paf.file = paf.file)
+paf.table <- readPaf(paf.file = paf.file)
+cigar2ranges(paf.table = paf.table)
 
 }
 \author{

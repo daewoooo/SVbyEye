@@ -40,11 +40,10 @@ parseCigarString <- function(cigar.str = NULL, coordinate.space = "reference") {
 
 #' Function to load CIGAR string reported in PAF alignments into a set of genomic ranges.
 #'
-#' @param paf.file A character string containing alignment represented as a CIGAR string.
 #' @param min.insertion.size A minimum size (in base pairs) of an insertion to be retained.
 #' @param min.deletion.size A minimum size (in base pairs) of a deletion to be retained.
 #' @param collapse.mismatches Set to \code{TRUE} if mismatches should be collapsed in order expand matched regions.
-#' @inheritParams readPaf
+#' @inheritParams breakPaf
 #' @inheritParams parseCigarString
 #' @importFrom GenomicRanges GRanges width shift reduce strand
 #' @return A \code{\link{GRanges}} object.
@@ -54,22 +53,26 @@ parseCigarString <- function(cigar.str = NULL, coordinate.space = "reference") {
 #' ## Get PAF to process
 #' paf.file <- system.file("extdata", "test3.paf", package = "SVbyEye")
 #' ## Parse CIGAR into a set of genomic ranges
-#' cigar2ranges(paf.file = paf.file)
+#' paf.table <- readPaf(paf.file = paf.file)
+#' cigar2ranges(paf.table = paf.table)
 #'
-cigar2ranges <- function(paf.file = NULL, coordinate.space = "reference", min.insertion.size = 50, min.deletion.size = 50, collapse.mismatches = TRUE) {
-    ## Read in coordinates from minimap2 output in PAF format
-    paf.data <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
-    qname <- paste(unique(paf.data$q.name), collapse = ";")
-    ## Order by target sequence
-    # paf.data <- paf.data[order(paf.data$t.start),]
+cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.insertion.size = 50, min.deletion.size = 50, collapse.mismatches = TRUE) {
+
+  ## Check user input ##
+  ## Make sure PAF has at least 12 mandatory fields
+  if (ncol(paf.table) >= 12) {
+    paf <- paf.table
+  } else {
+    stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
+  }
 
     ## Process alignments ##
     matches <- list()
     mismatches <- list()
     insertions <- list()
     deletions <- list()
-    for (i in seq_len(nrow(paf.data))) {
-        paf.aln <- paf.data[i, ]
+    for (i in seq_len(nrow(paf.table))) {
+        paf.aln <- paf.table[i, ]
         ## Parse CIGAR string ##
         cg.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = coordinate.space)
         ## Get cigar ranges and offset ranges based on alignment starting position
