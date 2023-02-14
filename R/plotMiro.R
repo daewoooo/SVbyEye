@@ -134,7 +134,8 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
     ## Get x-axis labels
     q.labels <- pretty(q.range)
-    t.labels <- pretty(t.range)
+    #t.labels <- pretty(t.range)
+    t.labels <- pretty(range(coords$seq.pos[coords$seq.id == "target"]))
     ## Covert query to target coordinates
     q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
     t.breaks <- t.labels
