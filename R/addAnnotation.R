@@ -8,9 +8,9 @@
 #' @param shape A user defined shape ranges in 'annot.gr' are visualized, either 'arrowhead' or 'rectangle'.
 #' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels).
+#' @param max.colors A maximum number of discrete color levels for which legend will be reported. If more than that legend will be removed.
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.
-#' @param new.annotation.level Set to \code{TRUE} if the annotation ranges should be plotted at a separate level
-#' defined by 0.05 fraction of the y-axis range.
+#' @param annotation.level A \code{numeric} that defines a fraction of y-axis to be the y-axis position for the annotation track (Default : `0.05`).
 #' @param offset.annotation Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.
 #' @param annotation.label A \code{character} string to be used as a label to added annotation track.
 #' @param y.label.id A user defined metadata column id within `annot.gr` that for each annotation range contains
@@ -20,6 +20,7 @@
 #' @importFrom grid unit
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
+#' @importFrom randomcoloR randomColor
 #' @importFrom gggenes geom_gene_arrow
 #' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @importFrom IRanges IRanges ranges
@@ -87,7 +88,7 @@
 #'     color.palette = color.palette, coordinate.space = "target", annotation.label = "SD"
 #' )
 #'
-addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, coordinate.space = "target", new.annotation.level = TRUE, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
+addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
     ## Get plotted data
     gg.data <- ggplot.obj$data
     if (coordinate.space != 'self') {
@@ -95,28 +96,31 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
       query.id <- unique(gg.data$seq.name[gg.data$seq.id == "query"])
     }
 
-    ## Get x and y-axis limits
-    # xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
-    ## For x-axis range also consider user defined cartesian coordinates for target region
+    ## Get x-axis limits (expected to be always continuous)
+    ## For x-axis range also consider user defined cartesian coordinates for the target region
     if (coordinate.space != 'self') {
       xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
     } else {
-      xlim <- ggplot.obj$coordinates$limits$x
+      #xlim <- ggplot.obj$coordinates$limits$x
+      xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
     }
-    ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
-    ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
-    ybreaks <- ggplot2::layer_scales(ggplot.obj)$y$breaks
-    if (length(ylabels) == 0) {ylabels <- ''}
-    if (length(ybreaks) == 0) {ybreaks <- 0}
-    #ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
-    ylabels <- ylabels[order(ybreaks)]
 
-    ## Define the offset value to be 5% of the y axis range
-    if (new.annotation.level) {
-        offset <- diff(ylim) * 0.05
+    ## Get x-axis limits
+    if ("ScaleContinuous" %in% class(ggplot2::layer_scales(ggplot.obj)$y)) { ## To finish!!!
+      ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
+      ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
+      ybreaks <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+      if (length(ylabels) == 0) {ylabels <- ''}
+      if (length(ybreaks) == 0) {ybreaks <- 0}
+      #ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+      ylabels <- ylabels[order(ybreaks)]
+      ybreaks <- sort(ybreaks) ## [Testing]
     } else {
-        offset <- 0
+      stop("'addAnnotation' function works only for ggplot2 objects with continuous scale for both x and y-axis !!!")
     }
+
+    ## Define the offset value to be the user defined fraction of the y-axis range [default: 0.05]
+    offset <- diff(ylim) * annotation.level
 
     ## Get query and target coordinate ranges
     if (coordinate.space == "query" | coordinate.space == "target") {
@@ -172,11 +176,11 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
             ## Match y-axis labels if to user defined ID column via 'y.label.id' parameter
             if (!is.null(y.label.id)) {
                 if (y.label.id %in% colnames(annot.df)) {
-                    if (all(ylabels %in% annot.df[, eval(y.label.id)])) {
-                        annot.df$y.offset <- match(annot.df[, eval(y.label.id)], ylabels)
-                    } else {
-                        annot.df$y.offset <- y.offset
-                    }
+                    #if (all(ylabels %in% annot.df[, eval(y.label.id)])) {
+                        annot.df$y.offset <- match(annot.df[, eval(y.label.id)], ylabels) + offset
+                    #} else {
+                    #    annot.df$y.offset <- y.offset
+                    #}
                 } else {
                     warning("User defined 'y.label.id' is not a valid metadata column in 'annot.gr', skipping !!!")
                     annot.df$y.offset <- y.offset
@@ -200,15 +204,15 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                         ## Get user define discrete color palette
                         if (all(dicrete.levels %in% names(color.palette))) {
                             pal <- color.palette
-                            if (length(pal) >= 20) {
+                            if (length(pal) >= max.colors) {
                                 col.scale <- "discreteNoLegend"
                             } else {
                                 col.scale <- "discrete"
                             }
                             ## Create default discrete color palette
                         } else {
-                            if (n.uniq <= 20) {
-                                pal <- wesanderson::wes_palette("Zissou1", n.uniq, type = "continuous")
+                            if (n.uniq <= max.colors) {
+                                pal <- randomcoloR::randomColor(count = n.uniq)
                                 col.scale <- "discrete"
                             } else {
                                 warning("More than 20 color levels, legend won't be reported!!!")
@@ -240,10 +244,10 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
             } else if (shape == "rectangle") {
                 if (!is.null(fill.by)) {
                     plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-                        geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset + 0.01, color = .data[[fill.by]], fill = .data[[fill.by]]), radius = grid::unit(0, "mm"))
+                        geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = .data[[fill.by]], fill = .data[[fill.by]]), radius = grid::unit(0, "mm"))
                 } else {
                     plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-                        geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset + 0.01, color = NULL, fill = NULL), radius = grid::unit(0, "mm"))
+                        geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = NULL, fill = NULL), radius = grid::unit(0, "mm"))
                 }
             }
 
@@ -266,7 +270,7 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                 }
             }
 
-            ## Expand x-axis [TODO not sure if needed, if set scondary axis disapears!!!]
+            ## Expand x-axis [TODO not sure if needed, if set secondary axis disapears!!!]
             # suppressMessages(
             #   plt <- plt + ggplot2::(add = 0)
             # )

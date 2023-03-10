@@ -1,4 +1,4 @@
-#' Add PAF alignments to a SVbyEye plot.
+#' Add PAF alignments to a SVbyEye miropeat style plot.
 #'
 #' This function takes a \code{ggplot2} object generated using \code{\link{plotMiro}} function and adds extra PAF alignments to it
 #' stored in the `paf.table`. This function can also be used to highlight already present alignment or to add other features such as
