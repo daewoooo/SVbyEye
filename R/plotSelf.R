@@ -62,7 +62,7 @@
 #' )
 #' addAnnotation(
 #'     ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = "self",
-#'     new.annotation.level = FALSE
+#'     annotation.level = 0
 #' )
 #'
 plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, shape = "segment", sort.by = "position", color.by = "direction", color.palette = NULL, add.alignment.arrows = TRUE, highlight.pos = NULL, highlight.region = NULL) {

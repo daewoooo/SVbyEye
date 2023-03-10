@@ -97,7 +97,7 @@ plt <- plotSelf(
 )
 addAnnotation(
     ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = "self",
-    new.annotation.level = FALSE
+    annotation.level = 0
 )
 
 }
