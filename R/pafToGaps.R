@@ -137,6 +137,7 @@ paf2gaps <- function(paf.table, min.gap.diff = NULL) {
 #' reportGaps(t.ranges = target.ranges, q.ranges = query.ranges, invert = TRUE)
 #'
 reportGaps <- function(t.ranges = NULL, q.ranges = NULL, invert = FALSE) {
+    ptm <- startTimedMessage("[reportGaps] Exporting gaps betweem target and query ranges")
     ## Helper function ##
     getGaps <- function(gr = NULL) {
         gap.gr <- GenomicRanges::gaps(gr, start = min(GenomicRanges::start(gr)))
@@ -233,9 +234,11 @@ reportGaps <- function(t.ranges = NULL, q.ranges = NULL, invert = FALSE) {
             gap.gr$aln.gap.gr <- aln.gap.gr
             return(gap.gr)
         } else {
+            stopTimedMessage(ptm)
             return(NULL)
         }
     } else {
+        stopTimedMessage(ptm)
         return(NULL)
     }
 }

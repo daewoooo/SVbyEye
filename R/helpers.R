@@ -154,7 +154,7 @@ getColorScheme <- function(data.table = NULL, value.field = NULL, breaks = NULL)
 #'
 #' @param collapse.by A user defined column name present in `paf.table` to serve as grouping variable.
 #' @inheritParams breakPaf
-#' @return A \code{tibble} of collapsed PAF alignments
+#' @return A \code{tibble} of collapsed PAF alignments.
 #' @importFrom dplyr group_by across all_of summarise relocate last_col
 #' @author David Porubsky
 #' @export

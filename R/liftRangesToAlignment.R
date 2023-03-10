@@ -19,6 +19,8 @@
 #' liftRangesToAlignment(gr = roi.gr, paf.file = paf.file, direction = "target2query")
 #'
 liftRangesToAlignment <- function(gr = NULL, paf.file = NULL, direction = "query2target") {
+    ptm <- startTimedMessage(paste0("[liftRangesToAlignment] Lifting coordinates: ", direction))
+
     ## Check user input
     stopifnot(methods::is(gr, "GRanges"), file.exists(paf.file), methods::is(direction, "character"))
 
@@ -132,6 +134,7 @@ liftRangesToAlignment <- function(gr = NULL, paf.file = NULL, direction = "query
             GenomicRanges::mcols(gr.lifted) <- c(GenomicRanges::mcols(gr.lifted), GenomicRanges::mcols(gr))
         }
 
+        stopTimedMessage(ptm)
         ## Return lifted coordinates
         return(gr.lifted)
     }

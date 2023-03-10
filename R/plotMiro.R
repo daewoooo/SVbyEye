@@ -223,7 +223,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
                 warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
             }
         } else {
-            warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+            message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
         }
     }
 

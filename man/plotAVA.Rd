@@ -58,6 +58,9 @@ plotAVA(paf.table = paf.table, color.by = "identity")
 ## Define custom sample order
 seqnames.order <- c("HG00438_2", "HG01358_2", "HG02630_2", "HG03453_2")
 plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames.order)
+## Only samples present in custom sample order are being plotted
+seqnames.order <- c("HG00438_2", "HG01358_2", "HG03453_2")
+plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames.order)
 ## Outline PAF alignments
 plotAVA(paf.table = paf.table, outline.alignments = TRUE)
 ## Highlight structural variants

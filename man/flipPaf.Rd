@@ -19,7 +19,7 @@ A \code{tibble} of PAF alignments flipped based on desired majority strand orien
 }
 \description{
 This function takes loaded PAF alignments using \code{\link{readPaf}} function and flips
-the orientation of PAF alignments given the desired majority strand orientation (Either '+' or '-').
+the orientation of PAF alignments given the desired 'majority.strand' orientation (Either '+' or '-').
 }
 \examples{
 ## Get PAF to process

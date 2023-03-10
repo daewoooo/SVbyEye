@@ -13,10 +13,22 @@ syncRangesDir(ranges, majority.strand = "+", strand.only = FALSE)
 
 \item{strand.only}{If set to \code{TRUE} simple character string of strand directionality ('+', '-') is reported.}
 }
+\value{
+A \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object.
+}
 \description{
-This function takes a set of ranges in \code{\link{GRanges-class}} object and return the same ranges
-as \code{\link{GRanges-class}} object such that total length of plus (direct, '+') and minus (minus, '-') .
+This function takes a set of ranges in \code{\link{GRanges-class}} or \code{\link{GRangesList-class}} object
+and return the same ranges in same class object such that total length of plus (direct, '+') and minus (minus, '-') .
 oriented ranges meet the user defined `majority.strand` orientation.
+}
+\examples{
+## Define test genomic ranges to synchronize directionality ##
+test.gr <- GenomicRanges::GRanges(seqnames = 'test',
+ranges = IRanges::IRanges(start = c(1, 200, 300),
+                          end  = c(200, 300, 500)), strand = c('-', '+', '-')
+                          )
+syncRangesDir(ranges = test.gr, majority.strand = "+")
+
 }
 \author{
 David Porubsky

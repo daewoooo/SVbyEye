@@ -1,7 +1,7 @@
 #' Flip orientation of PAF alignments.
 #'
 #' This function takes loaded PAF alignments using \code{\link{readPaf}} function and flips
-#' the orientation of PAF alignments given the desired majority strand orientation (Either '+' or '-').
+#' the orientation of PAF alignments given the desired 'majority.strand' orientation (Either '+' or '-').
 #'
 #' @param force Set to \code{TRUE} if query PAF alignments should be flipped.
 #' @inheritParams breakPaf

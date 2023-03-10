@@ -109,7 +109,6 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             paf.svs <- paf.l$SVs
         }
     } else {
-        # paf$aln.id <- 1:nrow(paf)
         paf.svs <- NULL
         if (!is.null(highlight.sv)) {
             highlight.sv <- NULL
@@ -338,7 +337,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                     warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
                 }
             } else {
-                warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+                message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
             }
         }
     } else if (shape == "arc") {
@@ -402,7 +401,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                     warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
                 }
             } else {
-                warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+              message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
             }
         }
     } else if (shape == "arrow") {
@@ -461,7 +460,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
           }
         } else {
-          warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+          message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
         }
       }
     } else {

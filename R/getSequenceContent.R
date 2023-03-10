@@ -93,6 +93,8 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
 #' fasta2nucleotideContent(fasta.seq = fasta.seq, sequence.pattern = "AT", nucleotide.content = "GC")
 #'
 fasta2nucleotideContent <- function(fasta.seq, sequence.pattern = NULL, nucleotide.content = NULL) {
+    ptm <- startTimedMessage("[fasta2nucleotideContent] Calculating FASTA sequence content")
+
     ## Check user input ##
     ## Check if submitted FASTA sequence is in accepted format
     if (!is(fasta.seq, "DNAStringSet")) {
@@ -161,6 +163,8 @@ fasta2nucleotideContent <- function(fasta.seq, sequence.pattern = NULL, nucleoti
         fasta.content <- dplyr::bind_cols(fasta.content, nuc.content)
         # }
     }
+
+    stopTimedMessage(ptm)
     ## Return sequence content table
     return(fasta.content)
 }

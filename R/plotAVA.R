@@ -27,6 +27,9 @@
 #' ## Define custom sample order
 #' seqnames.order <- c("HG00438_2", "HG01358_2", "HG02630_2", "HG03453_2")
 #' plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames.order)
+#' ## Only samples present in custom sample order are being plotted
+#' seqnames.order <- c("HG00438_2", "HG01358_2", "HG03453_2")
+#' plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames.order)
 #' ## Outline PAF alignments
 #' plotAVA(paf.table = paf.table, outline.alignments = TRUE)
 #' ## Highlight structural variants
@@ -54,6 +57,23 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     } else {
         stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
     }
+
+  ## Get desired sequence order ##
+  ## Based on user input
+  seq.ids <- unique(paf$q.name)
+  if (is.character(seqnames.order)) {
+    if (all(seq.ids %in% seqnames.order)) {
+      seq.ord <- seqnames.order
+    } else {
+      #seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
+      message("Not all query and target IDs present in user defined 'seqnames.order', subsetting !!!")
+      ## Subset PAF to only those samples defined in seqnames.order
+      paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order,]
+      seq.ord <- seqnames.order
+    }
+  } else {
+    seq.ord <- NULL
+  }
 
     ## Break PAF at insertion/deletions defined in cigar string
     if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
@@ -96,47 +116,24 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
         }
     }
 
-    ## Rename sequences if named vector defined by a user
-    # if (!is.null(seqnames.order)) {
-    #   ## Make sure at least two seqnames in user defined list are present in PAF alignments
-    #   if (length(seqnames.order[seqnames.order %in% paf$q.name]) > 1) {
-    #     ## Keep only alignments involving user defined sequence order
-    #     paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order,]
-    #     #seqnames.order.named <- 1:length(seqnames.order)
-    #     #names(seqnames.order.named) <- seqnames.order
-    #     #paf$q.name <- dplyr::recode(paf$q.name, !!!(seqnames.order.named))
-    #     #paf$t.name <- dplyr::recode(paf$t.name, !!!(seqnames.order.named))
-    #   }
-    # }
-    ## Get desired sequence order
-    seq.ids <- unique(paf$q.name)
-    if (is.character(seqnames.order)) {
-        if (all(seq.ids %in% seqnames.order)) {
-            seq.ord <- seqnames.order
-        } else {
-            seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
-        }
-    } else {
-        seq.ord <- NULL
-    }
-
+    ## If user sequence order not defined get one based on number of mismatches between all pairs of alignments ##
     ## Get unique alignment ID
     paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
     if (is.null(seq.ord)) {
-        ## Order alignments based on the number of mismatches
-        # paf$NM <- S4Vectors::sapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('X'))[[1]]), USE.NAMES = FALSE)
-        paf$NM <- vapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("X"))[[1]]), USE.NAMES = FALSE, FUN.VALUE = numeric(1))
-        paf.ord <- paf %>%
-            dplyr::group_by(seq.pair) %>%
-            dplyr::summarise(n.nm = sum(.data$NM)) %>%
-            dplyr::arrange(.data$n.nm)
-        # paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(identity =  sum(n.match) / sum(aln.len)) %>% dplyr::arrange(identity)
-        paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, "__"))
-        ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
-        seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
+      ## Order alignments based on the number of mismatches
+      # paf$NM <- S4Vectors::sapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('X'))[[1]]), USE.NAMES = FALSE)
+      paf$NM <- vapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("X"))[[1]]), USE.NAMES = FALSE, FUN.VALUE = numeric(1))
+      paf.ord <- paf %>%
+        dplyr::group_by(seq.pair) %>%
+        dplyr::summarise(n.nm = sum(.data$NM)) %>%
+        dplyr::arrange(.data$n.nm)
+      # paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(identity =  sum(n.match) / sum(aln.len)) %>% dplyr::arrange(identity)
+      paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, "__"))
+      ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
+      seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
     } else {
-        ## Assign user defined assembly order
-        seq.names <- seq.ord
+      ## Assign user defined assembly order
+      seq.names <- seq.ord
     }
 
     ## Order PAF
@@ -248,7 +245,7 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
 
     ## Add alignment outlines
     if (outline.alignments) {
-        plt <- plt + geom_miropeats(data = coords[coords$ID == "M", ], ggplot2::aes(x, y, group = group), fill = NA, color = "gray", size = 0.25)
+        plt <- plt + geom_miropeats(data = coords[coords$ID == "M", ], ggplot2::aes(x, y, group = group), fill = NA, color = "gray", linewidth = 0.25)
     }
 
     ## Add indels
@@ -267,7 +264,7 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
                 warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
             }
         } else {
-            warning("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+            message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
         }
     }
 

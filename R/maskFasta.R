@@ -22,6 +22,8 @@
 #' maskFASTA(fasta.file = fasta.file, mask.ranges = mask.ranges, invert = TRUE)
 #'
 maskFASTA <- function(fasta.file, mask.ranges = NULL, invert = FALSE, mask.character = "N", fasta.save = NULL) {
+  ptm <- startTimedMessage(paste0("[maskFASTA] Masking FASTA file, ", fasta.file))
+
     if (file.exists(fasta.file)) {
         ## Read in FASTA sequence
         seq <- Rsamtools::scanFa(file = fasta.file, as = "DNAStringSet")
@@ -61,6 +63,8 @@ maskFASTA <- function(fasta.file, mask.ranges = NULL, invert = FALSE, mask.chara
     } else {
         message("Please speficify 'fasta.save' if you want to export FASTA into a file!!!")
     }
+
+  stopTimedMessage(ptm)
     ## Return masked FASTA
     return(masked.seq)
 }

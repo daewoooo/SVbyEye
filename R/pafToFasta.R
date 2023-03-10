@@ -37,6 +37,7 @@
 #' )
 #' }
 paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm.fasta = NULL, majority.strand = "+", revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
+    ptm <- startTimedMessage("[paf2FASTA] Exporting PAF alignments to FASTA file")
     ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -192,13 +193,17 @@ paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm
         # }
         ## Return extracted FASTA or index
         if (return == "fasta") {
+            stopTimedMessage(ptm)
             return(gr.seq)
         } else if (return == "index") {
+            stopTimedMessage(ptm)
             return(index.gr)
         } else {
+            stopTimedMessage(ptm)
             return(NULL)
         }
     } else {
+        stopTimedMessage(ptm)
         return(paf)
     }
 }

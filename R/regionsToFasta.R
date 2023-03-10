@@ -10,6 +10,7 @@
 #' @inheritParams paf2FASTA
 #' @importFrom Rsamtools indexFa FaFile scanFa scanFaIndex
 #' @importFrom BSgenome getSeq
+#' @importFrom methods is
 #' @importFrom Biostrings writeXStringSet
 #' @importFrom GenomeInfoDb seqlengths seqnames seqlevels
 #' @importFrom GenomicRanges start end mcols
@@ -50,8 +51,10 @@
 #' regions2FASTA(gr = sv.bps.gr, asm.fasta = query.fasta, expand = 10, index = 1)
 #'
 regions2FASTA <- function(gr, bsgenome = NULL, asm.fasta = NULL, index.field = NULL, expand = 0, fasta.save = NULL) {
-    ## Load BSgenome object
-   if (!is(bsgenome, "BSgenome")) {
+   ptm <- startTimedMessage("[regions2FASTA] Exporting GRanges object to FASTA")
+
+   ## Load BSgenome object
+   if (!methods::is(bsgenome, "BSgenome")) {
        if (is.character(bsgenome)) {
           warning("Parameter 'bsgenome' has to be a valid bsgenome class object !!!")
        } else {
@@ -138,5 +141,6 @@ regions2FASTA <- function(gr, bsgenome = NULL, asm.fasta = NULL, index.field = N
     } # else {
     # warning("Please speficify 'fasta.save' if you want to export FASTA into a file!!!")
     # }
+    stopTimedMessage(ptm)
     return(gr.seq)
 }

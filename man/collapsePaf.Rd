@@ -13,7 +13,7 @@ along with CIGAR string defined in 'cg' column.}
 \item{collapse.by}{A user defined column name present in `paf.table` to serve as grouping variable.}
 }
 \value{
-A \code{tibble} of collapsed PAF alignments
+A \code{tibble} of collapsed PAF alignments.
 }
 \description{
 This function takes PAF alignments stored in using \code{tibble} object and collapse them

@@ -18,6 +18,7 @@
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
 #' @importFrom grid unit
+#' @importFrom methods is
 #' @importFrom scales comma
 #' @importFrom wesanderson wes_palette
 #' @importFrom randomcoloR randomColor
@@ -153,7 +154,7 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
         stop("Please specify 'coordinate.space' as either 'target', 'query' or 'self' !!!")
     }
 
-    if (!is.null(annot.gr) & is(annot.gr, "GRanges")) {
+    if (!is.null(annot.gr) & methods::is(annot.gr, "GRanges")) {
         ## Restrict annotation ranges to x-limits
         annot.gr <- annot.gr[GenomicRanges::start(annot.gr) >= xlim[1] & GenomicRanges::end(annot.gr) <= xlim[2]]
         if (length(annot.gr) > 0) {
