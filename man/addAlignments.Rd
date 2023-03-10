@@ -2,7 +2,7 @@
 % Please edit documentation in R/addAlignments.R
 \name{addAlignments}
 \alias{addAlignments}
-\title{Add PAF alignments to a SVbyEye plot.}
+\title{Add PAF alignments to a SVbyEye miropeat style plot.}
 \usage{
 addAlignments(
   ggplot.obj = NULL,

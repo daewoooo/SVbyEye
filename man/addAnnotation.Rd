@@ -10,8 +10,9 @@ addAnnotation(
   shape = "arrowhead",
   fill.by = NULL,
   color.palette = NULL,
+  max.colors = 20,
   coordinate.space = "target",
-  new.annotation.level = TRUE,
+  annotation.level = 0.05,
   offset.annotation = FALSE,
   annotation.label = NULL,
   y.label.id = NULL
@@ -28,10 +29,11 @@ addAnnotation(
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels).}
 
+\item{max.colors}{A maximum number of discrete color levels for which legend will be reported. If more than that legend will be removed.}
+
 \item{coordinate.space}{A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.}
 
-\item{new.annotation.level}{Set to \code{TRUE} if the annotation ranges should be plotted at a separate level
-defined by 0.05 fraction of the y-axis range.}
+\item{annotation.level}{A \code{numeric} that defines a fraction of y-axis to be the y-axis position for the annotation track (Default : `0.05`).}
 
 \item{offset.annotation}{Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.}
 

@@ -31,7 +31,7 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{binsize}{A size of a bin in base pairs to split a PAF alignment into.}
 
-\item{shape}{A shape used to plot aligned sequences: Either 'segment' or 'arc'.}
+\item{shape}{A shape used to plot aligned sequences: Either 'segment', 'arc' or 'arrow'.}
 
 \item{sort.by}{Order PAF alignments by relative left-most coordinates ('position') or by the alignment length ('length').}
 
@@ -64,15 +64,22 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "segment")
 ## Plot alignment as arcs and color by alignment directionality
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
-## Highlight structural variants
+## Plot alignment as arrows and color by alignment directionality
+plotSelf(paf.table = paf.table, color.by = "direction", shape = "arrow")
+## Highlight structural variants within segemnt shapes
 plotSelf(
     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
     highlight.sv = "outline"
 )
-## Highlight structural variants and visualize as arcs
+## Highlight structural variants within arc shapes
 plotSelf(
     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
     highlight.sv = "outline", shape = "arc"
+)
+## Highlight structural variants within arrow shapes
+plotSelf(
+    paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
+    highlight.sv = "outline", shape = "arrow"
 )
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
 plotSelf(paf.table = paf.table, binsize = 1000)

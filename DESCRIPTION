@@ -36,7 +36,8 @@ Imports:
   IRanges,
   GenomeInfoDb,
   Rsamtools,
-  wesanderson
+  wesanderson,
+  randomcoloR
 Suggests:
   BSgenome.Hsapiens.UCSC.hg38,
   BiocStyle,
