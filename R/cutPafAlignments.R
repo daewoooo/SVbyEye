@@ -37,7 +37,7 @@ cutPafAlignments <- function(paf.table, target.region = NULL) {
     if (!is.null(target.region)) {
         if (is.character(target.region)) {
             target.region.gr <- methods::as(target.region, "GRanges")
-        } else if (is(target.region.gr, "GRanges")) {
+        } else if (is(target.region, "GRanges")) {
             target.region.gr <- target.region
         } else {
             message("Parameter 'target.region' can either be 'GRanges' object or character string 'chr#:start-end'!!!")

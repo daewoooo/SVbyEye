@@ -150,7 +150,7 @@ fasta2nucleotideContent <- function(fasta.seq, sequence.pattern = NULL, nucleoti
         ## Get counts of a specific nucleotides per FASTA sequence
         bases.counts <- rowSums(base.freq[, bases, drop = FALSE])
         ## Get frequency of a specific nucleotides per FASTA sequence
-        bases.freq <- rowSums(base.freq[, bases, drop = FALSE]) / rowSums(base.freq)
+        bases.freq <- bases.counts / rowSums(base.freq[, c('A', 'C', 'G', 'T'), drop = FALSE])
 
         ## Report counts and frequencies
         nuc.content <- suppressMessages(dplyr::bind_cols(as.numeric(bases.counts), bases.freq))
