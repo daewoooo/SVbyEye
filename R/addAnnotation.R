@@ -10,6 +10,8 @@
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels).
 #' @param max.colors A maximum number of discrete color levels for which legend will be reported. If more than that legend will be removed.
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.
+#' @param annotation.group A name of an extra field present in 'annot.gr' to be used to connect set of ranges of the same group
+#' by a straight black line (Useful to plot exons from one or multiple genes).
 #' @param annotation.level A \code{numeric} that defines a fraction of y-axis to be the y-axis position for the annotation track (Default : `0.05`).
 #' @param offset.annotation Set to \code{TRUE} if subsequent annotation ranges should be offsetted below and above the midline.
 #' @param annotation.label A \code{character} string to be used as a label to added annotation track.
@@ -89,7 +91,17 @@
 #'     color.palette = color.palette, coordinate.space = "target", annotation.label = "SD"
 #' )
 #'
-addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
+#' ## Add gene-like annotation
+#' test.gr <- GenomicRanges::GRanges(
+#'                seqnames = 'target.region',
+#'                ranges = IRanges::IRanges(start = c(19000000,19030000,19070000),
+#'                                          end = c(19010000,19050000,19090000)),
+#'                                          ID = 'gene1')
+#' addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+#'               shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
+#'               fill.by = 'ID')
+#'
+addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.group = NULL, annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
     ## Get plotted data
     gg.data <- ggplot.obj$data
     if (coordinate.space != 'self') {
@@ -158,21 +170,22 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
         ## Restrict annotation ranges to x-limits
         annot.gr <- annot.gr[GenomicRanges::start(annot.gr) >= xlim[1] & GenomicRanges::end(annot.gr) <= xlim[2]]
         if (length(annot.gr) > 0) {
-            ## Offset overlapping annotation ranges up&down based on start position
+            ## Offset overlapping annotation ranges up&down based on start position ##
             if (offset.annotation) {
-                annot.gr <- GenomicRanges::sort(annot.gr, ignore.strand = TRUE)
+                #annot.gr <- GenomicRanges::sort(annot.gr, ignore.strand = TRUE)
                 if (coordinate.space == "target") {
-                    y.offset <- rep(y.offset + c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
-                } else if (coordinate.space == "query") {
-                    y.offset <- rep(y.offset - c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
-                } else if (coordinate.space == "self") {
-                    y.offset <- rep(y.offset - c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
+                    #y.offset <- rep(y.offset + c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
+                    y.offset <- getAnnotationLevels(annot.gr = annot.gr, offset = y.offset, annotation.group = annotation.group, direction = 'positive')
+                } else if (coordinate.space == "query" | coordinate.space == "self") {
+                    #y.offset <- rep(y.offset - c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
+                    y.offset <- getAnnotationLevels(annot.gr = annot.gr, offset = y.offset, annotation.group = annotation.group, direction = 'negative')
                 }
             }
 
             ## Prepare data for plotting ##
             ## Convert to data frame object
             annot.df <- as.data.frame(annot.gr)
+
             ## Add y-axis coordinates
             ## Match y-axis labels if to user defined ID column via 'y.label.id' parameter
             if (!is.null(y.label.id)) {
@@ -229,25 +242,44 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                 col.scale <- "discreteNoLegend"
             }
 
-            ## Add annotation to the ggplot obkect ##
+            ## Connect annotation ranges based on group defined in 'annotation.group' ##
+            if (!is.null(annotation.group)) {
+              if (annotation.group %in% colnames(annot.df)) {
+                link.df <- annot.df %>%
+                  dplyr::group_by(dplyr::across(dplyr::all_of(annotation.group))) %>%
+                  dplyr::summarise(
+                    seqnames = unique(seqnames),
+                    start = min(start),
+                    end = max(end),
+                    y.offset = unique(y.offset)
+                  )
+
+                plt <- ggplot.obj +
+                  ggplot2::geom_segment(data = link.df, ggplot2::aes(x = start, xend = end, y = y.offset, yend = y.offset))
+              }
+            } else {
+              plt <- ggplot.obj
+            }
+
+            ## Add annotation to the ggplot object ##
             if (shape == "arrowhead") {
                 ## Make sure field 'strand' is defined
                 if (!"strand" %in% colnames(annot.df)) {
                     annot.df$strand <- "*"
                 }
                 if (!is.null(fill.by)) {
-                    plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
                         geom_arrowhead(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = .data[[fill.by]], fill = .data[[fill.by]], strand = strand))
                 } else {
-                    plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
                         geom_arrowhead(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = NULL, fill = NULL, strand = strand))
                 }
             } else if (shape == "rectangle") {
                 if (!is.null(fill.by)) {
-                    plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
                         geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = .data[[fill.by]], fill = .data[[fill.by]]), radius = grid::unit(0, "mm"))
                 } else {
-                    plt <- ggplot.obj + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
                         geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = NULL, fill = NULL), radius = grid::unit(0, "mm"))
                 }
             }

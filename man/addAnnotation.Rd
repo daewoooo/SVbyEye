@@ -12,6 +12,7 @@ addAnnotation(
   color.palette = NULL,
   max.colors = 20,
   coordinate.space = "target",
+  annotation.group = NULL,
   annotation.level = 0.05,
   offset.annotation = FALSE,
   annotation.label = NULL,
@@ -32,6 +33,9 @@ addAnnotation(
 \item{max.colors}{A maximum number of discrete color levels for which legend will be reported. If more than that legend will be removed.}
 
 \item{coordinate.space}{A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.}
+
+\item{annotation.group}{A name of an extra field present in 'annot.gr' to be used to connect set of ranges of the same group
+by a straight black line (Useful to plot exons from one or multiple genes).}
 
 \item{annotation.level}{A \code{numeric} that defines a fraction of y-axis to be the y-axis position for the annotation track (Default : `0.05`).}
 
@@ -109,6 +113,16 @@ addAnnotation(
     ggplot.obj = plt, annot.gr = sd.annot.gr, fill.by = "sd.categ",
     color.palette = color.palette, coordinate.space = "target", annotation.label = "SD"
 )
+
+## Add gene-like annotation
+test.gr <- GenomicRanges::GRanges(
+               seqnames = 'target.region',
+               ranges = IRanges::IRanges(start = c(19000000,19030000,19070000),
+                                         end = c(19010000,19050000,19090000)),
+                                         ID = 'gene1')
+addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+              shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
+              fill.by = 'ID')
 
 }
 \author{
