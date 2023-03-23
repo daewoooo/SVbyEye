@@ -45,7 +45,7 @@
 #' annot.gr <- get(load(annot.file))
 #' addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', y.label.id = 'ID')
 #'
-plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE) {
+plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE, sv_color = NULL) {
     ## Check user input
     ## Make sure submitted paf.table has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -247,7 +247,13 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     if (outline.alignments) {
         plt <- plt + geom_miropeats(data = coords[coords$ID == "M", ], ggplot2::aes(x, y, group = group), fill = NA, color = "gray", linewidth = 0.25)
     }
-
+        
+    ## Warn if sv_color input is not selected
+    if (is.null(sv_color) || length(sv_color) != 2) {
+        warning("To select the sv color, 'sv_color' option must be a vector of 2 characters, using default colors instead! (Red and Yellow)")
+        sv_color <- c("red", "yellow") # or assign a default color vector
+    }                    
+                       
     ## Add indels
     if (!is.null(highlight.sv)) {
         if (nrow(coords[coords$ID != "M", ]) > 0) {
@@ -255,11 +261,11 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
             if (highlight.sv == "outline") {
                 plt <- plt + ggnewscale::new_scale_color() +
                     geom_miropeats(data = coords[coords$ID != "M", ], ggplot2::aes(x, y, group = group, color = ID), fill = NA, alpha = 0.5, inherit.aes = FALSE) +
-                    ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                    ggplot2::scale_color_manual(values = c("DEL" = sv_color[1], "INS" = sv_color[2]), name = "SV class")
             } else if (highlight.sv == "fill") {
                 plt <- plt + ggnewscale::new_scale_fill() +
                     geom_miropeats(data = coords[coords$ID != "M", ], ggplot2::aes(x, y, group = group, fill = ID), alpha = 0.5, inherit.aes = FALSE) +
-                    ggplot2::scale_fill_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                    ggplot2::scale_fill_manual(values = c("DEL" = sv_color[1], "INS" = sv_color[2]), name = "SV class")
             } else {
                 warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
             }
