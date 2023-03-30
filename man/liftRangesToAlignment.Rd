@@ -4,12 +4,13 @@
 \alias{liftRangesToAlignment}
 \title{Function to lift coordinates to the alignment in PAF format.}
 \usage{
-liftRangesToAlignment(gr = NULL, paf.file = NULL, direction = "query2target")
+liftRangesToAlignment(paf.table, gr = NULL, direction = "query2target")
 }
 \arguments{
-\item{gr}{A \code{\link{GRanges-class}} object containing single or multiple ranges in query or target sequence coordinates.}
+\item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
+along with CIGAR string defined in 'cg' column.}
 
-\item{paf.file}{A path to a PAF file containing alignments of a query sequence to a target sequence.}
+\item{gr}{A \code{\link{GRanges-class}} object containing single or multiple ranges in query or target sequence coordinates.}
 
 \item{direction}{One of the possible, lift ranges from query to target 'query2target' or vice versa 'target2query'.}
 }
@@ -24,8 +25,10 @@ Function to lift coordinates to the alignment in PAF format.
 roi.gr <- as("chr17:46645907-46697277", "GRanges")
 ## Get PAF alignment to lift to
 paf.file <- system.file("extdata", "test_lift1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Lift target range to query coordinates
-liftRangesToAlignment(gr = roi.gr, paf.file = paf.file, direction = "target2query")
+liftRangesToAlignment(paf.table = paf.table, gr = roi.gr, direction = "target2query")
 
 }
 \author{

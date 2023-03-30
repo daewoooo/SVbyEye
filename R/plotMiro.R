@@ -13,7 +13,7 @@
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
 #' @inheritParams paf2coords
-#' @inheritParams cutPafAlignments
+#' @inheritParams subsetPafAlignments
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
 #' @importFrom grid unit
@@ -71,9 +71,9 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         stop("Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!")
     }
 
-    ## Subset/cut PAF alignments to user defined target region
+    ## Subset PAF alignments to user defined target region
     if (!is.null(target.region)) {
-        paf <- cutPafAlignments(paf.table = paf, target.region = target.region)
+        paf <- subsetPafAlignments(paf.table = paf, target.region = target.region)
     }
 
     ## Break PAF at insertion/deletions defined in cigar string
