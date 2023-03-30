@@ -203,3 +203,60 @@ collapsePaf <- function(paf.table, collapse.by = NULL) {
     ## Return collapsed PAF
     return(paf)
 }
+
+
+#' Assign each genomic range a non-overlapping level value
+#'
+#' This function takes a set of genomic ranges in \code{\link{GRanges-class}} object and assign to each range
+#' a unique level such that each range or group of ranges (if `annotation.group` is defined) resides on different levels.
+#'
+#' @param annot.gr A \code{\link{GRanges-class}} object with a set of ranges to report unique non-overlapping levels for.
+#' @param offset A \code{numeric} value from which unique annotation levels start from.
+#' @param annotation.group A name of an extra field present in 'annot.gr' to be used to report unique levels for a set of
+#'  ranges that belong to the same group.
+#' @param direction Set to `positive` or `negative` to make sure reported levels are either decreasing or increasing
+#' from the defined 'offset' (default: `positive`).
+#' @return A \code{numeric} vector of unique levels corresponding to submitted ranges via 'annot.gr'.
+#' @importFrom GenomicRanges mcols disjointBins GRanges
+#' @importFrom IRanges ranges
+#' @author David Porubsky
+#' @export
+#' @examples
+#' ## Define random set of ranges grouped by gene name
+#' test.gr1 <- GenomicRanges::GRanges(seqnames = 'target.region',
+#'                 ranges = IRanges::IRanges(start = c(19000000, 19030000, 19070000),
+#'                                           end = c(19010000, 19050000, 19090000)))
+#' test.gr1$ID <- 'gene1'
+#' test.gr2 <- GenomicRanges::shift(test.gr1, shift = 10000)
+#' test.gr2$ID <- 'gene2'
+#' test.gr3 <- GenomicRanges::shift(test.gr1, shift = 90000)
+#' test.gr3$ID <- 'gene3'
+#' test.gr <- c(test.gr1, test.gr2, test.gr3)
+#' ## Obtain unique annotation levels grouped by ID
+#' getAnnotationLevels(annot.gr = test.gr, offset = 1, annotation.group = 'ID')
+#'
+getAnnotationLevels <- function(annot.gr = NULL, offset = NULL, annotation.group = NULL, direction = 'positive') {
+  if (!is.null(annotation.group)) {
+    if (annotation.group %in% names(GenomicRanges::mcols(annot.gr))) {
+      group.seqnames <- unlist(GenomicRanges::mcols(annot.gr[,annotation.group]))
+      ranges.gr <- GenomicRanges::GRanges(seqnames =  group.seqnames, ranges = IRanges::ranges(annot.gr))
+      ranges.gr <- range(ranges.gr)
+      ranges.gr$levels <- GenomicRanges::disjointBins(IRanges::ranges(ranges.gr))
+      levels <- ranges.gr$levels[match(group.seqnames, as.character(GenomeInfoDb::seqnames(ranges.gr)))]
+    }
+  } else {
+    levels <- GenomicRanges::disjointBins(annot.gr)
+  }
+  ## Define offsets
+  n.levels <- length(unique(levels))
+  if (direction == 'positive') {
+    annot.levels <- seq(from=offset, by = 0.05, length.out = n.levels)
+  } else if (direction == 'negative') {
+    annot.levels <- seq(from=offset, by = 0.05, length.out = n.levels)
+  } else {
+    warning("Parameter 'direction' can only take values 'positive' or 'negative', using default value !!!")
+    annot.levels <- seq(from=offset, by = 0.05, length.out = n.levels)
+  }
+  annot.levels <- annot.levels[levels]
+  return(annot.levels)
+}
