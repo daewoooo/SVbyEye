@@ -89,7 +89,7 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
             dplyr::group_by(.data$seq.pair) %>%
             dplyr::mutate(align.n = dplyr::n())
         paf <- paf[paf$align.n >= min.align.n,]
-        paf <- paf[,-c('seq.pair', 'align.n')]
+        paf <- paf[,!colnames(paf) %in% c('seq.pair', 'align.n')]
     }
 
     ## Keep only specific sequence/region name
