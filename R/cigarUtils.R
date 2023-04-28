@@ -31,7 +31,7 @@ parseCigarString <- function(cigar.str = NULL, coordinate.space = "reference") {
         stop("Parameter 'coordinate.space' can only take values 'reference' or 'query' !!!")
     }
     ## Translate cigar symbols
-    cigar.id.trans <- dplyr::recode(cigar.id, "=" = "match", "I" = "insertion", "D" = "deletion", "X" = "mismatch")
+    cigar.id.trans <- dplyr::recode(cigar.id, "=" = "match", "M" = "match", "I" = "insertion", "D" = "deletion", "X" = "mismatch")
     ## Export ranges
     irl <- split(cigar.ranges, cigar.id.trans)
     return(irl)

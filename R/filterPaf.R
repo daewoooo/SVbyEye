@@ -83,12 +83,13 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
 
     ## Filter by the number of alignments per sequence alignment pair
     ## Get unique alignment ID
-    paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
     if (min.align.n > 0) {
+        paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
         paf <- paf %>%
             dplyr::group_by(.data$seq.pair) %>%
             dplyr::mutate(align.n = dplyr::n())
-        paf <- paf[paf$align.n >= min.align.n, ]
+        paf <- paf[paf$align.n >= min.align.n,]
+        paf <- paf[,-c('seq.pair', 'align.n')]
     }
 
     ## Keep only specific sequence/region name
