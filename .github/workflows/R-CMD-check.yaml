@@ -36,7 +36,7 @@ jobs:
       - name: Install additional LaTeX packages (non-Windows)
         if: inputs.runner_os != 'Windows'
         run: |
-          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools 
+          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools pdfcrop
           tlmgr list --only-installed
       
       - uses: r-lib/actions/check-r-package@v2
