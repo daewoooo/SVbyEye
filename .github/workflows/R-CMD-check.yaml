@@ -24,7 +24,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           pak-version: devel
-          extra-packages: any::rcmdcheck, any::XML, any::tinytex, any::tools
+          extra-packages: any::rcmdcheck, any::XML, any::tinytex
           needs: check
 
       - name: Install latex
