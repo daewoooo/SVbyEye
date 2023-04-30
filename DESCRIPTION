@@ -43,7 +43,6 @@ Suggests:
   BiocStyle,
   testthat,
   knitr,
-  tools,
   rmarkdown
 License: file LICENSE
 Encoding: UTF-8

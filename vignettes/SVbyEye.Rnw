@@ -1,8 +1,7 @@
 %\VignetteIndexEntry{How to use SVbyEye}
-%\VignetteEngine{knitr::knitr}
 \documentclass{article}
 
-<<style-knitr, eval=TRUE, echo=FALSE, results='asis'>>=
+<<style-Sweave, eval=TRUE, echo=FALSE, results=tex>>=
 BiocStyle::latex()
 @
 
@@ -12,12 +11,5 @@ BiocStyle::latex()
 \begin{document}
 \maketitle
 \tableofcontents
-
-\section{Session Info}
-
-<<sessionInfo, results="asis", eval=TRUE>>=
-toLatex(sessionInfo())
-@
-
 \end{document}
 
