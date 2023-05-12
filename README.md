@@ -5,7 +5,6 @@
 <!-- badges: end -->
 
 =========================================================================
-# SVbyEye
 R Package to visualize alignments between two or multiple genome sequences.
 
 Author: David Porubsky
