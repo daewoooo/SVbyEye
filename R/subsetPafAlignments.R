@@ -52,8 +52,10 @@ subsetPafAlignments <- function(paf.table, target.region = NULL) {
         }
     }
 
-    ## Check if any paf alignment overlap user defined target region
+    ## Check if any PAF alignment overlap user defined target region
     if (!all(target.gr == IRanges::subsetByOverlaps(target.gr, target.region.gr, type = "within"))) {
+      ## Check if PAF contains expected cg field containing CIGAR string
+      if ('cg' %in% colnames(paf)) {
         if (nrow(paf) > 1) {
             ## Narrow alignment at desired start position ##
             cut.start.idx <- which(paf$t.start < GenomicRanges::start(target.region.gr))
@@ -147,6 +149,10 @@ subsetPafAlignments <- function(paf.table, target.region = NULL) {
             paf$aln.len <- new.aln.len
             paf$cg <- new.cigar
         }
+      } else {
+        warning(paste0("Expected PAF field 'cg' containing CIGAR string is missing, ",
+                "therefore alignments cannot be narrowed down exactly to the user defined 'target.region'!!!"))
+      }
     }
     stopTimedMessage(ptm)
     return(paf)
