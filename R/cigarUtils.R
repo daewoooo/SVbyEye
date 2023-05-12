@@ -72,23 +72,31 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
     insertions <- list()
     deletions <- list()
     for (i in seq_len(nrow(paf.table))) {
-        paf.aln <- paf.table[i, ]
+        paf.aln <- paf.table[i,]
         ## Parse CIGAR string ##
         cg.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = coordinate.space)
+        ## Get sequence ID
+        if (coordinate.space == "reference") {
+          seqname <- paf.aln$t.name
+        } else if (coordinate.space == "query") {
+          seqname <- paf.aln$q.name
+        } else {
+          stop("Parameter 'coordinate.space' can only be either 'reference' or 'query'!!!")
+        }
         ## Get cigar ranges and offset ranges based on alignment starting position
         if (length(cg.ranges$match) > 0) {
-            match.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$match)
+            match.gr <- GenomicRanges::GRanges(seqnames = seqname, ranges = cg.ranges$match)
         } else {
             match.gr <- GenomicRanges::GRanges()
         }
         if (length(cg.ranges$mismatch) > 0) {
-            mismatch.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$mismatch)
+            mismatch.gr <- GenomicRanges::GRanges(seqnames = seqname, ranges = cg.ranges$mismatch)
             mismatch.gr$size <- 1
         } else {
             mismatch.gr <- GenomicRanges::GRanges()
         }
         if (length(cg.ranges$deletion) > 0) {
-            del.gr <- GenomicRanges::GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$deletion)
+            del.gr <- GenomicRanges::GRanges(seqnames = seqname, ranges = cg.ranges$deletion)
             ## In case of query coordinates get deletion size from the reference coordinates
             if (coordinate.space == "query") {
                 ref.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = "reference")
@@ -104,7 +112,7 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
             del.gr <- GenomicRanges::GRanges()
         }
         if (length(cg.ranges$insertion) > 0) {
-            ins.gr <- GRanges(seqnames = paf.aln$q.name, ranges = cg.ranges$insertion)
+            ins.gr <- GRanges(seqnames = seqname, ranges = cg.ranges$insertion)
             ## In case of reference coordinates get insertion size from the query coordinates
             if (coordinate.space == "reference") {
                 qry.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = "query")
