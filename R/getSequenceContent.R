@@ -1,11 +1,11 @@
 #' Add FASTA sequence content to PAF alignments.
 #'
-#' This function with take a PAF table and for each alignment (rows) will report counts and frequencies of user defined
+#' This function takes a PAF table and for each alignment (rows) will report counts and frequencies of user defined
 #' `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content).
 #'
 #' @inheritParams breakPaf
 #' @inheritParams paf2FASTA
-#' @inheritParams fasta2nucleotideContent
+#' @inheritParams getNucleotideContent
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
 #' @importFrom dplyr bind_cols
@@ -58,16 +58,73 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
     ## Get FASTA sequences per PAF region
     fasta.seq <- regions2FASTA(gr = paf.gr, asm.fasta = asm.fasta, index.field = 1)
     ## Get nucleotide or pattern count and frequency
-    nuc.content <- fasta2nucleotideContent(fasta.seq = fasta.seq, sequence.pattern = sequence.pattern, nucleotide.content = nucleotide.content)
+    nuc.content <- getNucleotideContent(fasta.seq = fasta.seq, sequence.pattern = sequence.pattern, nucleotide.content = nucleotide.content)
     ## Add defined FASTA nucleotide content to submitted paf.table
     paf.table <- dplyr::bind_cols(paf.table, nuc.content)
     return(paf.table)
 }
 
 
+#' Get sequence content from a single FASTA file.
+#'
+#' This function with takes a path to FASTA file containing a single sequence and report counts and frequencies of user defined
+#' `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content) across the
+#' whole sequence or in user defined bins.
+#'
+#' @param fasta.file A path to a valid FASTA file to be processed.
+#' @param binsize A user defined number of base pairs to split the loaded FASTA sequence into
+#' @inheritParams getNucleotideContent
+#' @importFrom Biostrings readDNAStringSet Views
+#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom GenomicRanges GRanges
+#' @importFrom IRanges IRanges ranges
+#' @author David Porubsky
+#' @export
+#' @examples
+#' ## Get FASTA to process ##
+#' asm.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package = "SVbyEye")
+#' ## Report sequence content for a given FASTA file in 5000bp long bins
+#' fasta2nucleotideContent(fasta.file = asm.fasta, binsize = 5000, sequence.pattern = "AT")
+#'
+fasta2nucleotideContent <- function(fasta.file, binsize=NULL, sequence.pattern = NULL, nucleotide.content = NULL) {
+  ptm <- startTimedMessage("[fasta2nucleotideContent] Calculating FASTA sequence content")
+
+  ## Check user input
+  if (file.exists(fasta.file)) {
+    fa.seq <- Biostrings::readDNAStringSet(fasta.file)
+    seq.len <- GenomeInfoDb::seqlengths(fa.seq)
+  } else {
+    stop('Please submit a path to a valid FASTA file !!!')
+  }
+
+  ## Bin FASTA sequence
+  if (!is.null(binsize)) {
+    if (binsize > 0) {
+      views.obj <- Biostrings::Views(unlist(fa.seq), start = seq(from=1, to=(seq.len - binsize), by=binsize), width = binsize)
+      views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::ranges(views.obj))
+      seq.views <- as(views.obj, 'DNAStringSet')
+    } else {
+      views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::IRanges(start = 1, end = seq.len))
+      seq.views <- fa.seq
+    }
+  } else {
+    views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::IRanges(start = 1, end = seq.len))
+    seq.views <- fa.seq
+  }
+  ## Get nucleotide or pattern count and frequency
+  seq.content <- suppressMessages( getNucleotideContent(fasta.seq = seq.views,
+                                                        sequence.pattern = sequence.pattern,
+                                                        nucleotide.content = nucleotide.content) )
+  mcols(views.gr) <- seq.content
+  ## Return calcualted sequence content
+  stopTimedMessage(ptm)
+  return(views.gr)
+}
+
+
 #' Get sequence content from one or multiple FASTA sequences.
 #'
-#' This function with take a single or set of FASTA sequences and for each sequence will report counts and frequencies of user defined
+#' This function takes a single or set of FASTA sequences and for each sequence will report counts and frequencies of user defined
 #' `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content).
 #'
 #' @param fasta.seq A \code{\link{DNAStringSet-class}} object containing one or multiple FASTA sequences.
@@ -90,10 +147,10 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
 #' ## Read in FASTA sequence
 #' fasta.seq <- paf2FASTA(paf.table = paf.table, asm.fasta = asm.fasta)
 #' ## Report sequence and nucleotide content for a given FASTA sequence
-#' fasta2nucleotideContent(fasta.seq = fasta.seq, sequence.pattern = "AT", nucleotide.content = "GC")
+#' getNucleotideContent(fasta.seq = fasta.seq, sequence.pattern = "AT", nucleotide.content = "GC")
 #'
-fasta2nucleotideContent <- function(fasta.seq, sequence.pattern = NULL, nucleotide.content = NULL) {
-    ptm <- startTimedMessage("[fasta2nucleotideContent] Calculating FASTA sequence content")
+getNucleotideContent <- function(fasta.seq, sequence.pattern = NULL, nucleotide.content = NULL) {
+    ptm <- startTimedMessage("[getNucleotideContent] Calculating FASTA sequence content")
 
     ## Check user input ##
     ## Check if submitted FASTA sequence is in accepted format
