@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{collapsePaf}
 \alias{collapsePaf}
-\title{Collapse PAF query and target ranges based withing a group}
+\title{Collapse PAF query and target ranges based on unique identifier.}
 \usage{
 collapsePaf(paf.table, collapse.by = NULL)
 }

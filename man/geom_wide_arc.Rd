@@ -11,6 +11,9 @@ geom_wide_arc(
   stat = "wide_arc",
   position = "identity",
   n = 100,
+  max.width = NULL,
+  y.offset = 0,
+  y.reverse = FALSE,
   na.rm = FALSE,
   show.legend = NA,
   inherit.aes = TRUE,
@@ -25,6 +28,12 @@ geom_wide_arc(
 \code{geom_} prefix (e.g. \code{"point"} rather than \code{"geom_point"})}
 
 \item{n}{The number of points to create for each alignment polygon (Default : `100`).}
+
+\item{max.width}{The maximum width of the arc in y-coordinate units.}
+
+\item{y.offset}{The y-axis coordinate from where the arc will start.}
+
+\item{y.reverse}{Set to `TRUE` if the arc orientation should be flipped upside down.}
 }
 \description{
 `geom_wide_arc()` draws wide polygons between two sets of start and end coordinates.
@@ -41,8 +50,8 @@ Input data is a \code{data.frame} object that contains required aesthetics `x` a
 (required aesthetics are in bold):
 
 - **x**
-- **y**
 - **group**
+- y (if not defined it will set to zero)
 - color
 - linewidth
 - linetype
@@ -52,15 +61,16 @@ Input data is a \code{data.frame} object that contains required aesthetics `x` a
 }
 
 \examples{
-## Create example data.frame to plot
+## Create example data.frame to plot ##
+## Each link between sequence region1 (seq1) and sequence region2 (seq2)
+## is expected to have 4 x-coordinates (start.seq1, start.seq2, end.seq1, end.seq2)
 plt.df <- data.frame(
     x = c(100, 500, 200, 1000),
-    y = 0,
     group = 1
 )
 ## Make a plot
 ggplot2::ggplot(plt.df) +
-    geom_wide_arc(ggplot2::aes(x = x, y = y, group = group), alpha = 0.5)
+    geom_wide_arc(ggplot2::aes(x = x, group = group), alpha = 0.5)
 
 }
 \seealso{

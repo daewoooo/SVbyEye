@@ -2,16 +2,19 @@
 % Please edit documentation in R/getSequenceContent.R
 \name{fasta2nucleotideContent}
 \alias{fasta2nucleotideContent}
-\title{Get sequence content from one or multiple FASTA sequences.}
+\title{Get sequence content from a single FASTA file.}
 \usage{
 fasta2nucleotideContent(
-  fasta.seq,
+  fasta.file,
+  binsize = NULL,
   sequence.pattern = NULL,
   nucleotide.content = NULL
 )
 }
 \arguments{
-\item{fasta.seq}{A \code{\link{DNAStringSet-class}} object containing one or multiple FASTA sequences.}
+\item{fasta.file}{A path to a valid FASTA file to be processed.}
+
+\item{binsize}{A user defined number of base pairs to split the loaded FASTA sequence into}
 
 \item{sequence.pattern}{A user defined DNA sequence pattern which occurrences will be counted in submitted `fasta.seq`.
 (e.g. set `sequence.pattern` to 'GA' to obtain counts of all 'GA' occurrences per FASTA sequence).}
@@ -20,20 +23,15 @@ fasta2nucleotideContent(
 (e.g. to obtain 'GC' content set `nucleotide.content` to 'GC')}
 }
 \description{
-This function with take a single or set of FASTA sequences and for each sequence will report counts and frequencies of user defined
-`sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content).
+This function with takes a path to FASTA file containing a single sequence and report counts and frequencies of user defined
+`sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content) across the
+whole sequence or in user defined bins.
 }
 \examples{
-## Get PAF to process ##
-paf.file <- system.file("extdata", "test_getFASTA.paf", package = "SVbyEye")
-## Read in PAF
-paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
-## Get FASTA to process
+## Get FASTA to process ##
 asm.fasta <- system.file("extdata", "test_getFASTA_query.fasta", package = "SVbyEye")
-## Read in FASTA sequence
-fasta.seq <- paf2FASTA(paf.table = paf.table, asm.fasta = asm.fasta)
-## Report sequence and nucleotide content for a given FASTA sequence
-fasta2nucleotideContent(fasta.seq = fasta.seq, sequence.pattern = "AT", nucleotide.content = "GC")
+## Report sequence content for a given FASTA file in 5000bp long bins
+fasta2nucleotideContent(fasta.file = asm.fasta, binsize = 5000, sequence.pattern = "AT")
 
 }
 \author{
