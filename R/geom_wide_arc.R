@@ -12,8 +12,8 @@
 #' (required aesthetics are in bold):
 #'
 #' - **x**
-#' - **y**
 #' - **group**
+#' - y (if not defined it will set to zero)
 #' - color
 #' - linewidth
 #' - linetype
@@ -26,6 +26,9 @@
 #'
 #' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes,... As is standard for ggplot2.
 #' @param n The number of points to create for each alignment polygon (Default : `100`).
+#' @param max.width The maximum width of the arc in y-coordinate units.
+#' @param y.offset The y-axis coordinate from where the arc will start.
+#' @param y.reverse Set to `TRUE` if the arc orientation should be flipped upside down.
 #'
 #' @seealso [plotSelf()]
 #' @author David Porubsky
@@ -34,15 +37,16 @@
 #' @rdname geom_wide_arc
 #'
 #' @examples
-#' ## Create example data.frame to plot
+#' ## Create example data.frame to plot ##
+#' ## Each link between sequence region1 (seq1) and sequence region2 (seq2)
+#' ## is expected to have 4 x-coordinates (start.seq1, start.seq2, end.seq1, end.seq2)
 #' plt.df <- data.frame(
 #'     x = c(100, 500, 200, 1000),
-#'     y = 0,
 #'     group = 1
 #' )
 #' ## Make a plot
 #' ggplot2::ggplot(plt.df) +
-#'     geom_wide_arc(ggplot2::aes(x = x, y = y, group = group), alpha = 0.5)
+#'     geom_wide_arc(ggplot2::aes(x = x, group = group), alpha = 0.5)
 #'
 NULL
 
@@ -58,30 +62,53 @@ StatWideArc <- ggplot2::ggproto("StatWideArc", ggplot2::Stat,
         }
         data
     },
-    compute_panel = function(data, scales, n = 100) {
-        data <- data[order(data$group, data$y), ]
+    compute_panel = function(data, scales, n = 100, max.width = NULL, y.offset = 0, y.reverse = FALSE) {
+        if (!'y' %in% colnames(data)) {
+          data$y <- 0
+        }
+        #data <- data[order(data$group, data$y), ]
+        data <- data[order(data$group), ]
         coords1 <- data[c(TRUE, FALSE, FALSE, TRUE), ]
         coords2 <- data[c(FALSE, TRUE, TRUE, FALSE), ]
         coords1 <- add.widearc.controls.points(coords1)
         coords2 <- add.widearc.controls.points(coords2)
+        ## Scale y height to user defined max.width
+        if (!is.null(max.width)) {
+          if (max.width > 0) {
+            max.y <- max(c(coords1$y, coords2$y))
+            coords1$y <- q2t(coords1$y, q.range = c(0, max.y), t.range = c(0, max.width))
+            coords2$y <- q2t(coords2$y, q.range = c(0, max.y), t.range = c(0, max.width))
+          }
+        }
+        ## Reverse arc upside down
+        if (y.reverse) {
+          coords1$y <- coords1$y * -1
+          coords2$y <- coords2$y * -1
+        }
+        ## Add offset to y axis coordinates
+        coords1$y <- coords1$y + y.offset
+        coords2$y <- coords2$y + y.offset
+        ## Calculate bezier curve
         coords1 <- ggforce::StatBezier$compute_panel(coords1, scales, n)
         coords2 <- ggforce::StatBezier$compute_panel(coords2, scales, n)
         arc.coords <- rbind(coords1, coords2)
     },
-    required_aes = c("x", "y", "group"),
-    extra_params = c("na.rm", "n")
+    required_aes = c("x", "group"),
+    extra_params = c("na.rm", "n", "max.width", "y.offset")
 )
 
 #' @rdname geom_wide_arc
 #' @export
 geom_wide_arc <- function(mapping = NULL, data = NULL, geom = "polygon",
                           stat = "wide_arc", position = "identity",
-                          n = 100, na.rm = FALSE,
+                          n = 100, max.width = NULL, y.offset = 0,
+                          y.reverse = FALSE, na.rm = FALSE,
                           show.legend = NA, inherit.aes = TRUE, ...) {
     ggplot2::layer(
         data = data, mapping = mapping, stat = stat, geom = geom,
         position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, n = n, ...)
+        params = list(na.rm = na.rm, n = n, max.width = max.width,
+                      y.offset = y.offset, y.reverse = y.reverse, ...)
     )
 }
 
@@ -98,3 +125,4 @@ add.widearc.controls.points <- function(data) {
     mid2$y <- y_height
     rbind(start, mid1, mid2, end)
 }
+
