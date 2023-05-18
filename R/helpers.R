@@ -146,7 +146,7 @@ getColorScheme <- function(data.table = NULL, value.field = NULL, breaks = NULL)
 }
 
 
-#' Collapse PAF query and target ranges based withing a group
+#' Collapse PAF query and target ranges based on unique identifier.
 #'
 #' This function takes PAF alignments stored in using \code{tibble} object and collapse them
 #' based on grouping variable defined in `collapse.by` that have to be a valid column name

@@ -109,7 +109,7 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
 
     ## Get x-axis limits (expected to be always continuous)
     ## For x-axis range also consider user defined cartesian coordinates for the target region
-    if (coordinate.space != 'self') {
+    if (coordinate.space == 'target') {
       xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
     } else {
       #xlim <- ggplot.obj$coordinates$limits$x
@@ -296,7 +296,8 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                     }
                     suppressMessages(
                         plt <- plt + ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels) +
-                          theme(axis.text.y = element_text(), axis.ticks.y = element_line())
+                          ggplot2::theme(axis.text.y = ggplot2::element_text(),
+                                         axis.ticks.y = ggplot2::element_line())
                     )
                 }
             }
