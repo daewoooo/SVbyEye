@@ -4,13 +4,20 @@
 \alias{paf2coords}
 \title{Prepare PAF alignments for plotting.}
 \usage{
-paf2coords(paf.table, offset.alignments = FALSE, add.col = NULL)
+paf2coords(
+  paf.table,
+  offset.alignments = FALSE,
+  sync.x.coordinates = TRUE,
+  add.col = NULL
+)
 }
 \arguments{
 \item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
 along with CIGAR string defined in 'cg' column.}
 
 \item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.}
+
+\item{sync.x.coordinates}{If set to \code{TRUE} query coordinates will be adjusted to the limits of target coordinates. (Default : `TRUE`)}
 
 \item{add.col}{A user defined column name present in `paf.table` to be added in returned coordinates table.}
 }

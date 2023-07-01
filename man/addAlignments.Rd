@@ -13,7 +13,8 @@ addAlignments(
   fill.palette = NULL,
   outline.alignments = FALSE,
   linetype = "solid",
-  coord.strict = TRUE
+  coord.strict = TRUE,
+  sync.x.coordinates = TRUE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{coord.strict}{If set to \code{TRUE} PAF alignments from the `paf.table` will be subsetted in order to be within
 x-axis limits of the `ggplot.obj`.}
+
+\item{sync.x.coordinates}{If set to \code{TRUE} query coordinates will be adjusted to the limits of target coordinates. (Default : `TRUE`)}
 }
 \value{
 A \code{ggplot2} object.

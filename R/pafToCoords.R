@@ -6,6 +6,7 @@
 #'
 #' @param offset.alignments Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.
 #' @param add.col A user defined column name present in `paf.table` to be added in returned coordinates table.
+#' @param sync.x.coordinates If set to \code{TRUE} query coordinates will be adjusted to the limits of target coordinates. (Default : `TRUE`)
 #' @inheritParams breakPaf
 #' @return A \code{tibble} of PAF alignments reported as x and y coordinate values.
 #' @importFrom tibble add_column
@@ -24,7 +25,7 @@
 #' paf.table$GC.content <- round(runif(nrow(paf.table), min = 30, max = 60), digits = 2)
 #' paf2coords(paf.table = paf.table, add.col = "GC.content")
 #'
-paf2coords <- function(paf.table, offset.alignments = FALSE, add.col = NULL) {
+paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates = TRUE, add.col = NULL) {
     ## Check user input ##
     ## Make sure PAF has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -50,24 +51,29 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, add.col = NULL) {
     }
 
     ## Sync scales between alignments [per region id]
-    paf.l <- split(paf, paf$seq.pair)
-    for (i in seq_along(paf.l)) {
-        paf.sub <- paf.l[[i]]
-        q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
-        t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
-        ## Adjust target ranges given the size difference with respect to query ranges
-        range.offset <- diff(q.range) - diff(t.range)
-        t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
-        ## Covert query to target coordinates
-        paf.sub$q.start.trans <- q2t(x = paf.sub$q.start, q.range = q.range, t.range = t.range)
-        paf.sub$q.end.trans <- q2t(x = paf.sub$q.end, q.range = q.range, t.range = t.range)
-        # q.range <- range(c(paf$q.start, paf$q.end))
-        # t.range <- range(c(paf$t.start, paf$t.end))
-        # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
-        # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
-        paf.l[[i]] <- paf.sub
+    if (sync.x.coordinates) {
+      paf.l <- split(paf, paf$seq.pair)
+      for (i in seq_along(paf.l)) {
+          paf.sub <- paf.l[[i]]
+          q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
+          t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
+          ## Adjust target ranges given the size difference with respect to query ranges
+          range.offset <- diff(q.range) - diff(t.range)
+          t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+          ## Covert query to target coordinates
+          paf.sub$q.start.trans <- q2t(x = paf.sub$q.start, q.range = q.range, t.range = t.range)
+          paf.sub$q.end.trans <- q2t(x = paf.sub$q.end, q.range = q.range, t.range = t.range)
+          # q.range <- range(c(paf$q.start, paf$q.end))
+          # t.range <- range(c(paf$t.start, paf$t.end))
+          # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
+          # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
+          paf.l[[i]] <- paf.sub
+      }
+      paf <- do.call(rbind, paf.l)
+    } else {
+      paf$q.start.trans <-paf$q.start
+      paf$q.end.trans <- paf$q.end
     }
-    paf <- do.call(rbind, paf.l)
 
     ## Vectorize data transformation ##
     x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
@@ -132,6 +138,5 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, add.col = NULL) {
             warning("User defined column name in 'add.column' is not present in submitted 'paf.table', skipping !!!")
         }
     }
-
     return(coords)
 }

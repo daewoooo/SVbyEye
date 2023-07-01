@@ -74,7 +74,9 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = 't
       query.gr <- suppressMessages( liftRangesToAlignment(paf.table = paf, gr = target.gr, direction = 'target2query') )
       ## Expand target ranges to match mapped query ranges
       target.gr <- target.gr[query.gr$idx]
+      target.gr$alignmentsHits <- query.gr$alignmentsHits
       GenomicRanges::strand(target.gr) <- GenomicRanges::strand(query.gr)
+      cigars.region <- query.gr$cg
       processCIGAR <- TRUE
     } else {
       processCIGAR <- FALSE
@@ -110,6 +112,7 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = 't
       ## Expand query ranges to match mapped target ranges
       query.gr <- query.gr[target.gr$idx]
       GenomicRanges::strand(query.gr) <- GenomicRanges::strand(target.gr)
+      cigars.region <- target.gr$cg
       processCIGAR <- TRUE
     } else {
       processCIGAR <- FALSE
@@ -117,51 +120,57 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = 't
   }
 
   if (processCIGAR) {
-    ## Subset the cigar string per target region ##
-    ## Define PAF alignment object
-    alignments <- GenomicAlignments::GAlignments(
-      seqnames = paf$t.name,
-      pos = as.integer(paf$t.start) + 1L,
-      cigar = paf$cg,
-      strand = GenomicRanges::strand(paf$strand),
-      names = paf$t.name
-    )
-    ## Get overlaps between target ranges and alignments
-    #hits <- findOverlaps(target.gr, alignments, minoverlap = min.overlap)
-    hits <- GenomicRanges::findOverlaps(target.gr, alignments)
-    ## Keep only longest overlaps for each target range
-    intersect.gr <- GenomicRanges::pintersect(target.gr[S4Vectors::queryHits(hits)], as(alignments[S4Vectors::subjectHits(hits)], 'GRanges'))
-    overlap.width <- GenomicRanges::width(intersect.gr)
-    max.overlap <- sapply(split(overlap.width, S4Vectors::queryHits(hits)), max)
-    hits <- hits[overlap.width %in% max.overlap]
-    ## Get local alignment coordinates [in parallel fashion]
-    #lifted.gr <- GenomicAlignments::pmapToAlignments(x = target.gr, alignments = alignments[S4Vectors::subjectHits(hits)])
-    #names(lifted.gr) <- NULL
-
-    ## Set target range to local alignment coordinates
-    suppressWarnings( target.local.gr <- GenomicRanges::shift(target.gr, shift = -(start(alignments)[S4Vectors::subjectHits(hits)] - 1)) )
-    start(target.local.gr[start(target.local.gr) == 0]) <- 1
-    #target.local.gr <- GenomicRanges::trim(target.local.gr)
-
-    ## Define start and end position for CIGAR extraction
-    #starts <- pmax(GenomicRanges::start(lifted.gr), 1)
-    #width <- GenomicRanges::width(target.gr) - 1
-    #ends <- pmin(GenomicRanges::end(lifted.gr), GenomicRanges::width(alignments)[S4Vectors::subjectHits(hits)])
-    starts <- GenomicRanges::start(target.local.gr)
-    width <- GenomicRanges::width(target.local.gr)
-
-    cigars <- alignments@cigar[S4Vectors::subjectHits(hits)]
-    cigars.region <- vapply(seq_along(starts), function(i) {
-      tryCatch(
-        {
-          #GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], end = ends[i])[1]
-          GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], width = width[i])[1]
-        },
-        error = function(e) {
-          return("1=")
-        }
-      )
-    }, FUN.VALUE = character(1))
+  #   ## Subset the cigar string per target region ##
+    # ## Define PAF alignment object
+    # alignments <- GenomicAlignments::GAlignments(
+    #   seqnames = paf$t.name,
+    #   pos = as.integer(paf$t.start) + 1L,
+    #   #pos = as.integer(paf$t.start),
+    #   cigar = paf$cg,
+    #   strand = GenomicRanges::strand(paf$strand),
+    #   names = paf$t.name
+    # )
+    # ## Get overlaps between target ranges and alignments
+    # #hits <- findOverlaps(target.gr, alignments, minoverlap = min.overlap)
+    # hits <- GenomicRanges::findOverlaps(target.gr, alignments)
+  #   end(target.gr[which.max(end(target.gr))]) <- max(end(alignments))
+  #   hits <- GenomicRanges::findOverlaps(target.gr, alignments, type = 'within')
+  #
+  #   ## Keep only longest overlaps for each target range
+  #   intersect.gr <- GenomicRanges::pintersect(target.gr[S4Vectors::queryHits(hits)], as(alignments[S4Vectors::subjectHits(hits)], 'GRanges'))
+  #   overlap.width <- GenomicRanges::width(intersect.gr)
+  #   max.overlap <- sapply(split(overlap.width, S4Vectors::queryHits(hits)), max)
+  #   hits <- hits[overlap.width %in% max.overlap]
+  #   #hits <- hits[which(unique(overlap.width) %in% max.overlap)]
+  #
+  #   ## Get local alignment coordinates [in parallel fashion]
+  #   #lifted.gr <- GenomicAlignments::pmapToAlignments(x = target.gr, alignments = alignments[S4Vectors::subjectHits(hits)])
+  #   #names(lifted.gr) <- NULL
+  #
+  #   ## Set target range to local alignment coordinates
+  #   suppressWarnings( target.local.gr <- GenomicRanges::shift(target.gr, shift = -(start(alignments)[S4Vectors::subjectHits(hits)] - 1)) )
+  #   suppressWarnings( target.local.gr <- GenomicRanges::shift(target.gr, shift = -(start(alignments)[target.gr$alignmentsHits] - 1)) )
+  #   start(target.local.gr[start(target.local.gr) == 0]) <- 1
+  #   #target.local.gr <- GenomicRanges::trim(target.local.gr)
+  #
+  #   ## Define start and end position for CIGAR extraction
+  #   #starts <- pmax(GenomicRanges::start(lifted.gr), 1)
+  #   #width <- GenomicRanges::width(target.gr) - 1
+  #   #ends <- pmin(GenomicRanges::end(lifted.gr), GenomicRanges::width(alignments)[S4Vectors::subjectHits(hits)])
+  #   starts <- GenomicRanges::start(target.local.gr)
+  #   width <- GenomicRanges::width(target.local.gr)
+  #
+  #   cigars <- alignments@cigar[S4Vectors::subjectHits(hits)]
+  #   cigars.region <- vapply(seq_along(starts), function(i) {
+  #     tryCatch(
+  #       {
+  #         GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], width = width[i])[1]
+  #       },
+  #       error = function(e) {
+  #         return("1=")
+  #       }
+  #     )
+  #   }, FUN.VALUE = character(1))
 
     ## Get alignment length from regional cigars
     aln.len <- vapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg)[[1]]), USE.NAMES = FALSE, FUN.VALUE = numeric(1))
@@ -171,19 +180,33 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = 't
     n.mismatch <- vapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("X"))[[1]]), USE.NAMES = FALSE, FUN.VALUE = numeric(1))
 
     ## Prepare modified PAF for export ##
+    # return.paf <- tibble::tibble("q.name" = as.character(GenomeInfoDb::seqnames(query.gr))
+    #                           ,"q.len" = paf$q.len[S4Vectors::subjectHits(hits)]
+    #                           ,"q.start" = GenomicRanges::start(query.gr)
+    #                           ,"q.end" = GenomicRanges::end(query.gr)
+    #                           ,"strand" = as.character( GenomicRanges::strand(query.gr) )
+    #                           ,"t.name" = as.character(GenomeInfoDb::seqnames(target.gr))
+    #                           ,"t.len" = paf$t.len[S4Vectors::subjectHits(hits)]
+    #                           ,"t.start" = GenomicRanges::start(target.gr)
+    #                           ,"t.end" = GenomicRanges::end(target.gr)
+    #                           ,"n.match" = n.match
+    #                           ,"aln.len" = aln.len
+    #                           ,"mapq" = paf$mapq[S4Vectors::subjectHits(hits)]
+    #                           ,"cg" = cigars.region)
+
     return.paf <- tibble::tibble("q.name" = as.character(GenomeInfoDb::seqnames(query.gr))
-                              ,"q.len" = paf$q.len[S4Vectors::subjectHits(hits)]
-                              ,"q.start" = GenomicRanges::start(query.gr)
-                              ,"q.end" = GenomicRanges::end(query.gr)
-                              ,"strand" = as.character( GenomicRanges::strand(query.gr) )
-                              ,"t.name" = as.character(GenomeInfoDb::seqnames(target.gr))
-                              ,"t.len" = paf$t.len[S4Vectors::subjectHits(hits)]
-                              ,"t.start" = GenomicRanges::start(target.gr)
-                              ,"t.end" = GenomicRanges::end(target.gr)
-                              ,"n.match" = n.match
-                              ,"aln.len" = aln.len
-                              ,"mapq" = paf$mapq[S4Vectors::subjectHits(hits)]
-                              ,"cg" = cigars.region)
+                                 ,"q.len" = paf$q.len[target.gr$alignmentsHits]
+                                 ,"q.start" = GenomicRanges::start(query.gr)
+                                 ,"q.end" = GenomicRanges::end(query.gr)
+                                 ,"strand" = as.character( GenomicRanges::strand(query.gr) )
+                                 ,"t.name" = as.character(GenomeInfoDb::seqnames(target.gr))
+                                 ,"t.len" = paf$t.len[target.gr$alignmentsHits]
+                                 ,"t.start" = GenomicRanges::start(target.gr)
+                                 ,"t.end" = GenomicRanges::end(target.gr)
+                                 ,"n.match" = n.match
+                                 ,"aln.len" = aln.len
+                                 ,"mapq" = paf$mapq[target.gr$alignmentsHits]
+                                 ,"cg" = cigars.region)
 
   } else {
     return.paf <- paf
