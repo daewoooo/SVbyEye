@@ -204,7 +204,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
         }
         ## Keep extra metacolumns if present
         if (ncol(GenomicRanges::mcols(gr)) > 0) {
-            GenomicRanges::mcols(gr.lifted) <- c(GenomicRanges::mcols(gr.lifted), GenomicRanges::mcols(gr))
+            GenomicRanges::mcols(gr.lifted) <- c(GenomicRanges::mcols(gr.lifted), GenomicRanges::mcols(gr[gr.lifted$idx]))
         }
 
         stopTimedMessage(ptm)

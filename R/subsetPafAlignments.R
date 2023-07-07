@@ -56,7 +56,6 @@ subsetPafAlignments <- function(paf.table, target.region = NULL) {
         } else {
             message("\nNone of the PAF ranges overlap user defined 'target.region', exiting ...")
             return(NULL)
-            break
         }
     }
 
