@@ -41,7 +41,7 @@ or a custom column name present in submitted `paf.table`.}
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
 
-\item{add.alignment.arrows}{Set to \code{TRUE} if alignment arrows should be added to the plot.}
+\item{add.alignment.arrows}{Set to \code{FALSE} if alignment arrows should not be added to the plot.}
 
 \item{highlight.pos}{A single or a set of positions to be highlighted as vertical solid lines.}
 

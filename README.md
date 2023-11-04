@@ -15,6 +15,7 @@ Author: David Porubsky
 To install the development version from Github, follow the steps given below. The installation has only been tested on Ubuntu system, if you need to install on Windows or Mac additional steps might be necessary (e.g. installation of Rtools from https://cran.r-project.org/bin/windows/Rtools/)
 
 1. Install a recent version of R (>=4.2) from https://www.r-project.org/
+   Under linux make sure current version of r-base & r-base-dev is installed.
 2. Optional: For ease of use, install Rstudio from https://www.rstudio.com/
 3. Open R or RStudio and execute the following lines one by one (Please ensure that you have writing permissions to install packages):
 

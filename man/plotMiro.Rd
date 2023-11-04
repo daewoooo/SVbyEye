@@ -14,6 +14,7 @@ plotMiro(
   color.palette = NULL,
   outline.alignments = FALSE,
   offset.alignments = FALSE,
+  add.alignment.arrows = TRUE,
   target.region = NULL,
   genomic.scale = "bp"
 )
@@ -39,6 +40,8 @@ to color alignment directionality, `[default: color.palette <- c('-' = 'cornflow
 \item{outline.alignments}{Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.}
 
 \item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.}
+
+\item{add.alignment.arrows}{Set to \code{FALSE} if alignment arrows should not be added to the plot.}
 
 \item{target.region}{A user defined target region either as character string ('chr:start-end') or as
 a \code{\link{GRanges-class}} object containing a single genomic region to which PAF alignments will be
