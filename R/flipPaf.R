@@ -53,9 +53,12 @@ flipPaf <- function(paf.table, majority.strand = NULL, force = FALSE) {
 
     ptm <- startTimedMessage("[flipPaf] Flipping orientation of PAF alignments")
 
+    ## Get unique alignment ID
+    paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
+
     ## Force alignment flip
     if (force) {
-        paf.l <- split(paf, paf$q.name)
+        paf.l <- split(paf, paf$seq.pair)
         for (i in seq_along(paf.l)) {
             paf.ctg <- paf.l[[i]]
             paf.l[[i]] <- flipPafAln(paf.table = paf.ctg)
@@ -77,7 +80,7 @@ flipPaf <- function(paf.table, majority.strand = NULL, force = FALSE) {
         ## Make sure alignment is defined before deciding on majority directionality
         if (!is.na(sum(paf$aln.len))) {
             if (sum(paf$aln.len) > 0) {
-                paf.l <- split(paf, paf$q.name)
+                paf.l <- split(paf, paf$seq.pair)
                 for (i in seq_along(paf.l)) {
                     paf.ctg <- paf.l[[i]]
                     ## Flip directionality based to make sure majority strand covers the most bases

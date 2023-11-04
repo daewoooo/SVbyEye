@@ -110,13 +110,17 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
     ## Get x-axis limits (expected to be always continuous)
     ## For x-axis range also consider user defined cartesian coordinates for the target region
     if (coordinate.space == 'target') {
-      xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
+      #xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
+      xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"],
+                      ggplot2::layer_scales(ggplot.obj)$x$limits))
     } else {
       #xlim <- ggplot.obj$coordinates$limits$x
-      xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
+      #xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
+      xlim <- range( ggplot2::layer_scales(ggplot.obj)$x$range$range,
+                     ggplot2::layer_scales(ggplot.obj)$x$limits)
     }
 
-    ## Get x-axis limits
+    ## Get y-axis limits
     if ("ScaleContinuous" %in% class(ggplot2::layer_scales(ggplot.obj)$y)) { ## To finish!!!
       ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
       ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
@@ -126,12 +130,37 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
       #ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
       ylabels <- ylabels[order(ybreaks)]
       ybreaks <- sort(ybreaks) ## [Testing]
+      names(ybreaks) <- ylabels
     } else {
       stop("'addAnnotation' function works only for ggplot2 objects with continuous scale for both x and y-axis !!!")
     }
 
     ## Define the offset value to be the user defined fraction of the y-axis range [default: 0.05]
     offset <- diff(ylim) * annotation.level
+
+    ## Subset annotation ranges to plot specific genomic positions
+    if ('pos.genomic' %in% colnames(gg.data)) {
+      limits <- gg.data %>% dplyr::group_by(.data$seq.id, .data$seq.name) %>% dplyr::reframe(gen.range = range(.data$pos.genomic))
+      limits.l <- split(limits, limits$seq.name)
+      annot.l <- list()
+      for (i in seq_along(limits.l)) {
+        lims <- limits.l[[i]]
+        seq.id <- unique(lims$seq.name)
+        if (seq.id %in% as.character(seqnames(annot.gr))) {
+          gr <- annot.gr[seqnames(annot.gr) == seq.id]
+          gr <- gr[start(gr) > min(lims$gen.range) & end(gr) < max(lims$gen.range)]
+          annot.l[[length(annot.l) + 1]] <- gr
+        }
+      }
+      annot.gr <- do.call(c, annot.l)
+    }
+
+    ## Shift genomic positions in case multiple query or target sequences have been concatenated
+    if ('pos.shift' %in% colnames(gg.data)) {
+      pos.shifts <- gg.data %>% dplyr::group_by(.data$seq.id, .data$seq.name) %>% dplyr::summarize(pos.shift = unique(.data$pos.shift), .groups = 'drop')
+      start(annot.gr) <- start(annot.gr) + pos.shifts$pos.shift[match(as.character(seqnames(annot.gr)), pos.shifts$seq.name)]
+      end(annot.gr) <- end(annot.gr) + pos.shifts$pos.shift[match(as.character(seqnames(annot.gr)), pos.shifts$seq.name)]
+    }
 
     ## Get query and target coordinate ranges
     if (coordinate.space == "query" | coordinate.space == "target") {
@@ -141,7 +170,6 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
         range.offset <- diff(q.range) - diff(t.range)
         t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
     }
-
     ## Translate query coordinates to target coordinates
     if (coordinate.space == "query") {
         if (length(annot.gr) > 0) {
@@ -188,11 +216,8 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
             ## Match y-axis labels if to user defined ID column via 'y.label.id' parameter
             if (!is.null(y.label.id)) {
                 if (y.label.id %in% colnames(annot.df)) {
-                    #if (all(ylabels %in% annot.df[, eval(y.label.id)])) {
-                        annot.df$y.offset <- match(annot.df[, eval(y.label.id)], ylabels) + offset
-                    #} else {
-                    #    annot.df$y.offset <- y.offset
-                    #}
+                        #annot.df$y.offset <- match(annot.df[, eval(y.label.id)], ylabels) + offset ## Revert to if broken
+                        annot.df$y.offset <- ybreaks[match(annot.df[, eval(y.label.id)], names(ybreaks))] + offset
                 } else {
                     warning("User defined 'y.label.id' is not a valid metadata column in 'annot.gr', skipping !!!")
                     annot.df$y.offset <- y.offset

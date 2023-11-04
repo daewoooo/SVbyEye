@@ -175,6 +175,8 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     group <- rep(seq_len(nrow(paf)), each = 4)
     seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
     seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
+    pos.shift <- 0
+    pos.genomic <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
     seq.id <- c(rbind("query", "target", "query", "target"))
     n.match <- rep(paf$n.match, each = 4)
     aln.len <- rep(paf$aln.len, each = 4)
@@ -189,6 +191,8 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
         y = y,
         group = group,
         seq.pos = seq.pos,
+        pos.shift = pos.shift,
+        pos.genomic = pos.genomic,
         direction = direction,
         seq.name = seq.name,
         seq.id = seq.id,

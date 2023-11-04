@@ -292,6 +292,39 @@ breakPafAlignment <- function(paf.aln = NULL, min.deletion.size = 50, min.insert
 #'
 breakPaf <- function(paf.table = NULL, min.deletion.size = 50, min.insertion.size = 50, collapse.mismatches = TRUE, report.sv = TRUE) {
     ptm <- startTimedMessage("[breakPaf] Breaking PAF alignments at indels")
+    ## Check if PAF contains expected cg field containing CIGAR string
+    if (!'cg' %in% colnames(paf.table)) {
+      stop(paste0("\nExpected PAF field 'cg' containing CIGAR string is missing, ",
+                  "therefore alignments cannot be broken at insertion/deletions !!!"))
+    }
+
+    ## Select CIGAR string with user defined min.deletion.size and min.insertion.size
+    cigars <- paf.table$cg
+
+    if (!is.null(min.insertion.size)) {
+      if (min.insertion.size > 0) {
+        insertion.filt <- S4Vectors::sapply(cigars, function(cg) any(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("I"))[[1]] >= min.insertion.size), USE.NAMES = FALSE)
+      } else {
+        insertion.filt <- rep(TRUE, length(cigars))
+      }
+    } else {
+      insertion.filt <- rep(TRUE, length(cigars))
+    }
+
+    if (!is.null(min.deletion.size)) {
+      if (min.deletion.size > 0) {
+        deletion.filt <- S4Vectors::sapply(cigars, function(cg) any(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("D"))[[1]] >= min.deletion.size), USE.NAMES = FALSE)
+      } else {
+        deletion.filt <- rep(TRUE, length(cigars))
+      }
+    } else {
+      deletion.filt <- rep(TRUE, length(cigars))
+    }
+
+    filt <- insertion.filt |  deletion.filt
+    to.add <-  paf.table[!filt,]
+    paf.table <- paf.table[filt,]
+
     ## Extract matching bases for each PAF record
     matches <- list()
     svs <- list()
@@ -315,8 +348,8 @@ breakPaf <- function(paf.table = NULL, min.deletion.size = 50, min.insertion.siz
     stopTimedMessage(ptm)
     ## Return broken paf alignments
     if (report.sv) {
-        return(list("M" = dplyr::bind_rows(matches), "SVs" = dplyr::bind_rows(svs)))
+        return(list("M" = dplyr::bind_rows(matches, to.add), "SVs" = dplyr::bind_rows(svs)))
     } else {
-        return(list("M" = dplyr::bind_rows(matches), "SVs" = NULL))
+        return(list("M" = dplyr::bind_rows(matches, to.add), "SVs" = NULL))
     }
 }

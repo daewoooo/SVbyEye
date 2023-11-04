@@ -9,6 +9,7 @@
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 #' to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.
 #' @param outline.alignments Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.
+#' @param add.alignment.arrows Set to \code{FALSE} if alignment arrows should not be added to the plot.
 #' @param genomic.scale Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') `[default: 'bp']`.
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
@@ -51,7 +52,7 @@
 #' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 #' plotMiro(paf.table = paf.table, min.deletion.size = 50, highlight.sv = "outline")
 #'
-plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE, offset.alignments = FALSE, target.region = NULL, genomic.scale = "bp") {
+plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE, offset.alignments = FALSE, add.alignment.arrows = TRUE, target.region = NULL, genomic.scale = "bp") {
     ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -65,7 +66,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     }
     ## Make sure submitted paf.table contains single query and target sequence id
     if (length(unique(paf.table$q.name)) > 1) {
-        stop("Currently, function [plotMiro] does not support visualization of more than one query sequence id !!!")
+        #stop("Currently, function [plotMiro] does not support visualization of more than one query sequence id !!!")
     }
     if (length(unique(paf.table$t.name)) > 1) {
         stop("Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!")
@@ -153,10 +154,14 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         t.labels <- abs(t.labels)
     }
 
-    ## Get y-axis labels
-    seq.labels <- c(
+    ## Get y-axis labels and breaks
+    y.labels <- c(
         unique(coords$seq.name[coords$seq.id == "query"]),
         unique(coords$seq.name[coords$seq.id == "target"])
+    )
+    y.breaks <- c(
+      max(unique(coords$y[coords$seq.id == "query"])),
+      max(unique(coords$y[coords$seq.id == "target"]))
     )
 
     ## Define color palette for alignment directionality
@@ -230,7 +235,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     ## Add custom x and y scales
     suppressMessages(
         plt <- plt +
-            ggplot2::scale_y_continuous(breaks = c(1, 2), labels = seq.labels) +
+            ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels) +
             ggplot2::scale_x_continuous(
                 breaks = q.breaks, labels = scales::comma(q.labels),
                 sec.axis = ggplot2::sec_axis(trans = y ~ ., breaks = t.breaks, labels = scales::comma(t.labels)), expand = c(0, 0)
@@ -240,39 +245,41 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
             ggplot2::ylab("")
     )
 
-    ## Set plot boundaries based on user defined target region
-    if (!is.null(target.region)) {
-        if (is.character(target.region)) {
-            target.region.gr <- as(target.region, "GRanges")
-            plt <- plt + ggplot2::coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
-        } else if (is(target.region.gr, "GRanges")) {
-            target.region.gr <- target.region
-            plt <- plt + ggplot2::coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
-        } else {
-            warning("User defined 'target.region' has be either character string 'chr:start-end' or GenomicRanges object, skipping!!!")
-        }
-    }
+    ## Set plot boundaries based on user defined target region [This causes weird truncating of target region !!!]
+    # if (!is.null(target.region)) {
+    #     if (is.character(target.region)) {
+    #         target.region.gr <- as(target.region, "GRanges")
+    #         plt <- plt + ggplot2::coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
+    #     } else if (is(target.region, "GRanges")) {
+    #         target.region.gr <- target.region
+    #         plt <- plt + ggplot2::coord_cartesian(xlim = c(GenomicRanges::start(target.region.gr), GenomicRanges::end(target.region.gr)))
+    #     } else {
+    #         warning("User defined 'target.region' has be either character string 'chr:start-end' or GenomicRanges object, skipping!!!")
+    #     }
+    # }
 
     ## Add arrows to mark start and end of each alignment ##
-    ## Use an un-binned version of PAF alignments (group by bin ID if present)
-    if ("bin.id" %in% colnames(paf.copy)) {
-        paf.copy <- collapsePaf(paf.table = paf.copy, collapse.by = "bin.id")
+    if (add.alignment.arrows) {
+      ## Use an un-binned version of PAF alignments (group by bin ID if present)
+      if ("bin.id" %in% colnames(paf.copy)) {
+          paf.copy <- collapsePaf(paf.table = paf.copy, collapse.by = "bin.id")
+      }
+      ## Convert to plotting coordinates
+      coords.arrow <- paf2coords(paf.table = paf.copy, offset.alignments = offset.alignments)
+      start <- coords.arrow$x[c(TRUE, TRUE, FALSE, FALSE)]
+      end <- coords.arrow$x[c(FALSE, FALSE, TRUE, TRUE)]
+      y <- coords.arrow$y[c(TRUE, TRUE, FALSE, FALSE)]
+      group <- coords.arrow$group[c(TRUE, TRUE, FALSE, FALSE)]
+      plt.df <- data.frame(start = start, end = end, y = y, group = group)
+      plt.df$direction <- ifelse(plt.df$start < plt.df$end, "+", "-")
+      ## Add arrows to the plot
+      plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+          gggenes::geom_gene_arrow(data = plt.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, color = .data$direction, fill = .data$direction), arrowhead_height = grid::unit(3, "mm")) +
+          ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
+          ggplot2::scale_color_manual(values = pal, name = "Alignment\ndirection")
     }
-    ## Convert to plotting coordinates
-    coords.arrow <- paf2coords(paf.table = paf.copy, offset.alignments = offset.alignments)
-    start <- coords.arrow$x[c(T, T, F, F)]
-    end <- coords.arrow$x[c(F, F, T, T)]
-    y <- coords.arrow$y[c(T, T, F, F)]
-    group <- coords.arrow$group[c(T, T, F, F)]
-    plt.df <- data.frame(start = start, end = end, y = y, group = group)
-    plt.df$direction <- ifelse(plt.df$start < plt.df$end, "+", "-")
-    ## Add arrows to the plot
-    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-        gggenes::geom_gene_arrow(data = plt.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, color = .data$direction, fill = .data$direction), arrowhead_height = grid::unit(3, "mm")) +
-        ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
-        ggplot2::scale_color_manual(values = pal, name = "Alignment\ndirection")
 
-    ## Set the theme
+    ## Set plot theme ##
     theme_miro <- ggplot2::theme(
         panel.grid.major = ggplot2::element_blank(),
         panel.grid.minor = ggplot2::element_blank(),

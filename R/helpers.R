@@ -260,3 +260,70 @@ getAnnotationLevels <- function(annot.gr = NULL, offset = NULL, annotation.group
   annot.levels <- annot.levels[levels]
   return(annot.levels)
 }
+
+
+#' Define shift of genomic coordinates in order to get continuous coordinate scale.
+#'
+#' This function takes a PAF alignments loaded by \code{\link{readPaf}} function and defines how much to shift genomic coordinates
+#' in order to get continuous coordinates in cases when there more than one query or target sequences in the input PAF alignments.
+#'
+#' @inheritParams breakPaf
+#' @importFrom dplyr group_by reframe
+#' @return A \code{tibble} of PAF alignments reported with a continuous coordinates.
+#' @author David Porubsky
+#' @export
+#' @examples
+#' ## Get PAF to plot
+#' paf.file <- system.file("extdata", "test_ava.paf", package = "SVbyEye")
+#' ## Read in PAF
+#' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+#' ## Filter PAF
+#' paf.table <- paf.table[paf.table$t.name == 'HG03453_2',]
+#' ## Define shift in genomic coordiantes to get continuous scale
+#' paf2continuousScale(paf.table)
+#'
+paf2continuousScale <- function(paf.table) {
+  ## Make sure PAF has at least 12 mandatory fields
+  if (ncol(paf.table) >= 12) {
+    paf <- paf.table
+  } else {
+    stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
+  }
+
+  ## Check if there more than one unique query sequences
+  if (length(unique(paf$q.name)) > 1) {
+    ## If yes make sure query coordinates are continuous
+    q.limits <- paf %>% dplyr::group_by(q.name) %>% dplyr::reframe(range = range(c(q.start, q.end)))
+    q.gaps <- diff(q.limits$range) * -1
+    q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0])
+    names(q.shift) <- unique(q.limits$q.name)
+    #paf$q.genomic.start <- paf$q.start
+    #paf$q.genomic.end <- paf$q.end
+    #paf$q.start <- paf$q.start + q.shift[paf$q.name]
+    #paf$q.end <- paf$q.end + q.shift[paf$q.name]
+    paf$q.shift <- q.shift[paf$q.name]
+  } else {
+    paf$q.shift <- 0
+    #paf$q.genomic.start <- paf$q.start
+    #paf$q.genomic.end <- paf$q.end
+  }
+
+  ## Check if there more than one unique target sequences
+  if (length(unique(paf$t.name)) > 1) {
+    ## If yes make sure target coordinates are continuous
+    t.limits <- paf %>% dplyr::group_by(t.name) %>% dplyr::reframe(range = range(c(t.start, t.end)))
+    t.gaps <- diff(t.limits$range) * -1
+    t.shift <- c(0, t.gaps[seq(length(t.gaps)) %% 2 == 0])
+    names(t.shift) <- unique(t.limits$q.name)
+    #paf$t.genomic.start <- paf$t.start
+    #paf$t.genomic.end <- paf$t.end
+    #paf$t.start <- paf$t.start + t.shift[paf$t.name]
+    #paf$t.end <- paf$t.end + t.shift[paf$t.name]
+    paf$t.shift <- t.shift[paf$t.name]
+  } else {
+    paf$t.shift <- 0
+    #paf$t.genomic.start <- paf$t.start
+    #paf$t.genomic.end <- paf$t.end
+  }
+  return(paf)
+}

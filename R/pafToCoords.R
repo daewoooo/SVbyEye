@@ -45,41 +45,73 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
     paf[paf$strand == "-", c("t.start", "t.end")] <- rev(paf[paf$strand == "-", c("t.start", "t.end")])
     # paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
 
+    ## Add continuous scale to PAF to make sure multiple query and target sequences are position next to each other
+    paf <- paf2continuousScale(paf.table = paf)
+    paf$q.start.shift <- paf$q.start + paf$q.shift
+    paf$q.end.shift <- paf$q.end + paf$q.shift
+    paf$t.start.shift <- paf$t.start + paf$t.shift
+    paf$t.end.shift <- paf$t.end + paf$t.shift
+
     ## Get unique alignment ID
-    if (!"seq.pair" %in% colnames(paf)) {
-        paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
-    }
+    # if (!"seq.pair" %in% colnames(paf)) {
+    #     paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
+    # }
 
     ## Sync scales between alignments [per region id]
     if (sync.x.coordinates) {
-      paf.l <- split(paf, paf$seq.pair)
-      for (i in seq_along(paf.l)) {
-          paf.sub <- paf.l[[i]]
-          q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
-          t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
-          ## Adjust target ranges given the size difference with respect to query ranges
-          range.offset <- diff(q.range) - diff(t.range)
-          t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
-          ## Covert query to target coordinates
-          paf.sub$q.start.trans <- q2t(x = paf.sub$q.start, q.range = q.range, t.range = t.range)
-          paf.sub$q.end.trans <- q2t(x = paf.sub$q.end, q.range = q.range, t.range = t.range)
-          # q.range <- range(c(paf$q.start, paf$q.end))
-          # t.range <- range(c(paf$t.start, paf$t.end))
-          # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
-          # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
-          paf.l[[i]] <- paf.sub
-      }
-      paf <- do.call(rbind, paf.l)
+      # paf.l <- split(paf, paf$seq.pair)
+      # for (i in seq_along(paf.l)) {
+      #     paf.sub <- paf.l[[i]]
+      #     q.range <- range(c(paf.sub$q.start, paf.sub$q.end))
+      #     t.range <- range(c(paf.sub$t.start, paf.sub$t.end))
+      #     ## Adjust target ranges given the size difference with respect to query ranges
+      #     range.offset <- diff(q.range) - diff(t.range)
+      #     t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+      #     ## Covert query to target coordinates
+      #     paf.sub$q.start.trans <- q2t(x = paf.sub$q.start, q.range = q.range, t.range = t.range)
+      #     paf.sub$q.end.trans <- q2t(x = paf.sub$q.end, q.range = q.range, t.range = t.range)
+      #     # q.range <- range(c(paf$q.start, paf$q.end))
+      #     # t.range <- range(c(paf$t.start, paf$t.end))
+      #     # paf$q.start.trans <- q2t(x = paf$q.start, q.range = q.range, t.range = t.range)
+      #     # paf$q.end.trans <- q2t(x = paf$q.end, q.range = q.range, t.range = t.range)
+      #     paf.l[[i]] <- paf.sub
+      # }
+      # paf <- do.call(rbind, paf.l)
+
+      q.range <- range(c(paf$q.start.shift, paf$q.end.shift))
+      t.range <- range(c(paf$t.start.shift, paf$t.end.shift))
+      ## Adjust target ranges given the size difference with respect to query ranges
+      range.offset <- diff(q.range) - diff(t.range)
+      t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+      ## Covert query to target coordinates
+      paf$q.start.trans <- q2t(x = paf$q.start.shift, q.range = q.range, t.range = t.range)
+      paf$q.end.trans <- q2t(x = paf$q.end.shift, q.range = q.range, t.range = t.range)
+
     } else {
-      paf$q.start.trans <-paf$q.start
+      paf$q.start.trans <- paf$q.start
       paf$q.end.trans <- paf$q.end
     }
 
     ## Vectorize data transformation ##
+    ## Define x and y coordinates
     x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
     y <- rep(c(1, 2, 1, 2), times = nrow(paf))
 
-    ## Offset overlapping target alignments up&down based on start position
+    ## If there are more than one query or target sequence use offset
+    if (length(unique(paf$q.name)) > 1) {
+      offset <- seq(from = 0, to = length(unique(paf$q.name))/10, by = 0.1)[seq_along(unique(paf$q.name))]
+      names(offset) <- unique(paf$q.name)
+      #q.offset <- rep(offset, table(paf$q.name) * 2)
+      y[c(TRUE, FALSE, TRUE, FALSE)] <- y[c(TRUE, FALSE, TRUE, FALSE)] - rep(offset[paf$q.name], each = 2)
+    }
+    if (length(unique(paf$t.name)) > 1) {
+      offset <- seq(from = 0, to = length(unique(paf$t.name))/10, by = 0.1)[seq_along(unique(paf$t.name))]
+      names(offset) <- unique(paf$t.name)
+      #t.offset <- rep(offset, table(paf$t.name) * 2)
+      y[c(TRUE, FALSE, TRUE, FALSE)] <- y[c(TRUE, FALSE, TRUE, FALSE)] + rep(offset[paf$t.name], each = 2)
+    }
+
+    ## Offset overlapping TARGET alignments up&down based on start position [TODO rewrite to a helper function]
     if (offset.alignments) {
         if ("bin.id" %in% colnames(paf)) {
             ## Use an un-binned version of PAF alignments (group by bin ID if present)
@@ -102,14 +134,17 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
 
     group <- rep(seq_len(nrow(paf)), each = 4)
     seq.name <- c(rbind(paf$q.name, paf$t.name, paf$q.name, paf$t.name))
-    seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
+    #seq.pos <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
+    seq.pos <- c(rbind(paf$q.start.shift, paf$t.start.shift, paf$q.end.shift, paf$t.end.shift))
+    pos.shift <- c(rbind(paf$q.shift, paf$t.shift, paf$q.shift, paf$t.shift))
+    pos.genomic <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
     seq.id <- rep(c("query", "target", "query", "target"), times = nrow(paf))
     n.match <- rep(paf$n.match, each = 4)
     aln.len <- rep(paf$aln.len, each = 4)
     mapq <- rep(paf$mapq, each = 4)
     aln.id <- rep(paf$aln.id, each = 4)
     ID <- rep(paf$ID, each = 4)
-    seq.pair <- rep(paf$seq.pair, each = 4)
+    #seq.pair <- rep(paf$seq.pair, each = 4)
     direction <- rep(paf$strand, each = 4)
 
     ## Create coordinates table (for plotting)
@@ -118,6 +153,8 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
         y = y,
         group = group,
         seq.pos = seq.pos,
+        pos.shift = pos.shift,
+        pos.genomic = pos.genomic,
         direction = direction,
         seq.name = seq.name,
         seq.id = seq.id,
@@ -126,7 +163,7 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
         mapq = mapq,
         aln.id = aln.id,
         ID = ID,
-        seq.pair = seq.pair
+        #seq.pair = seq.pair
     )
 
     ## Add user defined column name if defined

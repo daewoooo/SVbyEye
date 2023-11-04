@@ -5,7 +5,6 @@
 #'
 #' @param shape A shape used to plot aligned sequences: Either 'segment', 'arc' or 'arrow'.
 #' @param sort.by Order PAF alignments by relative left-most coordinates ('position') or by the alignment length ('length').
-#' @param add.alignment.arrows Set to \code{TRUE} if alignment arrows should be added to the plot.
 #' @param highlight.pos A single or a set of positions to be highlighted as vertical solid lines.
 #' @param highlight.region A pair of positions to be highlighted as vertical range.
 #' @inheritParams breakPaf
@@ -153,8 +152,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         s2.end = paf$t.end,
         s1.width = (paf$q.end - paf$q.start) + 1,
         s2.width = (paf$t.end - paf$t.start) + 1,
-        s1.id = paf$q.name,
-        s2.id = paf$t.name,
+        seq.name = paste(unique(paf$q.name, paf$t.name), collapse = '_'),
+        seq.id = 'self',
         dir = paf$strand,
         n.match = paf$n.match,
         aln.len = paf$aln.len,
@@ -174,6 +173,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         "s2.start" = coords[coords$dir == "-", ]$s2.end,
         "s2.end" = coords[coords$dir == "-", ]$s2.start
     )
+
     ## Sort alignments
     if (sort.by == "position") {
         ## Order alignments by query position
@@ -263,6 +263,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                 # y=c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y1end, plt.dir.df$y2end)),
                 y = c(rbind(plt.dir.df$y1, plt.dir.df$y2, plt.dir.df$y2end, plt.dir.df$y1end)),
                 group = rep(seq_len(nrow(plt.dir.df)), each = 4),
+                seq.id = plt.dir.df$seq.id,
+                seq.name = plt.dir.df$seq.name,
                 col.levels = rep(plt.dir.df$col.levels, each = 4)
             )
         } else {
@@ -270,6 +272,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                 x = c(rbind(NaN, NaN, NaN, NaN)),
                 y = c(rbind(NaN, NaN, NaN, NaN)),
                 group = rep(1, each = 4),
+                seq.id = NA,
+                seq.name = NA,
                 col.levels = factor(NA, levels(coords$col.levels))
             )
         }
@@ -279,6 +283,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                 x = c(rbind(plt.rev.df$s1.start, plt.rev.df$s1.end, plt.rev.df$s2.end, plt.rev.df$s2.start)),
                 y = c(rbind(plt.rev.df$y1, plt.rev.df$y1end, plt.rev.df$y2end, plt.rev.df$y2)),
                 group = rep(seq_len(nrow(plt.rev.df)), each = 4),
+                seq.id = plt.rev.df$seq.id,
+                seq.name = plt.rev.df$seq.name,
                 col.levels = rep(plt.rev.df$col.levels, each = 4)
             )
         } else {
@@ -286,6 +292,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                 x = c(rbind(NaN, NaN, NaN, NaN)),
                 y = c(rbind(NaN, NaN, NaN, NaN)),
                 group = rep(1, each = 4),
+                seq.id = NA,
+                seq.name = NA,
                 col.levels = factor(NA, levels(coords$col.levels))
             )
         }
@@ -298,10 +306,10 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             ggplot2::geom_segment(ggplot2::aes(x = .data$s2.start, xend = .data$s2.end, y = .data$y2, yend = .data$y2end)) +
             ggplot2::geom_polygon(data = poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::geom_polygon(data = poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
-            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
             #ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
             ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
-            ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            #ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
             ggplot2::ylab("Self-alignments") +
             ggplot2::xlab("Contig position (bp)")
         ## Define alignment color scheme
@@ -341,10 +349,11 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             }
         }
     } else if (shape == "arc") {
-        ## Make Arc plot
+        ## Get arc coordinates
         x <- c(rbind(coords$s1.start, coords$s2.start, coords$s1.end, coords$s2.end))
         group <- rep(seq_len(nrow(coords)), each = 4)
-        seq.id <- c(rbind("s1", "s2", "s1", "s2"))
+        seq.id <- 'self'
+        seq.name <- unique(coords$seq.name)
         col.levels <- rep(coords$col.levels, each = 4)
 
         plt.df <- data.frame(
@@ -352,13 +361,14 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             y = 0,
             group = group,
             seq.id = seq.id,
+            seq.name = seq.name,
             col.levels = col.levels
         )
 
         plt <- ggplot2::ggplot(plt.df) +
             geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
-            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
-            ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
+            #ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
             ggplot2::ylab("Self-alignments") +
             ggplot2::xlab("Contig position (bp)")
         ## Define alignment color scheme
@@ -374,7 +384,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                 ## Define SV ranges
                 x <- c(rbind(paf.svs$q.start, paf.svs$t.start, paf.svs$q.end, paf.svs$t.end))
                 group <- rep(seq_len(nrow(paf.svs)), each = 4)
-                seq.id <- c(rbind("s1", "s2", "s1", "s2"))
+                #seq.id <- c(rbind("s1", "s2", "s1", "s2"))
                 direction <- rep(paf.svs$strand, each = 4)
                 ID <- rep(paf.svs$ID, each = 4)
 
@@ -382,7 +392,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                     x = x,
                     y = 0,
                     group = group,
-                    seq.id = seq.id,
+                    #seq.id = seq.id,
+                    #seq.name = seq.name,
                     direction = direction,
                     ID = ID
                 )
@@ -412,7 +423,9 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         xmin = c(coords$s1.start, coords$s2.start),
         xmax = c(coords$s1.end, coords$s2.end),
         y = as.numeric(coords$aln.id),
-        col.levels = factor(c(rep("+", nrow(coords)), coords$dir), levels = c("+", "-")) # to make sure s1 is always forward
+        col.levels = factor(c(rep("+", nrow(coords)), coords$dir), levels = c("+", "-")), # to make sure s1 is always forward
+        seq.id = 'self',
+        seq.name = unique(coords$seq.name)
       )
       arrow.links <- data.frame(
         xmin = pmax(coords$s1.start, coords$s1.end),
@@ -428,10 +441,10 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         ggplot2::geom_segment(data = arrow.links, aes(x = .data$xmin, xend = .data$xmax, y = .data$y, yend = .data$y), linetype = 'solid') +
         gggenes::geom_gene_arrow(data = arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = .data$y, forward = .data$dir, fill = .data$col.levels), arrowhead_height = grid::unit(3, "mm")) +
         ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
-        ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0)) +
+        ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
         #ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
         ggplot2::scale_y_continuous(expand = c(grid::unit(0.1, "mm"), grid::unit(0.1, "mm"))) +
-        ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+        #ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
         ggplot2::ylab("Self-alignments") +
         ggplot2::xlab("Contig position (bp)")
 
