@@ -1,0 +1,72 @@
+---
+title: "Visualization of structural variants using SVbyEye"
+author: "David Porubsky"
+date: "`r Sys.Date()`"
+package: SVbyEye
+output:
+  BiocStyle::pdf_document
+vignette: >
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteIndexEntry{Visualization of structural variants using SVbyEye}
+    %\VignetteKeywords{ggplot2, structural variation, visualization, genomics}
+    %\VignetteEncoding{UTF-8}
+    %\newenvironment{CSLReferences}
+    
+bibliography: /home/porubsky/SVbyEye/vignettes/references.bib
+---
+
+# Introduction
+
+Informative and efficient visualization of structural variation (SV) is an important step to validate such regions as well as to draw biological conclusions. With the advance in long-read sequencing technologies such as HiFi (high-fidelity) PAcBio and ONT (Oxford Nanopore) long reads we are now able to fully assemble even the most complex regions of the genome such as segmental duplications (SDs) and centromeres [CITE]. As scientists large part of our understanding of complex biological systems comes from direct visual observations. Therefore, in order to better grasp and understand the complexity of complex genomic regions an efficient visualisation is of paramount importance. We have developed SVbyEye exactly for this purpose such that we are able to directly observe complexity of a human (or other organisms) genome in question with respect to linear genome reference. SVbyEye is inspired by the previously developed tool called Miropeats and brings its visuals to a popular scripting language R and visualisation paradigm using ggplot2.
+
+\newpage
+
+# Generation of input alignements in PAF format
+
+In order to create an input alignments for SVbyEye visualisation we usually use minimap2 (version >=2.24) [@Li2016-ha], however any sequence-to-sequence aligner that can export alignemnts in PAF format should be sufficient. We note, however, we have tested our tool only using minimap2 alignments.
+
+When running minimap2 alignments please make sure that parameter -a is not set because it would export alignment in SAM format. Also make sure that parameter -c is set in order to export CIGAR strings as 'cg' tag in the output PAF. Lastly, consider to set parameter '--eqx' in order to output CIGAR string using '=/X' operators for sequence match/mismatch.
+
+
+## Generate assembly-to-reference minimap alignments
+minimap2 -x asm20 -c --eqx --secondary=no {reference.fasta} {query.fasta} > {output.alignment}
+
+## Generate sequence-to-sequence minimap alignments
+minimap2 -x asm20 -c --eqx --secondary=no {target.fasta} {query.fasta} > {output.alignment}
+
+## Generate all-versus-all minimap alignments
+minimap2 -x asm20 -c --eqx -D -P --dual=no {input.multi.fasta} {input.multi.fasta} > {output.ava.alignment}
+
+
+# Quickstart
+First load the package `r BiocStyle::Biocpkg("SVbyEye")`
+
+```{r, message=FALSE}
+## Load the SVbyEye package
+library(SVbyEye)
+```
+
+The main function of this package is called plotMiro().
+
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
+## Get PAF to plot
+paf.file <- system.file("extdata", "test1.paf",
+    package = "SVbyEye"
+)
+## Read in PAF
+paf.table <- readPaf(
+    paf.file = paf.file,
+    include.paf.tags = TRUE, restrict.paf.tags = "cg"
+)
+## Make a plot
+## Color by alignment directionality
+plotMiro(paf.table = paf.table, color.by = "direction")
+```
+
+
+Report any issues
+[here](https://github.com/daewoooo/SVbyEye/issues):
+
+\newpage
+
+# References

@@ -20,8 +20,11 @@ To install the development version from Github, follow the steps given below. Th
 3. Open R or RStudio and execute the following lines one by one (Please ensure that you have writing permissions to install packages):
 
   install.packages("devtools")
-	library(devtools)
-	install_github("daewoooo/SVbyEye", branch="master")
+	  library(devtools)
+	  install_github("daewoooo/SVbyEye", branch="master")
+
+## Documentation
+	Work in progress.
 	
 ## Report Errors
 If you encounter errors of any kind, please report an [issue here](https://github.com/daewoooo/SVbyEye/issues/new).
