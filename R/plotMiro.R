@@ -159,10 +159,11 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         unique(coords$seq.name[coords$seq.id == "query"]),
         unique(coords$seq.name[coords$seq.id == "target"])
     )
-    y.breaks <- c(
-      max(unique(coords$y[coords$seq.id == "query"])),
-      max(unique(coords$y[coords$seq.id == "target"]))
-    )
+    # y.breaks <- c(
+    #   max(unique(coords$y[coords$seq.id == "query"])),
+    #   max(unique(coords$y[coords$seq.id == "target"]))
+    # )
+    y.breaks <- coords$y[match(y.labels, coords$seq.name)]
 
     ## Define color palette for alignment directionality
     if (!is.null(color.palette)) {
