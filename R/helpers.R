@@ -296,6 +296,7 @@ paf2continuousScale <- function(paf.table) {
     q.limits <- paf %>% dplyr::group_by(q.name) %>% dplyr::reframe(range = range(c(q.start, q.end)))
     q.gaps <- diff(q.limits$range) * -1
     q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0])
+    q.shift <- cumsum(q.shift)
     names(q.shift) <- unique(q.limits$q.name)
     #paf$q.genomic.start <- paf$q.start
     #paf$q.genomic.end <- paf$q.end
