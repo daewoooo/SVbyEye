@@ -36,7 +36,7 @@
 #'     bsgenome = BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38
 #' )
 #' }
-paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm.fasta = NULL, majority.strand = "+", revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
+paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm.fasta = NULL, majority.strand = NULL, revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
     ptm <- startTimedMessage("[paf2FASTA] Exporting PAF alignments to FASTA file")
     ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
@@ -92,23 +92,28 @@ paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm
             gr <- paf.grl[[i]]
             qy.red <- base::range(gr, ignore.strand = TRUE)
             # tg.red <- range(gr$target.gr, ignore.strand=TRUE)
-            if (majority.strand %in% c("+", "-")) {
-                new.strand <- syncRangesDir(ranges = gr, majority.strand = majority.strand, strand.only = TRUE)
-                if (all(new.strand != GenomicRanges::strand(gr))) {
-                    GenomicRanges::strand(gr) <- new.strand
-                    gr <- qy.red
-                    # gr$target.gr <- tg.red
-                    gr$revcomp <- TRUE
-                } else {
-                    gr <- qy.red
-                    # gr$target.gr <- tg.red
-                    gr$revcomp <- FALSE
-                }
+            if (!is.null(majority.strand)) {
+              if (majority.strand %in% c("+", "-")) {
+                  new.strand <- syncRangesDir(ranges = gr, majority.strand = majority.strand, strand.only = TRUE)
+                  if (all(new.strand != GenomicRanges::strand(gr))) {
+                      GenomicRanges::strand(gr) <- new.strand
+                      gr <- qy.red
+                      # gr$target.gr <- tg.red
+                      gr$revcomp <- TRUE
+                  } else {
+                      gr <- qy.red
+                      # gr$target.gr <- tg.red
+                      gr$revcomp <- FALSE
+                  }
+              } else {
+                  gr <- qy.red
+                  # gr$target.gr <- tg.red
+                  gr$revcomp <- FALSE
+                  warning("Parameter 'majority.strand' can only takes values '+' or '-'!!!")
+              }
             } else {
-                gr <- qy.red
-                # gr$target.gr <- tg.red
-                gr$revcomp <- FALSE
-                warning("Parameter 'majority.strand' can only takes values '+' or '-'!!!")
+              gr <- qy.red
+              gr$revcomp <- FALSE
             }
             paf.grl[[i]] <- gr
         }
