@@ -45,7 +45,7 @@
 #' annot.gr <- get(load(annot.file))
 #' addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', y.label.id = 'ID')
 #'
-plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE) {
+plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", perc.identity.breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9), color.palette = NULL, outline.alignments = FALSE) {
     ## Check user input
     ## Make sure submitted paf.table has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -231,7 +231,7 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
         coords$identity <- (coords$n.match / coords$aln.len) * 100
         coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
         ## Define color scheme
-        coords.l <- getColorScheme(data.table = coords, value.field = "identity", breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9))
+        coords.l <- getColorScheme(data.table = coords, value.field = "identity", breaks = perc.identity.breaks)
         coords <- coords.l$data
         colors <- coords.l$colors
 

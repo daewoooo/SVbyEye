@@ -6,6 +6,7 @@
 #' @param highlight.sv Visualize alignment embedded structural variation either as an outlined ('outline') or filled ('fill') miropeats.
 #' @param color.by Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
 #' or a custom column name present in submitted `paf.table`.
+#' @param perc.identity.breaks Set of percentage values to categorize alignment percent identity into a set of discrete colors.
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 #' to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.
 #' @param outline.alignments Set to \code{TRUE} if boundaries of each alignment should be highlighted by gray outline.
@@ -52,7 +53,7 @@
 #' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 #' plotMiro(paf.table = paf.table, min.deletion.size = 50, highlight.sv = "outline")
 #'
-plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, outline.alignments = FALSE, offset.alignments = FALSE, add.alignment.arrows = TRUE, target.region = NULL, genomic.scale = "bp") {
+plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", perc.identity.breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9), color.palette = NULL, outline.alignments = FALSE, offset.alignments = FALSE, add.alignment.arrows = TRUE, target.region = NULL, genomic.scale = "bp") {
     ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -186,7 +187,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         coords$identity <- (coords$n.match / coords$aln.len) * 100
         coords$identity[is.nan(coords$identity) | is.na(coords$identity)] <- 0
         ## Define color scheme
-        coords.l <- getColorScheme(data.table = coords, value.field = "identity", breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9))
+        coords.l <- getColorScheme(data.table = coords, value.field = "identity", breaks = perc.identity.breaks)
         coords <- coords.l$data
         colors <- coords.l$colors
 
