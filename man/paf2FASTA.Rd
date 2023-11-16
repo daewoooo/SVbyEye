@@ -9,7 +9,7 @@ paf2FASTA(
   alignment.space = "query",
   bsgenome = NULL,
   asm.fasta = NULL,
-  majority.strand = "+",
+  majority.strand = NULL,
   revcomp = NULL,
   report.longest.aln = FALSE,
   report.query.name = NULL,

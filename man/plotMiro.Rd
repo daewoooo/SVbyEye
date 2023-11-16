@@ -11,6 +11,7 @@ plotMiro(
   highlight.sv = NULL,
   binsize = NULL,
   color.by = "direction",
+  perc.identity.breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9),
   color.palette = NULL,
   outline.alignments = FALSE,
   offset.alignments = FALSE,
@@ -33,6 +34,8 @@ along with CIGAR string defined in 'cg' column.}
 
 \item{color.by}{Color alignments either by directionality ('direction'), fraction of matched base pairs ('identity'),
 or a custom column name present in submitted `paf.table`.}
+
+\item{perc.identity.breaks}{Set of percentage values to categorize alignment percent identity into a set of discrete colors.}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels)
 to color alignment directionality, `[default: color.palette <- c('-' = 'cornflowerblue', '+' = 'forestgreen')]`.}
