@@ -27,11 +27,11 @@ jobs:
           extra-packages: any::rcmdcheck, any::XML, any::tinytex
           needs: check
 
-#      - name: Install latex
-#        uses: r-lib/actions/setup-tinytex@v2 
-#        env:
+      - name: Install latex
+        uses: r-lib/actions/setup-tinytex@v2 
+        env:
           # install full prebuilt version
-#          TINYTEX_INSTALLER: TinyTeX
+          TINYTEX_INSTALLER: TinyTeX
 #          
 #      - name: Install additional LaTeX packages (non-Windows)
 #        if: inputs.runner_os != 'Windows'
