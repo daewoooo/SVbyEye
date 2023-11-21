@@ -4,7 +4,7 @@ author: "David Porubsky"
 date: "`r Sys.Date()`"
 package: SVbyEye
 output:
-  BiocStyle::pdf_document
+  BiocStyle::html_document
 vignette: >
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteIndexEntry{Visualization of structural variants using SVbyEye}
