@@ -30,12 +30,12 @@
 #' plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
 #' ## Plot alignment as arrows and color by alignment directionality
 #' plotSelf(paf.table = paf.table, color.by = "direction", shape = "arrow")
-#' ## Highlight structural variants within segemnt shapes
+#' ## Highlight structural variants within self-alignments
 #' plotSelf(
 #'     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
 #'     highlight.sv = "outline"
 #' )
-#' ## Highlight structural variants within arc shapes
+#' ## Highlight structural variants using arc shapes
 #' plotSelf(
 #'     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
 #'     highlight.sv = "outline", shape = "arc"
@@ -433,7 +433,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         y = as.numeric(coords$aln.id)
       )
 
-      arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, -1)
+      arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, 0)
       ## Make sure start is always smaller than end of the alignment
       arrow.df[, c("xmin", "xmax")] <- t(apply(arrow.df[, c("xmin", "xmax")], 1, sort))
       ## Plot arrows
@@ -496,7 +496,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             "xmax" = c(rbind(paf.copy$q.end, paf.copy$t.end)),
             "col.levels" = factor(c(rbind("+", paf.copy$strand)), levels = c("+", "-"))
         ) # to make sure s1 is always forward
-        arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, -1)
+        arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, 0)
         ## Make sure start is always smaller than end of the alignment
         arrow.df[, c("xmin", "xmax")] <- t(apply(arrow.df[, c("xmin", "xmax")], 1, sort))
         ## Plot arrows
