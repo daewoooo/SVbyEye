@@ -28,17 +28,17 @@ jobs:
           needs: check
 
       - name: Install latex
-        uses: r-lib/actions/setup-tinytex@v2 
+        uses: r-lib/actions/setup-tinytex@v2
         env:
           # install full prebuilt version
           TINYTEX_INSTALLER: TinyTeX
-#          
-#      - name: Install additional LaTeX packages (non-Windows)
-#        if: inputs.runner_os != 'Windows'
-#        run: |
-#          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools pdfcrop
-#          tlmgr list --only-installed
-      
+
+      - name: Install additional LaTeX packages (non-Windows)
+        if: inputs.runner_os != 'Windows'
+        run: |
+          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools pdfcrop
+          tlmgr list --only-installed
+
       - uses: r-lib/actions/check-r-package@v2
 
       - name: BiocCheck
