@@ -10,9 +10,8 @@ vignette: >
     %\VignetteIndexEntry{Visualization of structural variants using SVbyEye}
     %\VignetteKeywords{ggplot2, structural variation, visualization, genomics}
     %\VignetteEncoding{UTF-8}
-    %\newenvironment{CSLReferences}
     
-bibliography: /home/porubsky/SVbyEye/vignettes/references.bib
+bibliography: references.bib
 ---
 
 # Introduction
