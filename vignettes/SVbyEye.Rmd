@@ -46,12 +46,12 @@ To create a simple miropeat style plot follow instructions below.
 
 First load the package `r BiocStyle::Biocpkg("SVbyEye")`
 
-```{r, message=FALSE, crop=FALSE}
+```{r, message=FALSE}
 ## Load the SVbyEye package
 library(SVbyEye)
 ```
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test1.paf",
     package = "SVbyEye"
@@ -69,7 +69,7 @@ User have a control over a number of visual features that are documented within 
 
 For instance, user can specify own color scheme to color alignments that are in plus (forward) or minus (reverse) direction.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Use custom color palette to color alignment directionality
 plotMiro(paf.table = paf.table, 
          color.palette = c("+" = "azure3", "-" = "yellow3"))
@@ -77,21 +77,21 @@ plotMiro(paf.table = paf.table,
 
 Next, user can decide to color alignments by their identity instead of direction.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Color alignments by sequence identity
 plotMiro(paf.table = paf.table, color.by = "identity")
 ```
 
 We advise that coloring alignments by sequence identity is the most useful in connection with binning the alignments into separate bins. This is useful when investigating regions of high and low sequence identity between the target and the query sequence. We note that when the parameter 'binsize' is defined the parameter 'color.by' is set to 'identity' by default.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Color by alignment by sequence identity
 plotMiro(paf.table = paf.table, binsize = 1000)
 ```
 
 Currently there are preset breaks of sequence identity (see `?plotMiro`) that can be changed by setting the parameter 'perc.identity.breaks'.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Color by alignment by sequence identity
 plotMiro(paf.table = paf.table, binsize = 1000, 
          perc.identity.breaks = c(99.5, 99.6, 99.7, 99.8, 99.9))
@@ -102,7 +102,7 @@ plotMiro(paf.table = paf.table, binsize = 1000,
 Often it is needed to mark certain regions between the query and target alignments such as gene position, position of segmental duplications (SDs) or other DNA functional elements. This can be done by adding extra layers of annotation ranges either on top of the target or query alignments.
 Annotation ranges are expected to be submitted to `addAnnotation()` function as a GenomicRanges object and are visualized as either arrowhead (can reflect range orientation) or rectangle.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 plt <- plotMiro(paf.table = paf.table)
 ## Load target annotation file
 target.annot <- system.file("extdata", "test1_target_annot.txt", package = "SVbyEye")
@@ -113,7 +113,7 @@ addAnnotation(ggplot.obj = plt,
               annot.gr = target.annot.gr, coordinate.space = "target")
 ```
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Load query annotation file
 query.annot <- system.file("extdata", "test1_query_annot.txt", package = "SVbyEye")
 query.annot.df <- read.table(query.annot, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
@@ -125,7 +125,7 @@ addAnnotation(ggplot.obj = plt,
 
 SVbyEye also offers functionalities to lift between query and target coordinates and vice versa based on the underlying PAF alignment file.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Lift target annotation to query and plot
 lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table, 
                                          gr = target.annot.gr, direction = "target2query")
@@ -134,7 +134,7 @@ addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, coordinate.space = "
 
 For instance, inversions are often flanked by long segments of SDs that are highly identical to each other. These can be visualized as follows. Direction of these segments can be reflected as well in case the strand is defined in the GenomicRanges object. 
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Load segmental duplication annotation
 sd.annot <- system.file("extdata", "test1.sd.annot.RData", package = "SVbyEye")
 sd.annot.gr <- get(load(sd.annot))
@@ -159,7 +159,7 @@ addAnnotation(
 
 Each annotation layer can be given its own name as well.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Give an annotation layer its own label
 ## Add target annotation as arrowhead
 plt1 <- addAnnotation(ggplot.obj = plt, 
@@ -175,7 +175,7 @@ addAnnotation(
 
 User has also control over the level where an annotation track should appear. By Default each annotation layer is displayed at the level defined by adding 0.05 fraction of the total size of y-axis in the target or query direction. This can of course be increased or decreased to a zero what means the annotation will be added at the same level as the target or query alignments. 
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Add target annotation as arrowhead
 addAnnotation(ggplot.obj = plt, 
               annot.gr = target.annot.gr, shape =  'rectangle', 
@@ -191,7 +191,7 @@ addAnnotation(ggplot.obj = plt,
 
 Gene annotation such exons or split genomic alignments can be visualized as set of genomic ranges that are connected by a horizonal line. This is defined based on a shared identifier (ID) that marks genomic ranges that are supposed to be grouped by such horizontal line.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Add gene-like annotation
 test.gr <- GenomicRanges::GRanges(
               seqnames = 'target.region',
@@ -206,7 +206,7 @@ addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
 
 Sometimes there is a need to highlight the whole genomic alignments with unique color. This can be done by overlaying the original alignment with an extra alignment.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Make a plot and store it in ggplot object
 plt1 <- plotMiro(paf.table = paf.table, color.by = "direction", add.alignment.arrows = FALSE)
 ## Highlight alignment as a filled polygon
@@ -220,7 +220,7 @@ addAlignments(ggplot.obj = plt1, paf.table = paf.table[4,], linetype = 'dashed')
 
 Another important feature of SVbyEye is its ability to break PAF alignments at the positions of insertions and deletions. This can by done by setting the minimum size of insertion and deletion to be reported and setting the way how those are marked within the plot, either outlined or filled. By default, deletions are colored by red and insertion by blue color. Deletions and insertions are defined as a sequence that is either missing or is extra within query with respect to the target.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Load the data to plot
 paf.file <- system.file("extdata", "test3.paf", package = "SVbyEye")
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
@@ -228,14 +228,14 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 plotMiro(paf.table = paf.table, min.deletion.size = 50, highlight.sv = "outline")
 ```
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Highlight detected deletion by filled polygons  
 plotMiro(paf.table = paf.table, min.deletion.size = 50, highlight.sv = "fill")
 ```
 
 For convenience one can also opt to break the PAF alignments at insertions and/or deletions and just report them as a table.
 
-```{r, echo=TRUE, message=FALSE, crop=FALSE}
+```{r, echo=TRUE, message=FALSE}
 ## Break PAF alignment at deletions >=50bp
 alns <- breakPaf(paf.table = paf.table, min.deletion.size = 50)
 ## Print out detected deletions
@@ -246,7 +246,7 @@ alns$SVs
 
 SVbyEye also allows to visualize alignments between more than two sequences. This can be done by aligning multiple sequences to each other using so called all-versus-all (AVA) alignments. In such a way alignment are visualized in subsequent order where alignment of first sequence are shown with respect to the second and then second sequence to the third etc. Alternatively, if the order of sequence in such a progressive alignment is know one can avoid AVA alignment and align each sequence to next in a defined order and merged these into a single PAF file. This is useful when one want to visualize alignment relationship between multiple sequences of the same or different species.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test_ava.paf", package = "SVbyEye")
 ## Read in PAF
@@ -257,7 +257,7 @@ plotAVA(paf.table = paf.table, color.by = "direction")
 
 Many of the same parameter settings as for plotMiro applies to plotAVA as well. Briefly, user can color alignments based on their orientation or identity, define desired color palette, and bin the alignments into user defined bins.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Color by fraction of matched bases in each alignment
 plotAVA(paf.table = paf.table, color.by = "identity", perc.identity.breaks = c(85, 90, 95))
 ## Use custom color palette to color alignment directionality
@@ -269,7 +269,7 @@ plotAVA(paf.table = paf.table, binsize = 10000)
 
 In addition to the above listed parameters user can also define desired sequence order in which progressive alignments will be reported. Importantly, only sample defined in 'seqnames.order' parameter will be plotted.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Define custom sample/sequence order
 seqnames.order <- c("HG00438_2", "HG01358_2", "HG02630_2", "HG03453_2")
 plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames.order)
@@ -281,7 +281,7 @@ plotAVA(paf.table = paf.table, color.by = "direction", seqnames.order = seqnames
 Adding annotation to AVA alignments slightly differs from what we learned with plotMiro function. Due to the fact that there are more than two sequences annotation levels are defined based on the sequence/sample identifier they belong to.
 This means user have to define an extra column that contains sequence identifiers to which each genomic range belongs to.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Add annotation to all-versus-all alignments ##
 plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
 annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
@@ -293,7 +293,7 @@ addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self',
 
 Again user can set the annotation level to zero in order to plot each annotation directly on the line corresponding to each unique sequence/sample.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Add annotation to the same level as are the sequence/sample alignments
 plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
 annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
@@ -304,7 +304,7 @@ addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self',
 
 When plotting the annotation user can define a custom color palette that needs to matched to the unique meta column in annotation ranges.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Add annotation to the same level as are the sequence/sample alignments
 plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
 annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
@@ -319,14 +319,14 @@ addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, fill.by = 'Repeat',
 
 Lastly, there is again a possibility to break PAF alignments at the insertion and deletions and visualize them as an outlined or filled regions between alignments.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Break PAF alignments at insertions and deletions and highlight them by an outline
 plotAVA(paf.table = paf.table, color.by = "direction", min.deletion.size = 1000, 
         min.insertion.size = 1000, color.palette = c("+" = "azure3", "-" = "yellow3"), 
         highlight.sv = 'outline')
 ```
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(8, 5)}
 ## Break PAF alignments at insertions and deletions and highlight them by filled polygons
 plotAVA(paf.table = paf.table, color.by = "direction", min.deletion.size = 1000, 
         min.insertion.size = 1000, color.palette = c("+" = "azure3", "-" = "yellow3"), 
@@ -337,7 +337,7 @@ plotAVA(paf.table = paf.table, color.by = "direction", min.deletion.size = 1000,
 
 There are cases when one wants to visualize regions that are homologous to each other we offer functions to visualize alignments of a given sequence to itself. Such self alignments are typical for segmental duplications that are paralogous sequences that have high identity.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 2), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 2)}
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test2.paf", package = "SVbyEye")
 ## Read in PAF
@@ -347,33 +347,33 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "segment")
 ```
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Plot alignment as arcs and color by alignment directionality
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
 ```
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 2), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 2)}
 ## Plot alignment as arrows and color by alignment directionality
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arrow")
 ```
 
 Again some of the previous parameter apply for the self-alignments as well. For example user can define the color palette, bin the alignments as well as break alignments at the insertion and deletions.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Plot alignment as arcs and color by alignment directionality
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc", 
          color.palette = c("+" = "azure3", "-" = "yellow3"))
 ```
 
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 plotSelf(paf.table = paf.table, binsize = 1000)
 ```
 
 When breaking the self-alignments at insertions and deletions proximal duplication is considered as query and the distal duplication as a target. It means that sequence missing in query is considered as deletion and sequence inserted in query with respect to target as insertion.
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Highlight structural variants within self-alignments
 plotSelf(paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
          highlight.sv = "outline", shape = "arc")
@@ -381,7 +381,7 @@ plotSelf(paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
 
 # Summarizing sequence composition as annotation heatmaps
 
-```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3), crop=FALSE}
+```{r, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
 ## Get PAF to plot
 paf.file <- system.file("extdata", "test_getFASTA.paf",
     package = "SVbyEye"
