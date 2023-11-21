@@ -72,7 +72,7 @@ addAlignments <- function(ggplot.obj = NULL, paf.table = NULL, color.by = NULL, 
   if (coord.strict) {
     q.filt <- paf$q.start >= q.range[1] & paf$q.end <= q.range[2]
     t.filt <- paf$t.start >= t.range[1] & paf$t.end <= t.range[2]
-    paf.table <- paf.table[q.filt & t.filt, ]
+    paf <- paf[q.filt & t.filt,]
   }
 
   ## Define color or fill of the added alignments
@@ -92,11 +92,11 @@ addAlignments <- function(ggplot.obj = NULL, paf.table = NULL, color.by = NULL, 
 
   ## Convert PAF alignments to plotting coordinates
   if (!is.null(color.by)) {
-    coords <- paf2coords(paf.table = paf, add.col = color.by, sync.x.coordinates = sync.x.coordinates)
+    coords <- paf2coords(paf.table = paf, add.col = color.by, sync.x.coordinates = sync.x.coordinates, q.range = q.range, t.range = t.range)
   } else if (!is.null(fill.by)) {
-    coords <- paf2coords(paf.table = paf, add.col = fill.by, sync.x.coordinates = sync.x.coordinates)
+    coords <- paf2coords(paf.table = paf, add.col = fill.by, sync.x.coordinates = sync.x.coordinates,  q.range = q.range, t.range = t.range)
   } else {
-    coords <- paf2coords(paf.table = paf, sync.x.coordinates = sync.x.coordinates)
+    coords <- paf2coords(paf.table = paf, sync.x.coordinates = sync.x.coordinates,  q.range = q.range, t.range = t.range)
   }
 
   ## Define linetype given the user input
