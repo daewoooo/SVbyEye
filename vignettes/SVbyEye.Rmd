@@ -392,9 +392,19 @@ paf.table <- readPaf(
     include.paf.tags = TRUE, restrict.paf.tags = "cg"
 )
 ## Make a plot colored by alignment directionality
-plotMiro(paf.table = paf.table, color.by = "direction")
+plt <- plotMiro(paf.table = paf.table, color.by = "direction")
 ## Get query sequence composition
-#getNucleotideContent()
+fa.file <- paf.file <- system.file("extdata", "test_getFASTA_query.fasta",
+    package = "SVbyEye"
+)
+## Calculate GC content per 5kbp bin
+gc.content <- fasta2nucleotideContent(fasta.file = fa.file, binsize = 5000, nucleotide.content = 'GC')
+## Add GC content as annotation heatmap
+addAnnotation(ggplot.obj = plt, annot.gr = gc.content, shape = 'rectangle', fill.by = 'GC_nuc.freq', coordinate.space = 'query', annotation.label = 'GCcont')
+## Calculate AT dinucleotide frequency
+dinuc.content <- fasta2nucleotideContent(fasta.file = fa.file, binsize = 5000, nucleotide.content = 'AT')
+## Add AT dinucleotide frequency as annotation heatmap
+addAnnotation(ggplot.obj = plt, annot.gr = dinuc.content, shape = 'rectangle', fill.by = 'AT_nuc.freq', coordinate.space = 'query', annotation.label = 'ATdinuc')
 
 ```
 

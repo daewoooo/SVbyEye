@@ -57,7 +57,13 @@ jobs:
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: rcmdcheck, magick
+          extra-packages: rcmdcheck, magick, tinytex
+
+      - name: Install latex
+        uses: r-lib/actions/setup-tinytex@v2 
+        env:
+          # install full prebuilt version
+          TINYTEX_INSTALLER: TinyTeX
 
       - name: Bioc - Build, Install, Check
         id: build-install-check
