@@ -1,9 +1,9 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.7.20)  5 NOV 2023 15:44
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.7.20)  21 NOV 2023 10:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
-**/tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye.tex
-(/tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye.tex
+**/tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye.tex
+(/tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye.tex
 LaTeX2e <2021-11-15> patch level 1
 L3 programming layer <2022-01-21> (/usr/share/texlive/texmf-dist/tex/latex/base
 /article.cls
@@ -736,41 +736,408 @@ LaTeX Font Info:    Font shape `T1/lmss/bx/it' in size <14.4> not available
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] [2]
-LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <10> not available
-(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 205.
 LaTeX Font Info:    Trying to load font information for T1+fvm on input line 20
-8.
+5.
 (/usr/share/texlive/texmf-dist/tex/latex/bera/t1fvm.fd
 File: t1fvm.fd 2004/09/07 scalable font definitions for T1/fvm.
 )
 LaTeX Font Info:    Font shape `T1/fvm/m/n' will be
-(Font)              scaled to size 7.98004pt on input line 208.
+(Font)              scaled to size 7.98004pt on input line 205.
+LaTeX Font Info:    Font shape `T1/lmss/m/it' in size <10> not available
+(Font)              Font shape `T1/lmss/m/sl' tried instead on input line 209.
 LaTeX Font Info:    Font shape `T1/fvm/m/it' in size <10> not available
-(Font)              Font shape `T1/fvm/m/sl' tried instead on input line 209.
+(Font)              Font shape `T1/fvm/m/sl' tried instead on input line 213.
 LaTeX Font Info:    Font shape `T1/fvm/m/sl' will be
-(Font)              scaled to size 7.98004pt on input line 209.
-</tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye_files/figure-latex/unnamed-ch
-unk-2-1.pdf, id=62, 693.59125pt x 204.765pt>
-File: /tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye_files/figure-latex/unnam
-ed-chunk-2-1.pdf Graphic file (type pdf)
-<use /tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye_files/figure-latex/unname
-d-chunk-2-1.pdf>
-Package pdftex.def Info: /tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye_files
-/figure-latex/unnamed-chunk-2-1.pdf  used on input line 234.
+(Font)              scaled to size 7.98004pt on input line 213.
+
+Overfull \vbox (0.45813pt too high) detected at line 232
+ []
+
+[3]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-2-1.pdf, id=129, 693.59125pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-2-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-2-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-2-1.pdf  used on input line 235.
 (pdftex.def)             Requested size: 341.4396pt x 100.80125pt.
-[3] [4 </tmp/RtmpdLPTmP/preview-b4863db852e5.dir/SVbyEye_files/figure-latex/unn
-amed-chunk-2-1.pdf>] [5] (./SVbyEye.aux)
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-3-1.pdf, id=130, 693.59125pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-3-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-3-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-3-1.pdf  used on input line 250.
+(pdftex.def)             Requested size: 341.4396pt x 100.80125pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-4-1.pdf, id=131, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-4-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-4-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-4-1.pdf  used on input line 262.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+[4 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unname
+d-chunk-2-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figur
+e-latex/unnamed-chunk-3-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyE
+ye_files/figure-latex/unnamed-chunk-4-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-5-1.pdf, id=166, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-5-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-5-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-5-1.pdf  used on input line 274.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-6-1.pdf, id=167, 693.59125pt x 211.79124pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-6-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-6-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-6-1.pdf  used on input line 287.
+(pdftex.def)             Requested size: 341.4396pt x 104.26013pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-7-1.pdf, id=168, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-7-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-7-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-7-1.pdf  used on input line 309.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+[5 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unname
+d-chunk-5-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figur
+e-latex/unnamed-chunk-6-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-8-1.pdf, id=195, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-8-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-8-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-8-1.pdf  used on input line 324.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-9-1.pdf, id=196, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-9-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-9-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-9-1.pdf  used on input line 338.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+[6 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unname
+d-chunk-7-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figur
+e-latex/unnamed-chunk-8-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyE
+ye_files/figure-latex/unnamed-chunk-9-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-10-1.pdf, id=231, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-10-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-10-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-10-1.pdf  used on input line 368.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+LaTeX Font Info:    Trying to load font information for TS1+fvm on input line 3
+78.
+(/usr/share/texlive/texmf-dist/tex/latex/bera/ts1fvm.fd
+File: ts1fvm.fd 2004/09/07 scalable font definitions for TS1/fvm.
+)
+LaTeX Font Info:    Font shape `TS1/fvm/m/n' will be
+(Font)              scaled to size 7.98004pt on input line 378.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-11-1.pdf, id=232, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-11-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-11-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-11-1.pdf  used on input line 389.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+[7 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unname
+d-chunk-10-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-12-1.pdf, id=248, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-12-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-12-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-12-1.pdf  used on input line 403.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-12-2.pdf, id=249, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-12-2.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-12-2.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-12-2.pdf  used on input line 416.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+[8 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unname
+d-chunk-11-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figu
+re-latex/unnamed-chunk-12-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVb
+yEye_files/figure-latex/unnamed-chunk-12-2.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-13-1.pdf, id=285, 693.59125pt x 277.035pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-13-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-13-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-13-1.pdf  used on input line 437.
+(pdftex.def)             Requested size: 341.4396pt x 136.37819pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-14-1.pdf, id=286, 693.59125pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-14-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-14-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-14-1.pdf  used on input line 455.
+(pdftex.def)             Requested size: 341.4396pt x 100.80125pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-14-2.pdf, id=287, 693.59125pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-14-2.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-14-2.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-14-2.pdf  used on input line 465.
+(pdftex.def)             Requested size: 341.4396pt x 100.80125pt.
+[9 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unname
+d-chunk-13-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figu
+re-latex/unnamed-chunk-14-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-15-1.pdf, id=314, 693.59125pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-15-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-15-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-15-1.pdf  used on input line 483.
+(pdftex.def)             Requested size: 341.4396pt x 100.80125pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-16-1.pdf, id=315, 693.59125pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-16-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-16-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-16-1.pdf  used on input line 493.
+(pdftex.def)             Requested size: 341.4396pt x 100.80125pt.
+[10 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-14-2.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-15-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SV
+byEye_files/figure-latex/unnamed-chunk-16-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-18-1.pdf, id=351, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-18-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-18-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-18-1.pdf  used on input line 530.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+[11 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-18-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-19-1.pdf, id=367, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-19-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-19-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-19-1.pdf  used on input line 542.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-19-2.pdf, id=368, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-19-2.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-19-2.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-19-2.pdf  used on input line 553.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-19-3.pdf, id=369, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-19-3.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-19-3.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-19-3.pdf  used on input line 563.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+[12 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-19-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-19-2.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-20-1.pdf, id=394, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-20-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-20-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-20-1.pdf  used on input line 576.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-20-2.pdf, id=395, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-20-2.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-20-2.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-20-2.pdf  used on input line 587.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+[13 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-19-3.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-20-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-21-1.pdf, id=421, 548.0475pt x 341.275pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-21-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-21-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-21-1.pdf  used on input line 604.
+(pdftex.def)             Requested size: 341.44171pt x 212.61937pt.
+[14 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-20-2.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-21-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-22-1.pdf, id=447, 548.0475pt x 341.275pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-22-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-22-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-22-1.pdf  used on input line 626.
+(pdftex.def)             Requested size: 341.44171pt x 212.61937pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-23-1.pdf, id=448, 548.0475pt x 341.275pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-23-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-23-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-23-1.pdf  used on input line 646.
+(pdftex.def)             Requested size: 341.44171pt x 212.61937pt.
+[15 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-22-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-24-1.pdf, id=463, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-24-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-24-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-24-1.pdf  used on input line 660.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-25-1.pdf, id=464, 548.0475pt x 340.27126pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-25-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-25-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-25-1.pdf  used on input line 672.
+(pdftex.def)             Requested size: 341.44171pt x 211.99403pt.
+[16 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-23-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-24-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-26-1.pdf, id=489, 706.64pt x 126.4725pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-26-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-26-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-26-1.pdf  used on input line 692.
+(pdftex.def)             Requested size: 341.43687pt x 61.10944pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-27-1.pdf, id=490, 706.64pt x 198.7425pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-27-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-27-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-27-1.pdf  used on input line 702.
+(pdftex.def)             Requested size: 341.43687pt x 96.02911pt.
+[17 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-25-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-26-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SV
+byEye_files/figure-latex/unnamed-chunk-27-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-28-1.pdf, id=526, 698.61pt x 67.25125pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-28-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-28-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-28-1.pdf  used on input line 712.
+(pdftex.def)             Requested size: 341.43712pt x 32.86821pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-29-1.pdf, id=527, 706.64pt x 198.7425pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-29-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-29-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-29-1.pdf  used on input line 725.
+(pdftex.def)             Requested size: 341.43687pt x 96.02911pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-30-1.pdf, id=528, 706.64pt x 216.81pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-30-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-30-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-30-1.pdf  used on input line 735.
+(pdftex.def)             Requested size: 341.43687pt x 104.75903pt.
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-31-1.pdf, id=529, 706.64pt x 198.7425pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-31-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-31-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-31-1.pdf  used on input line 748.
+(pdftex.def)             Requested size: 341.43687pt x 96.02911pt.
+[18 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-28-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/fig
+ure-latex/unnamed-chunk-29-1.pdf> </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SV
+byEye_files/figure-latex/unnamed-chunk-30-1.pdf> </tmp/RtmpoJP1K1/preview-53a91
+5c9abb92.dir/SVbyEye_files/figure-latex/unnamed-chunk-31-1.pdf>]
+</tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnamed-c
+hunk-32-1.pdf, id=573, 692.5875pt x 204.765pt>
+File: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unna
+med-chunk-32-1.pdf Graphic file (type pdf)
+<use /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-32-1.pdf>
+Package pdftex.def Info: /tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_file
+s/figure-latex/unnamed-chunk-32-1.pdf  used on input line 770.
+(pdftex.def)             Requested size: 341.44217pt x 100.9481pt.
+[19 </tmp/RtmpoJP1K1/preview-53a915c9abb92.dir/SVbyEye_files/figure-latex/unnam
+ed-chunk-32-1.pdf>] [20] [21] (./SVbyEye.aux)
 Package rerunfilecheck Info: File `SVbyEye.out' has not changed.
-(rerunfilecheck)             Checksum: 5D4AB40A057518AE45CB3ED322DA810F;1569.
+(rerunfilecheck)             Checksum: D0D82EC45C202F9747C4CB742E81C96E;4312.
  ) 
 Here is how much of TeX's memory you used:
- 17452 strings out of 480247
- 286453 string characters out of 5896151
- 607550 words of memory out of 5000000
- 35030 multiletter control sequences out of 15000+600000
- 523341 words of font info for 83 fonts, out of 8000000 for 9000
+ 17868 strings out of 480247
+ 315869 string characters out of 5896151
+ 613202 words of memory out of 5000000
+ 35340 multiletter control sequences out of 15000+600000
+ 525351 words of font info for 101 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 75i,13n,77p,1237b,430s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 75i,13n,77p,1238b,432s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texmf/
 fonts/enc/dvips/lm/lm-ec.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/
 bera/fvmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/bera/fvmro8a.
@@ -779,10 +1146,10 @@ type1/public/lm/lmssbo10.pfb></usr/share/texmf/fonts/type1/public/lm/lmssbx10.p
 fb></usr/share/texmf/fonts/type1/public/lm/lmsso10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts
 /type1/urw/helvetic/uhvr8a.pfb>
-Output written on SVbyEye.pdf (5 pages, 139505 bytes).
+Output written on SVbyEye.pdf (21 pages, 1400134 bytes).
 PDF statistics:
- 141 PDF objects out of 1000 (max. 8388607)
- 106 compressed objects within 2 object streams
- 21 named destinations out of 1000 (max. 500000)
- 18494 words of extra memory for PDF output out of 20736 (max. 10000000)
+ 654 PDF objects out of 1000 (max. 8388607)
+ 489 compressed objects within 5 object streams
+ 55 named destinations out of 1000 (max. 500000)
+ 18736 words of extra memory for PDF output out of 20736 (max. 10000000)
 

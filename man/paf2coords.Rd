@@ -8,6 +8,8 @@ paf2coords(
   paf.table,
   offset.alignments = FALSE,
   sync.x.coordinates = TRUE,
+  q.range = NULL,
+  t.range = NULL,
   add.col = NULL
 )
 }
@@ -18,6 +20,10 @@ along with CIGAR string defined in 'cg' column.}
 \item{offset.alignments}{Set to \code{TRUE} if subsequent target alignments should be offsetted below and above the midline.}
 
 \item{sync.x.coordinates}{If set to \code{TRUE} query coordinates will be adjusted to the limits of target coordinates. (Default : `TRUE`)}
+
+\item{q.range}{A \code{vector} containing min and max value for a query range.}
+
+\item{t.range}{A \code{vector} containing min and max value for a target range.}
 
 \item{add.col}{A user defined column name present in `paf.table` to be added in returned coordinates table.}
 }

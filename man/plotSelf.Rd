@@ -66,12 +66,12 @@ plotSelf(paf.table = paf.table, color.by = "direction", shape = "segment")
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
 ## Plot alignment as arrows and color by alignment directionality
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arrow")
-## Highlight structural variants within segemnt shapes
+## Highlight structural variants within self-alignments
 plotSelf(
     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
     highlight.sv = "outline"
 )
-## Highlight structural variants within arc shapes
+## Highlight structural variants using arc shapes
 plotSelf(
     paf.table = paf.table, min.deletion.size = 50, min.insertion.size = 50,
     highlight.sv = "outline", shape = "arc"
