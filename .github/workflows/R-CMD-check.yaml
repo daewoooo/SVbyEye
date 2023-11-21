@@ -10,83 +10,39 @@ name: R-CMD-check
 
 jobs:
   R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (Bioc ${{ matrix.config.bioc-version }})
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - { os: windows-2022, bioc-version: 'devel'}
-        - { os: macOS-11,     bioc-version: 'devel'}
-        - { os: ubuntu-20.04, bioc-version: 'devel'}
-
+    runs-on: ubuntu-latest
     env:
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
+      R_KEEP_PKG_SOURCE: yes
     steps:
-      - name: Install system libraries
-        if: ${{ runner.os == 'Linux'  }}
-        run: |
-          sudo apt-get update && sudo apt-get install libcurl4-openssl-dev
-
-      - name: Install Mac system libraries
-        if: ${{ matrix.config.os == 'macOS-11' }}
-        run: |
-          brew install openssl
-
-      - name: Configure git
-        run: |
-          git config --global core.autocrlf false
-          git config --global user.email "ghau@example.com"
-          git config --global user.name "GitHub Actions User"
-
       - uses: actions/checkout@v3
 
-      - name: Setup R and Bioconductor
-        uses: grimbough/bioc-actions/setup-bioc@v1
+      - uses: r-lib/actions/setup-r@v2
         with:
-          bioc-version: ${{ matrix.config.bioc-version }}
-          bioc-mirror: https://ftp.gwdg.de/pub/misc/bioconductor
+          use-public-rspm: true
 
-      - name: Install pandoc
-        uses: r-lib/actions/setup-pandoc@v2
-
-      - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: rcmdcheck, magick, tinytex
+          pak-version: devel
+          extra-packages: any::rcmdcheck, any::XML, any::tinytex, any::magick
+          needs: check
 
       - name: Install latex
         uses: r-lib/actions/setup-tinytex@v2 
         env:
           # install full prebuilt version
           TINYTEX_INSTALLER: TinyTeX
+#          
+#      - name: Install additional LaTeX packages (non-Windows)
+#        if: inputs.runner_os != 'Windows'
+#        run: |
+#          tlmgr install bera nowidow parnotes marginfix etoolbox titlesec sectsty framed enumitem parskip soul placeins footmisc changepage xstring caption mathtools pdfcrop
+#          tlmgr list --only-installed
+      
+      - uses: r-lib/actions/check-r-package@v2
 
-      - name: Bioc - Build, Install, Check
-        id: build-install-check
-        uses: grimbough/bioc-actions/build-install-check@v1
-
-      - name: Run BiocCheck
-        uses: grimbough/bioc-actions/run-BiocCheck@v1
-        with:
-          error-on: 'never'
-          arguments: '--no-check-bioc-help'
-
-      - name: Test coverage
-        if: ${{ matrix.config.os == 'ubuntu-20.04' }}
+      - name: BiocCheck
         run: |
-          install.packages('covr')
-          covr::codecov()
+          BiocManager::install("BiocCheck")
+          BiocCheck::BiocCheck(".")
         shell: Rscript {0}
-
-      ## upload the Rcheck folder if the workflow fails
-      - name: Upload output
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: ${{ matrix.os }}-bioc-${{ matrix.bioc-version}}
-          path: |
-            ${{ steps.build-install-check.outputs.check-dir }}
