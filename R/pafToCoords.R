@@ -8,6 +8,7 @@
 #' @param add.col A user defined column name present in `paf.table` to be added in returned coordinates table.
 #' @param sync.x.coordinates If set to \code{TRUE} query coordinates will be adjusted to the limits of target coordinates. (Default : `TRUE`)
 #' @inheritParams breakPaf
+#' @inheritParams q2t
 #' @return A \code{tibble} of PAF alignments reported as x and y coordinate values.
 #' @importFrom tibble add_column
 #' @importFrom dplyr bind_cols
@@ -25,7 +26,7 @@
 #' paf.table$GC.content <- round(runif(nrow(paf.table), min = 30, max = 60), digits = 2)
 #' paf2coords(paf.table = paf.table, add.col = "GC.content")
 #'
-paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates = TRUE, add.col = NULL) {
+paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates = TRUE, q.range = NULL, t.range = NULL, add.col = NULL) {
     ## Check user input ##
     ## Make sure PAF has at least 12 mandatory fields
     if (ncol(paf.table) >= 12) {
@@ -78,8 +79,14 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
       # }
       # paf <- do.call(rbind, paf.l)
 
-      q.range <- range(c(paf$q.start.shift, paf$q.end.shift))
-      t.range <- range(c(paf$t.start.shift, paf$t.end.shift))
+      ## Use user defined q.range if defined
+      if (is.null(q.range) | !is.numeric(q.range) | length(q.range) != 2) {
+        q.range <- range(c(paf$q.start.shift, paf$q.end.shift))
+      }
+      ## Use user defined t.range if defined
+      if (is.null(t.range) | !is.numeric(t.range) | length(t.range) != 2) {
+        t.range <- range(c(paf$t.start.shift, paf$t.end.shift))
+      }
       ## Adjust target ranges given the size difference with respect to query ranges
       range.offset <- diff(q.range) - diff(t.range)
       t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
