@@ -37,16 +37,37 @@ minimap2 -x asm20 -c --eqx -D -P --dual=no {input.multi.fasta} {input.multi.fast
 
 # Reading and filtering alignements in PAF format
 
-# Visualization of sequence-to-sequence alignemnts
-
-The main function of this package is called `plotMiro()` and can be used for visualization of a single sequence aligned to the reference or two any to DNA sequences aligned to each other. SVbyEye is visualizing such alignments in a horizontal layout with the target sequence being on at the top and query at the bottom.
+`r BiocStyle::Biocpkg("SVbyEye")` package expects as an input sequence alignments in PAF format. Such alignments can be read using `readPaf()` function. Subsequently, such alignments can be filtered using `filterPaf()` function. Lastly, one can also orient PAF alignments based on desired majority orientation (`majority.strand = '+' or '-'`) or can force to flip all alignments in the PAF file to opposite orientation with parameter `force = TRUE`.
 
 First load the `r BiocStyle::Biocpkg("SVbyEye")` package.
-
 ```{r pckg_load, message=FALSE}
 ## Load the SVbyEye package
 library(SVbyEye)
 ```
+
+```{r read_paf, echo=TRUE, message=FALSE, fig.dim = c(10, 3)}
+## Get PAF file to read
+paf.file <- system.file("extdata", "test1.paf",
+    package = "SVbyEye"
+)
+## Read in PAF
+paf.table <- readPaf(
+    paf.file = paf.file,
+    include.paf.tags = TRUE, restrict.paf.tags = "cg"
+)
+## Example PAF table, SVbyEye expects given column names
+paf.table
+
+## Filter alignment based on size
+filterPaf(paf.table = paf.table, min.align.len = 100000)
+
+## Force to flip orientation of PAF alignments
+flipPaf(paf.table = paf.table, force = TRUE)
+```
+
+# Visualization of sequence-to-sequence alignemnts
+
+The main function of this package is called `plotMiro()` and can be used for visualization of a single sequence aligned to the reference or two any to DNA sequences aligned to each other. SVbyEye is visualizing such alignments in a horizontal layout with the target sequence being on at the top and query at the bottom.
 
 To create a simple miropeat style plot follow instructions below.
 
@@ -123,12 +144,12 @@ addAnnotation(ggplot.obj = plt,
 
 SVbyEye also offers extra functionalities to lift between query and target coordinates and vice versa based on the underlying PAF alignment file.
 
-```{r lift_annot, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
+#```{r lift_annot, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Lift target annotation to query and plot
-lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table, 
-                                         gr = target.annot.gr, direction = "target2query")
+#lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table, 
+#                                         gr = target.annot.gr, direction = "target2query")
 #addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, coordinate.space = "query")
-```
+#```
 
 For instance, inversions are often flanked by long segments of SDs that are highly identical to each other. These can be visualized as follows. Direction of these segments can be reflected as well in case the strand is defined in the GenomicRanges object. 
 
