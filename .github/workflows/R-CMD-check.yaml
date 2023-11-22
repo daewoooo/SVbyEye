@@ -1,7 +1,10 @@
 on:
-  workflow_dispatch:
-  
-name: Workflow that tests the actions
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+name: R-CMD-check
 
 env:
   GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
