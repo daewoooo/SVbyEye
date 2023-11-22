@@ -3,10 +3,11 @@
 #' @param gr A \code{\link{GRanges-class}} object containing single or multiple ranges in query or target sequence coordinates.
 #' @param direction One of the possible, lift ranges from query to target 'query2target' or vice versa 'target2query'.
 #' @inheritParams breakPaf
-#' @importFrom GenomicRanges GRanges findOverlaps mcols shift
-#' @importFrom GenomicAlignments GAlignments mapFromAlignments
+#' @importFrom GenomicRanges GRanges findOverlaps mcols shift strand start width
+#' @importFrom GenomicAlignments GAlignments mapFromAlignments mapToAlignments cigarNarrow
 #' @importFrom S4Vectors queryHits subjectHits
 #' @importFrom methods is
+#' @importFrom IRanges IRanges ranges
 #' @return A \code{\link{GRanges-class}} object with resized original set of ranges.
 #' @author David Porubsky
 #' @export
@@ -91,7 +92,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
               gr.lift[mask] <- GenomicRanges::shift(gr.lift[mask], shift = paf.aln$q.start[match(names(gr.lift[mask]), names(alignments))] * -1)
             )
             ## Remove negative ranges
-            remove <- start(gr.lift) < 0
+            remove <- GenomicRanges::start(gr.lift) < 0
             gr.lift <- gr.lift[!remove]
           }
           ## Lift ranges
