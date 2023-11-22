@@ -1,89 +1,175 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  push:
-    branches: [main, master]
-  pull_request:
-    branches: [main, master]
+  workflow_dispatch:
+  
+name: Workflow that tests the actions
 
-name: R-CMD-check
+env:
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (Bioc ${{ matrix.config.bioc-version }})
-
+  pkg-at-root:
+    name: Root Pkg - Bioc ${{ matrix.bioc-version }} (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
-        config:
-        #- { os: windows-2022, bioc-version: 'devel'}
-        #- { os: macOS-11,     bioc-version: 'devel'}
-        - { os: ubuntu-20.04, bioc-version: 'devel'}
+        os: [ubuntu-22.04, windows-2022, macos-12]
+        ## Test using both Bioconductor devel and release
+        bioc-version: [devel, release]
 
-    env:
-      R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-
+    runs-on: ${{ matrix.os }}
+    
     steps:
-      - name: Install system libraries
-        if: ${{ runner.os == 'Linux'  }}
-        run: |
-          sudo apt-get update && sudo apt-get install libcurl4-openssl-dev
-
-      - name: Install Mac system libraries
-        if: ${{ matrix.config.os == 'macOS-11' }}
-        run: |
-          brew install openssl
-          ## Required to install magick as noted at
-          ## https://github.com/r-lib/usethis/commit/f1f1e0d10c1ebc75fd4c18fa7e2de4551fd9978f#diff-9bfee71065492f63457918efcd912cf2
-          brew install imagemagick@6
-
-      - name: Configure git
-        run: |
-          git config --global core.autocrlf false
-          git config --global user.email "ghau@example.com"
-          git config --global user.name "GitHub Actions User"
-
+    
       - uses: actions/checkout@v3
-
+          
       - name: Setup R and Bioconductor
         uses: grimbough/bioc-actions/setup-bioc@v1
         with:
-          bioc-version: ${{ matrix.config.bioc-version }}
+          bioc-version: ${{ matrix.bioc-version }}
           bioc-mirror: https://ftp.gwdg.de/pub/misc/bioconductor
-
+          use-public-rspm: false
+          
       - name: Install pandoc
         uses: r-lib/actions/setup-pandoc@v2
-
+          
       - name: Install dependencies
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: rcmdcheck, magick, tinytex
-
-      - name: Bioc - Build, Install, Check
+          cache-version: 1
+          
+      - name: Build, Install, Check
         id: build-install-check
         uses: grimbough/bioc-actions/build-install-check@v1
-
-      - name: Run BiocCheck
+        with:
+          package-directory: '.'
+      
+      ## Turn off the checks that we know will fail
+      ## Cause the workflow to error if any new errors appear
+      - name: Run BiocCheck with arguments
         uses: grimbough/bioc-actions/run-BiocCheck@v1
         with:
+          package-directory: '.'
+          arguments: '--no-check-bioc-views --no-check-vignettes --no-check-bioc-help'
+          error-on: 'error'
+          
+      ## upload the Rcheck folder regardless of success of failure
+      - name: Upload output
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: ${{ matrix.os }}-bioc-${{ matrix.bioc-version}}-Rcheck
+          path: |
+            ${{ steps.build-install-check.outputs.check-dir }}
+
+      ## upload source and binary packages
+      - name: Upload check output
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-bioc-${{ matrix.bioc-version}}-pkgs
+          path: |
+            ${{ steps.build-install-check.outputs.source-tarball }}
+            ${{ steps.build-install-check.outputs.package-binary }}
+
+  pkg-in-subfolder:
+    name: Subfolder Pkg - Bioc ${{ matrix.bioc-version }} (${{ matrix.os }}) 
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04]
+        bioc-version: [release]
+        
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    
+      - uses: actions/checkout@v3
+      
+      ## We only using Ubuntu and BioC-release here, 
+      ## so lets use the Rstudio package manager
+      ## to install binary linux packages
+      - name: Setup R and Bioconductor
+        uses: grimbough/bioc-actions/setup-bioc@v1
+        with:
+          bioc-version: ${{ matrix.bioc-version }}
+          bioc-mirror: https://packagemanager.rstudio.com/bioconductor
+          
+      - name: Install dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 1
+      
+      ## Run the complete build, install, check process like the Bioc Build System
+      - name: Build, Install, Check
+        id: build-install-check
+        uses: grimbough/bioc-actions/build-install-check@v1
+        with:
+          package-directory: 'inst/nestedPKG'
+      
+      ## Run all tests in BiocCheck, include those we know fail
+      ## Use the 'error-on' to prevent this failing the workflow
+      - name: Run BiocCheck without arguments
+        uses: grimbough/bioc-actions/run-BiocCheck@v1
+        with:
+          package-directory: 'inst/nestedPKG'
           error-on: 'never'
-          arguments: '--no-check-bioc-help'
-
-      - name: Test coverage
-        if: ${{ matrix.config.os == 'ubuntu-20.04' }}
-        run: |
-          install.packages('covr')
-          covr::codecov()
-        shell: Rscript {0}
-
+          
       ## upload the Rcheck folder if the workflow fails
       - name: Upload output
         uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: ${{ matrix.os }}-bioc-${{ matrix.bioc-version}}
+          name: ${{ matrix.os }}-bioc-${{ matrix.bioc-version}}-sub_folder
           path: |
             ${{ steps.build-install-check.outputs.check-dir }}
+
+  using-bioc-docker:
+    name: Docker Devel
+    strategy:
+      fail-fast: false
+
+    runs-on: ubuntu-22.04
+    container: bioconductor/bioconductor_docker:devel
+    
+    steps:
+    
+      - uses: actions/checkout@v3
+      
+      ##################################################
+      ## no need to install R, BiocManager, or Pandoc ##
+      ##################################################
+      
+      ## cache installed packages
+      - name: Cache install R packages
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/lib/R/site-library
+          key: docker-1
+          restore-keys: docker-
+      
+      ## we can use BiocManager will install binary packages in the Docker container
+      - name: Install dependencies
+        run: |
+            BiocManager::install(c('AnnotationHub', 'rtracklayer', 'knitr', 'rmarkdown', 'BiocStyle'))
+        shell: Rscript {0}
+          
+      - name: Build, Install, Check
+        id: build-install-check
+        uses: grimbough/bioc-actions/build-install-check@v1
+        with:
+          package-directory: '.'
+      
+      ## Turn off the checks that we know will fail
+      ## Cause the workflow to error if any new errors appear
+      - name: Run BiocCheck with arguments
+        uses: grimbough/bioc-actions/run-BiocCheck@v1
+        with:
+          package-directory: '.'
+          arguments: '--no-check-bioc-views --no-check-vignettes --no-check-bioc-help'
+          error-on: 'error'
+
+      - name: Upload built package binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-binary
+          path: |
+            ${{ steps.build-install-check.outputs.package-binary }}
