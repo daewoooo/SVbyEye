@@ -263,7 +263,7 @@ plotAVA(paf.table = paf.table, color.by = "identity", perc.identity.breaks = c(8
 plotAVA(paf.table = paf.table, color.by = "direction", 
         color.palette = c("+" = "azure3", "-" = "yellow3"))
 ## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
-plotAVA(paf.table = paf.table, binsize = 10000)
+#plotAVA(paf.table = paf.table, binsize = 10000)
 ```
 
 In addition to the above listed parameters user can also define desired sequence order in which progressive alignments will be reported. Importantly, only sample defined in 'seqnames.order' parameter will be plotted.

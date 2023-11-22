@@ -12,7 +12,7 @@ Description: SVbyEye is an implements functions to detect and visualize genomic 
   with a number of other functions simplify oparations on FASTA alignments reported PAF format. A number of wrapper functions allows user to
   produce near publication ready figures.
 Depends:
-  R (>= 4.2.0)
+  R (>= 4.3.0)
 Imports:
   ggplot2 (>= 3.4.0),
   ggnewscale,
