@@ -5,7 +5,8 @@
 <!-- badges: end -->
 
 ===================================================================================\
-R Package to visualize alignments between two or multiple DNA sequences.
+R Package to visualize alignments between two or multiple DNA sequences. There are \
+number of functionalities to facilitate to process alignments in PAF format.
 
 Author: David Porubsky
 
