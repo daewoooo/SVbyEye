@@ -12,7 +12,7 @@ Author: David Porubsky
 ## Installation
 
 ### Development version from Github
-To install the development version from Github, follow the steps given below. The installation has only been tested on Linux (Ubuntu) system, if you need to install on Windows or Mac additional steps might be necessary.
+To install the development version from Github, follow the steps given below. The installation has only been tested on Linux (Ubuntu) system, if you need to install on Windows or Mac-OS additional steps might be necessary.
 
 1. Install a recent version of R (>=4.2) from https://www.r-project.org/  
    Under Linux make sure current version of r-base & r-base-dev is installed.  
@@ -33,7 +33,7 @@ devtools::install_github("daewoooo/SVbyEye", branch="master")
 See [here](https://htmlpreview.github.io/?https://github.com/daewoooo/SVbyEye/blob/master/man/doc/SVbyEye.html) for a detailed package usage.
 	
 ## Report Errors
-If you encounter errors of any kind, please report an [issue here](https://github.com/daewoooo/SVbyEye/issues/new).
+If you encounter errors of any kind or want to request a new package functionality, please report an [issue here](https://github.com/daewoooo/SVbyEye/issues/new).
 
 ## NOTE
 Currently the SVbyEye package is under active development and contains unpublished work. We are currently actively working on a manuscript presenting this tool. Stay tuned for upcoming citation by the end of 2023. Please contact me if there are any question as to how to cite this tools in your work. 
