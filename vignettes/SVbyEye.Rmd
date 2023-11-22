@@ -41,7 +41,7 @@ minimap2 -x asm20 -c --eqx -D -P --dual=no {input.multi.fasta} {input.multi.fast
 
 The main function of this package is called `plotMiro()` and can be used for visualization of a single sequence aligned to the reference or two any to DNA sequences aligned to each other. SVbyEye is visualizing such alignments in a horizontal layout with the target sequence being on at the top and query at the bottom.
 
-First load the SVbyEye package.
+First load the `r BiocStyle::Biocpkg("SVbyEye")` package.
 
 ```{r pckg_load, message=FALSE}
 ## Load the SVbyEye package
@@ -127,7 +127,7 @@ SVbyEye also offers extra functionalities to lift between query and target coord
 ## Lift target annotation to query and plot
 lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table, 
                                          gr = target.annot.gr, direction = "target2query")
-addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, coordinate.space = "query")
+#addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, coordinate.space = "query")
 ```
 
 For instance, inversions are often flanked by long segments of SDs that are highly identical to each other. These can be visualized as follows. Direction of these segments can be reflected as well in case the strand is defined in the GenomicRanges object. 
