@@ -421,3 +421,9 @@ Report any issues
 \newpage
 
 # References
+
+# sessionInfo()
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```

@@ -29,7 +29,7 @@ devtools::install_github("daewoooo/SVbyEye", branch="master")
 ```	  
 
 ## Documentation
-See [here](https://github.com/daewoooo/SVbyEye//inst/doc/SVbyEye.html) for a detailed pacakge usage.
+See [here](https://htmlpreview.github.io/?https://github.com/daewoooo/SVbyEye/blob/master/man/doc/SVbyEye.html) for a detailed pacakge usage.
 	
 ## Report Errors
 If you encounter errors of any kind, please report an [issue here](https://github.com/daewoooo/SVbyEye/issues/new).
