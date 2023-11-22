@@ -5,18 +5,18 @@
 <!-- badges: end -->
 
 ===================================================================================\
-R Package to visualize alignments between two or multiple genome sequences.
+R Package to visualize alignments between two or multiple DNA sequences.
 
 Author: David Porubsky
 
 ## Installation
 
 ### Development version from Github
-To install the development version from Github, follow the steps given below. The installation has only been tested on Ubuntu system, if you need to install on Windows or Mac additional steps might be necessary (e.g. installation of Rtools from https://cran.r-project.org/bin/windows/Rtools/)
+To install the development version from Github, follow the steps given below. The installation has only been tested on Linux (Ubuntu) system, if you need to install on Windows or Mac additional steps might be necessary.
 
 1. Install a recent version of R (>=4.2) from https://www.r-project.org/\
    Under Linux make sure current version of r-base & r-base-dev is installed.\
-   Under Windows it is recommended to install recent version of Rtools from https://cran.r-project.org/bin/windows/Rtools/rtools40.html\
+   Under Windows it is recommended to install recent version of Rtools from https://cran.r-project.org/bin/windows/Rtools/\
 2. Optional: For ease of use, install Rstudio from https://www.rstudio.com/
 3. Open R or RStudio and execute the following lines one by one (Please ensure that you have writing permissions to install packages):
 
