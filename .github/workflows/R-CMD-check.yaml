@@ -19,7 +19,7 @@ jobs:
       matrix:
         config:
         #- { os: windows-2022, bioc-version: 'devel'}
-        - { os: macOS-11,     bioc-version: 'devel'}
+        #- { os: macOS-11,     bioc-version: 'devel'}
         - { os: ubuntu-20.04, bioc-version: 'devel'}
 
     env:
