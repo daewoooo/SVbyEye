@@ -293,7 +293,10 @@ paf2continuousScale <- function(paf.table) {
   ## Check if there more than one unique query sequences
   if (length(unique(paf$q.name)) > 1) {
     ## If yes make sure query coordinates are continuous
-    q.limits <- paf %>% dplyr::group_by(q.name) %>% dplyr::reframe(range = range(c(q.start, q.end)))
+    q.limits <- paf %>%
+      dplyr::arrange(t.start) %>% ## Make sure query coordinates are sorted by target coordinates
+      dplyr::mutate(q.name = factor(q.name, levels = unique(q.name))) %>%
+      dplyr::group_by(q.name) %>% dplyr::reframe(range = range(c(q.start, q.end)))
     q.gaps <- diff(q.limits$range) * -1
     q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0])
     q.shift <- cumsum(q.shift)
