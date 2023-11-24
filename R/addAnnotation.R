@@ -52,13 +52,6 @@
 #'     ggplot.obj = plt, annot.gr = query.annot.gr, shape = "rectangle",
 #'     coordinate.space = "query"
 #' )
-#' ## Lift target annotation to query and plot
-#' lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table,
-#'                                          gr = target.annot.gr, direction = "target2query")
-#' addAnnotation(
-#'     ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = "rectangle",
-#'     coordinate.space = "query"
-#' )
 #' ## Add segmental duplication annotation
 #' plt <- plotMiro(paf.table = paf.table)
 #' sd.annot <- system.file("extdata", "test1.sd.annot.RData", package = "SVbyEye")
@@ -100,6 +93,9 @@
 #'               fill.by = 'ID')
 #'
 addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.group = NULL, annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
+    ## Check user input ##
+    stopifnot(methods::is(annot.gr, "GRanges"), length(annot.gr) > 0)
+
     ## Get plotted data
     gg.data <- ggplot.obj$data
     if (coordinate.space != 'self') {

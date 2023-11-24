@@ -184,28 +184,28 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
 
         }
 
-        ## Add alignment strand information
         if (length(gr.lifted) > 0) {
+          ## Add alignment strand information
           GenomicRanges::strand(gr.lifted) <- GenomicAlignments::strand(alignments)[gr.lifted$alignmentsHits]
-        }
 
-        ## Add empty ranges to coordinates that failed to lift
-        if (!all(seq_along(gr) %in% gr.lifted$idx)) {
-            failed.idx <- (seq_along(gr))[-gr.lifted$idx]
-            decoy.gr <- GenomicRanges::GRanges(
-                seqnames = rep("Failed", length(failed.idx)),
-                ranges = IRanges::IRanges(start = 1, end = 0),
-                xHits = 1L,
-                alignmentsHits = 1L,
-                idx = failed.idx,
-                cg = '1='
-            )
-            gr.lifted <- suppressWarnings(c(gr.lifted, decoy.gr))
-            gr.lifted <- gr.lifted[order(gr.lifted$idx)]
-        }
-        ## Keep extra metacolumns if present
-        if (ncol(GenomicRanges::mcols(gr)) > 0) {
-            GenomicRanges::mcols(gr.lifted) <- c(GenomicRanges::mcols(gr.lifted), GenomicRanges::mcols(gr[gr.lifted$idx]))
+          ## Add empty ranges to coordinates that failed to lift
+          if (!all(seq_along(gr) %in% gr.lifted$idx)) {
+              failed.idx <- (seq_along(gr))[-gr.lifted$idx]
+              decoy.gr <- GenomicRanges::GRanges(
+                  seqnames = rep("Failed", length(failed.idx)),
+                  ranges = IRanges::IRanges(start = 1, end = 0),
+                  xHits = 1L,
+                  alignmentsHits = 1L,
+                  idx = failed.idx,
+                  cg = '1='
+              )
+              gr.lifted <- suppressWarnings(c(gr.lifted, decoy.gr))
+              gr.lifted <- gr.lifted[order(gr.lifted$idx)]
+          }
+          ## Keep extra metacolumns if present
+          if (ncol(GenomicRanges::mcols(gr)) > 0) {
+              GenomicRanges::mcols(gr.lifted) <- c(GenomicRanges::mcols(gr.lifted), GenomicRanges::mcols(gr[gr.lifted$idx]))
+          }
         }
 
         stopTimedMessage(ptm)

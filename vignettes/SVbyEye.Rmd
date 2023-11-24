@@ -144,12 +144,20 @@ addAnnotation(ggplot.obj = plt,
 
 SVbyEye also offers extra functionalities to lift between query and target coordinates and vice versa based on the underlying PAF alignment file.
 
-#```{r lift_annot, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
+```{r lift_annot, echo=TRUE, message=FALSE, fig.dim = c(10, 4)}
 ## Lift target annotation to query and plot
-#lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table, 
-#                                         gr = target.annot.gr, direction = "target2query")
-#addAnnotation(ggplot.obj = plt, annot.gr = lifted.annot.gr, coordinate.space = "query")
-#```
+target.gr <- as("target.region:19100000-19150000", "GRanges")
+lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table,
+                                         gr = target.gr, direction = "target2query")
+plt1 <- addAnnotation(
+    ggplot.obj = plt, annot.gr = target.gr, shape = "rectangle",
+     coordinate.space = "target"
+ )
+ addAnnotation(
+     ggplot.obj = plt1, annot.gr = lifted.annot.gr, shape = "rectangle",
+     coordinate.space = "query"
+ )
+```
 
 For instance, inversions are often flanked by long segments of SDs that are highly identical to each other. These can be visualized as follows. Direction of these segments can be reflected as well in case the strand is defined in the GenomicRanges object. 
 
