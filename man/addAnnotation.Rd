@@ -75,13 +75,6 @@ addAnnotation(
     ggplot.obj = plt, annot.gr = query.annot.gr, shape = "rectangle",
     coordinate.space = "query"
 )
-## Lift target annotation to query and plot
-lifted.annot.gr <- liftRangesToAlignment(paf.table = paf.table,
-                                         gr = target.annot.gr, direction = "target2query")
-addAnnotation(
-    ggplot.obj = plt, annot.gr = lifted.annot.gr, shape = "rectangle",
-    coordinate.space = "query"
-)
 ## Add segmental duplication annotation
 plt <- plotMiro(paf.table = paf.table)
 sd.annot <- system.file("extdata", "test1.sd.annot.RData", package = "SVbyEye")
