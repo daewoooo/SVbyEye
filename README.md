@@ -5,8 +5,8 @@
 <!-- badges: end -->
 
 ===================================================================================\
-R Package to visualize alignments between two or multiple DNA sequences. There are \
-number of functionalities to facilitate to process alignments in PAF format.
+R Package to visualize alignments between two or multiple DNA sequences including \
+a number of functionalities to facilitate processing of alignments in PAF format.
 
 Author: David Porubsky
 
@@ -15,7 +15,7 @@ Author: David Porubsky
 ### Development version from Github
 To install the development version from Github, follow the steps given below. The installation has only been tested on Linux (Ubuntu) system, if you need to install on Windows or Mac-OS additional steps might be necessary.
 
-1. Install a recent version of R (>=4.2) from https://www.r-project.org/  
+1. Install a recent version of R (>=4.3) from https://www.r-project.org/  
    Under Linux make sure current version of r-base & r-base-dev is installed.  
    Under Windows it is recommended to install recent version of Rtools from https://cran.r-project.org/bin/windows/Rtools/\
 2. Optional: For ease of use, install Rstudio from https://www.rstudio.com/

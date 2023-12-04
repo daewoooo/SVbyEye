@@ -9,6 +9,7 @@ addAnnotation(
   annot.gr = NULL,
   shape = "arrowhead",
   fill.by = NULL,
+  label.by = NULL,
   color.palette = NULL,
   max.colors = 20,
   coordinate.space = "target",
@@ -27,6 +28,8 @@ addAnnotation(
 \item{shape}{A user defined shape ranges in 'annot.gr' are visualized, either 'arrowhead' or 'rectangle'.}
 
 \item{fill.by}{A name of an extra field present in 'annot.gr' to be used to define color scheme.}
+
+\item{label.by}{A name of an extra field present in 'annot.gr' to be used as a label over each annotation range.}
 
 \item{color.palette}{A discrete color palette defined as named character vector (elements = colors, names = discrete levels).}
 
@@ -114,6 +117,10 @@ test.gr <- GenomicRanges::GRanges(
 addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
               shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
               fill.by = 'ID')
+## Add gene names
+addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+              shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
+              fill.by = 'ID', label.by = 'ID')
 
 }
 \author{
