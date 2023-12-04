@@ -7,6 +7,7 @@
 #' @param annot.gr A \code{\link{GRanges-class}} object with a set of ranges to be added as extra annotation.
 #' @param shape A user defined shape ranges in 'annot.gr' are visualized, either 'arrowhead' or 'rectangle'.
 #' @param fill.by A name of an extra field present in 'annot.gr' to be used to define color scheme.
+#' @param label.by A name of an extra field present in 'annot.gr' to be used as a label over each annotation range.
 #' @param color.palette A discrete color palette defined as named character vector (elements = colors, names = discrete levels).
 #' @param max.colors A maximum number of discrete color levels for which legend will be reported. If more than that legend will be removed.
 #' @param coordinate.space A coordinate space ranges in 'annot.gr' are reported, either 'target', 'query' or 'self'.
@@ -91,8 +92,12 @@
 #' addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
 #'               shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
 #'               fill.by = 'ID')
+#' ## Add gene names
+#' addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+#'               shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
+#'               fill.by = 'ID', label.by = 'ID')
 #'
-addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.group = NULL, annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
+addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, label.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.group = NULL, annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
     ## Check user input ##
     stopifnot(methods::is(annot.gr, "GRanges"), length(annot.gr) > 0)
 
@@ -275,6 +280,8 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
 
                 plt <- ggplot.obj +
                   ggplot2::geom_segment(data = link.df, ggplot2::aes(x = start, xend = end, y = y.offset, yend = y.offset))
+              } else {
+                annotation.group <- NULL
               }
             } else {
               plt <- ggplot.obj
@@ -301,6 +308,29 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                     plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
                         geom_roundrect(data = annot.df, ggplot2::aes(xmin = start, xmax = end, y = y.offset, color = NULL, fill = NULL), radius = grid::unit(0, "mm"))
                 }
+            }
+
+            ## Add annotation label above each annotation range ##
+            if (!is.null(label.by)) {
+              if (label.by %in% colnames(annot.df)) {
+                if (!is.null(annotation.group)) {
+                  label.df <- annot.df %>%
+                    dplyr::group_by(dplyr::across(dplyr::all_of(annotation.group))) %>%
+                    dplyr::summarise(
+                      seqnames = unique(seqnames),
+                      start = min(start),
+                      end = max(end),
+                      y.offset = unique(y.offset),
+                      label = unique(.data[[label.by]])) %>%
+                    dplyr::mutate(midpoint = start + ((end - start) / 2))
+                } else {
+                  label.df <- annot.df %>%
+                    dplyr::mutate(midpoint = start + ((end - start) / 2), label = .data[[label.by]])
+                }
+                ## Add label to the plot
+                plt <- plt +
+                  ggplot2::geom_text(data = label.df, ggplot2::aes(x = .data[['midpoint']], y = y.offset + 0.025, label = .data[['label']]))
+              }
             }
 
             ## Add y-label to annotation track if defined
