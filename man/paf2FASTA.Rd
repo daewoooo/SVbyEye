@@ -7,6 +7,7 @@
 paf2FASTA(
   paf.table,
   alignment.space = "query",
+  order.by = "query",
   bsgenome = NULL,
   asm.fasta = NULL,
   majority.strand = NULL,
@@ -23,6 +24,8 @@ paf2FASTA(
 along with CIGAR string defined in 'cg' column.}
 
 \item{alignment.space}{What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).}
+
+\item{order.by}{Order alignment either by `query` or `target` coordinates.}
 
 \item{bsgenome}{A \pkg{\link[BSgenome]{BSgenome-class}} object of reference genome to get the genomic sequence from.}
 

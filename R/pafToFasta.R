@@ -1,6 +1,7 @@
 #' Export FASTA sequences from a set of alignments reported in PAF formatted file.
 #'
 #' @param alignment.space What alignment coordinates should be exported as FASTA, either 'query' or 'target' (Default : `query`).
+#' @param order.by Order alignment either by `query` or `target` coordinates.
 #' @param bsgenome A \pkg{\link[BSgenome]{BSgenome-class}} object of reference genome to get the genomic sequence from.
 #' @param asm.fasta An assembly FASTA file to extract DNA sequence from defined PAF alignments.
 #' @param revcomp If set to \code{TRUE} FASTA sequence will be reverse complemented regardless of value defined in `majority.strand`.
@@ -36,7 +37,7 @@
 #'     bsgenome = BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38
 #' )
 #' }
-paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm.fasta = NULL, majority.strand = NULL, revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
+paf2FASTA <- function(paf.table, alignment.space = "query", order.by = 'query', bsgenome = NULL, asm.fasta = NULL, majority.strand = NULL, revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
     ptm <- startTimedMessage("[paf2FASTA] Exporting PAF alignments to FASTA file")
     ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
@@ -63,6 +64,13 @@ paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm
     }
 
     if (!is.null(paf)) {
+        ## Order alignments
+        if (order.by == 'target') {
+          paf <- paf[order(paf$t.start),]
+        } else if (order.by == 'query') {
+          paf <- paf[order(paf$q.start),]
+        }
+
         ## Convert query or target coordinates to GRanges
         if (alignment.space == "query") {
             paf.gr <- GenomicRanges::makeGRangesFromDataFrame(paf, seqnames.field = "q.name", start.field = "q.start", end.field = "q.end")
@@ -87,7 +95,8 @@ paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm
         }
 
         ## Sync alignment directionality based on preferred majority strand
-        paf.grl <- GenomicRanges::split(paf.gr, as.character(GenomeInfoDb::seqnames(paf.gr)))
+        split.f <- factor(as.character(GenomeInfoDb::seqnames(paf.gr)), levels = unique(as.character(GenomeInfoDb::seqnames(paf.gr))))
+        paf.grl <- GenomicRanges::split(paf.gr, split.f)
         for (i in seq_along(paf.grl)) {
             gr <- paf.grl[[i]]
             qy.red <- base::range(gr, ignore.strand = TRUE)
@@ -124,8 +133,8 @@ paf2FASTA <- function(paf.table, alignment.space = "query", bsgenome = NULL, asm
         }
 
         ## Order regions by position
-        paf.gr <- GenomicRanges::sort(paf.gr, ignore.strand = TRUE)
-        ## Order regions by target position
+        # paf.gr <- GenomicRanges::sort(paf.gr, ignore.strand = TRUE)
+        ## Order regions by target position [Prefered see above]
         # paf.gr <- paf.gr[GenomicRanges::order(paf.gr$target.gr)]
 
         ## Collapse consecutive alignments coming from the same contig/sequence
