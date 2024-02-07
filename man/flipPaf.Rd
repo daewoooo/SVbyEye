@@ -4,7 +4,7 @@
 \alias{flipPaf}
 \title{Flip orientation of PAF alignments.}
 \usage{
-flipPaf(paf.table, majority.strand = NULL, force = FALSE)
+flipPaf(paf.table, majority.strand = NULL, force = FALSE, flip.seqnames = NULL)
 }
 \arguments{
 \item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
@@ -13,6 +13,8 @@ along with CIGAR string defined in 'cg' column.}
 \item{majority.strand}{A desired majority strand directionality to be reported.}
 
 \item{force}{Set to \code{TRUE} if query PAF alignments should be flipped.}
+
+\item{flip.seqnames}{User defined query or target sequence IDs to be flipped in orientation.}
 }
 \value{
 A \code{tibble} of PAF alignments flipped based on desired majority strand orientation.
