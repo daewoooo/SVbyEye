@@ -101,7 +101,8 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
 
     ## Vectorize data transformation ##
     ## Define x and y coordinates
-    x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
+    #x <- c(rbind(paf$q.start.trans, paf$t.start, paf$q.end.trans, paf$t.end))
+    x <- c(rbind(paf$q.start.trans, paf$t.start.shift, paf$q.end.trans, paf$t.end.shift))
     y <- rep(c(1, 2, 1, 2), times = nrow(paf))
 
     ## If there are more than one query or target sequence use offset
@@ -115,7 +116,7 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
       offset <- seq(from = 0, to = length(unique(paf$t.name))/10, by = 0.1)[seq_along(unique(paf$t.name))]
       names(offset) <- unique(paf$t.name)
       #t.offset <- rep(offset, table(paf$t.name) * 2)
-      y[c(TRUE, FALSE, TRUE, FALSE)] <- y[c(TRUE, FALSE, TRUE, FALSE)] + rep(offset[paf$t.name], each = 2)
+      y[c(FALSE, TRUE, FALSE, TRUE)] <- y[c(FALSE, TRUE, FALSE, TRUE)] + rep(offset[paf$t.name], each = 2)
     }
 
     ## Offset overlapping TARGET alignments up&down based on start position [TODO rewrite to a helper function]

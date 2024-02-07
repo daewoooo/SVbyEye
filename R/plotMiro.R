@@ -70,7 +70,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         #stop("Currently, function [plotMiro] does not support visualization of more than one query sequence id !!!")
     }
     if (length(unique(paf.table$t.name)) > 1) {
-        stop("Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!")
+        #stop("Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!")
     }
 
     ## Subset PAF alignments to user defined target region
@@ -166,21 +166,22 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     # )
     y.breaks <- coords$y[match(y.labels, coords$seq.name)]
 
-    ## Define color palette for alignment directionality
+    ## Set default direction color
     if (!is.null(color.palette)) {
-        if (all(c("+", "-") %in% names(color.palette))) {
-            pal <- color.palette
-        } else {
-            pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
-            warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
-        }
-    } else {
+      if (all(c("+", "-") %in% names(color.palette))) {
+        pal <- color.palette
+      } else {
         pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
+        #warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
+      }
+    } else {
+      pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
     }
 
     ## Plot alignments and color by a user defined variable
     if (color.by == "direction") {
-        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
+        ## Make a plot
+        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$direction), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection")
     } else if (color.by == "identity") {
@@ -190,28 +191,32 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         coords.l <- getColorScheme(data.table = coords, value.field = "identity", breaks = perc.identity.breaks)
         coords <- coords.l$data
         colors <- coords.l$colors
-
-        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
+        ## Make a plot
+        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = "Identity")
     } else if (color.by %in% colnames(paf)) {
-        ## Define color scheme
-        coords.l <- getColorScheme(data.table = coords, value.field = color.by)
-        coords <- coords.l$data
-        colors <- coords.l$colors
-
-        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
-            geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
+        col.levels <- unique(coords[,eval(color.by), drop = TRUE])
+        if (!all(col.levels %in% names(color.palette))) {
+          ## Define color random scheme
+          coords.l <- getColorScheme(data.table = coords, value.field = color.by)
+          colors <- coords.l$colors
+        } else {
+          colors <- color.palette
+        }
+        ## Make a plot
+        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
+            geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = eval(color.by))
     } else {
-        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
+        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), alpha = 0.5, fill = "gray")
     }
 
     ## Add alignment outlines
     if (outline.alignments) {
         plt <- plt +
-            geom_miropeats(data = coords[coords$ID == "M", ], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), fill = NA, color = "gray", linewidth = 0.25)
+            geom_miropeats(data = coords[coords$ID == "M",], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), fill = NA, color = "gray", linewidth = 0.25)
     }
 
     ## Add indels
