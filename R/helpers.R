@@ -90,6 +90,7 @@ mirrorRanges <- function(gr, seqlength = NULL) {
 #' @importFrom dplyr pull
 #' @importFrom stats setNames
 #' @importFrom ggplot2 cut_number
+#' @importFrom randomcoloR randomColor
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -122,24 +123,35 @@ getColorScheme <- function(data.table = NULL, value.field = NULL, breaks = NULL)
         stop("No 'value.field' defined, please define 'value.field' either as column index or column name !!!")
     }
 
-    ## Define break ranges ##
-    vals <- data.table %>% dplyr::pull(eval(value.field))
-    if (!is.null(breaks)) {
-        levels <- c(
-            paste0("<", breaks[1]),
-            paste(breaks[-length(breaks)], breaks[-1], sep = ":"),
-            paste0(">", breaks[length(breaks)])
-        )
-        ## Get break intervals
-        ids <- findInterval(vals, vec = breaks) + 1
-        data.table$col.levels <- factor(levels[ids], levels = levels)
-        colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = "continuous")
-        colors <- stats::setNames(as.list(colors), levels)
-    } else {
-        ## If breaks are not defined split data into 5 chunks
-        data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
-        colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = "continuous")
-        colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
+    ## Define continuous color scale ##
+    if (is.numeric(data.table[, eval(value.field), drop = TRUE])) {
+      vals <- data.table %>% dplyr::pull(eval(value.field))
+      ## Define break ranges ##
+      if (!is.null(breaks)) {
+          levels <- c(
+              paste0("<", breaks[1]),
+              paste(breaks[-length(breaks)], breaks[-1], sep = ":"),
+              paste0(">", breaks[length(breaks)])
+          )
+          ## Get break intervals
+          ids <- findInterval(vals, vec = breaks) + 1
+          data.table$col.levels <- factor(levels[ids], levels = levels)
+          colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = "continuous")
+          colors <- stats::setNames(as.list(colors), levels)
+      } else {
+          ## If breaks are not defined split data into 5 chunks
+          data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
+          colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = "continuous")
+          colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
+      }
+    }
+
+    ## Define discrete color scale ##
+    if (is.character(data.table[, eval(value.field), drop = TRUE])) {
+      discrete.levels <- unique(data.table[, eval(value.field), drop = TRUE])
+      n.uniq <- length(discrete.levels)
+      colors <- randomcoloR::randomColor(count = n.uniq)
+      colors <- stats::setNames(as.list(colors), discrete.levels)
     }
     ## Return color scheme
     return(list(data = data.table, colors = colors))
@@ -298,7 +310,7 @@ paf2continuousScale <- function(paf.table) {
       dplyr::mutate(q.name = factor(q.name, levels = unique(q.name))) %>%
       dplyr::group_by(q.name) %>% dplyr::reframe(range = range(c(q.start, q.end)))
     q.gaps <- diff(q.limits$range) * -1
-    q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0])
+    q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0] + 1)
     q.shift <- cumsum(q.shift)
     names(q.shift) <- unique(q.limits$q.name)
     #paf$q.genomic.start <- paf$q.start
@@ -315,10 +327,14 @@ paf2continuousScale <- function(paf.table) {
   ## Check if there more than one unique target sequences
   if (length(unique(paf$t.name)) > 1) {
     ## If yes make sure target coordinates are continuous
-    t.limits <- paf %>% dplyr::group_by(t.name) %>% dplyr::reframe(range = range(c(t.start, t.end)))
+    t.limits <- paf %>%
+      dplyr::arrange(q.start) %>% ## Make sure query coordinates are sorted by query coordinates
+      dplyr::mutate(t.name = factor(t.name, levels = unique(t.name))) %>%
+      dplyr::group_by(t.name) %>% dplyr::reframe(range = range(c(t.start, t.end)))
     t.gaps <- diff(t.limits$range) * -1
-    t.shift <- c(0, t.gaps[seq(length(t.gaps)) %% 2 == 0])
-    names(t.shift) <- unique(t.limits$q.name)
+    t.shift <- c(0, t.gaps[seq(length(t.gaps)) %% 2 == 0] + 1)
+    t.shift <- cumsum(t.shift)
+    names(t.shift) <- unique(t.limits$t.name)
     #paf$t.genomic.start <- paf$t.start
     #paf$t.genomic.end <- paf$t.end
     #paf$t.start <- paf$t.start + t.shift[paf$t.name]

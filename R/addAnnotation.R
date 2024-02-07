@@ -235,12 +235,12 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                     if (is.numeric(annot.df[, eval(fill.by)])) {
                         pal <- wesanderson::wes_palette("Zissou1", 100, type = "continuous")
                         col.scale <- "gradient"
-                        ## Define discrete color scale
+                    ## Define discrete color scale
                     } else {
-                        dicrete.levels <- unique(annot.df[, eval(fill.by)])
-                        n.uniq <- length(dicrete.levels)
+                        discrete.levels <- unique(annot.df[, eval(fill.by)])
+                        n.uniq <- length(discrete.levels)
                         ## Get user define discrete color palette
-                        if (all(dicrete.levels %in% names(color.palette))) {
+                        if (all(discrete.levels %in% names(color.palette))) {
                             pal <- color.palette
                             if (length(pal) >= max.colors) {
                                 col.scale <- "discreteNoLegend"
