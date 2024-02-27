@@ -108,13 +108,13 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
     ## If there are more than one query or target sequence use offset
     if (length(unique(paf$q.name)) > 1) {
       offset <- seq(from = 0, to = length(unique(paf$q.name))/10, by = 0.1)[seq_along(unique(paf$q.name))]
-      names(offset) <- unique(paf$q.name)
+      names(offset) <- unique(paf$q.name[order(paf$q.start.shift, decreasing = TRUE)])
       #q.offset <- rep(offset, table(paf$q.name) * 2)
       y[c(TRUE, FALSE, TRUE, FALSE)] <- y[c(TRUE, FALSE, TRUE, FALSE)] - rep(offset[paf$q.name], each = 2)
     }
     if (length(unique(paf$t.name)) > 1) {
       offset <- seq(from = 0, to = length(unique(paf$t.name))/10, by = 0.1)[seq_along(unique(paf$t.name))]
-      names(offset) <- unique(paf$t.name)
+      names(offset) <- unique(paf$t.name[order(paf$t.start.shift, decreasing = TRUE)])
       #t.offset <- rep(offset, table(paf$t.name) * 2)
       y[c(FALSE, TRUE, FALSE, TRUE)] <- y[c(FALSE, TRUE, FALSE, TRUE)] + rep(offset[paf$t.name], each = 2)
     }

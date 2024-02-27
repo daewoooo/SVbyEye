@@ -65,13 +65,14 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     } else {
         stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
     }
+
     ## Make sure submitted paf.table contains single query and target sequence id
-    if (length(unique(paf.table$q.name)) > 1) {
-        #stop("Currently, function [plotMiro] does not support visualization of more than one query sequence id !!!")
-    }
-    if (length(unique(paf.table$t.name)) > 1) {
-        #stop("Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!")
-    }
+    # if (length(unique(paf.table$q.name)) > 1) {
+    #     stop("Currently, function [plotMiro] does not support visualization of more than one query sequence id !!!")
+    # }
+    # if (length(unique(paf.table$t.name)) > 1) {
+    #     stop("Currently, function [plotMiro] does not support visualization of more than one target sequence id !!!")
+    # }
 
     ## Subset PAF alignments to user defined target region
     if (!is.null(target.region)) {
@@ -169,7 +170,11 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     ## Set default direction color
     if (!is.null(color.palette)) {
       if (all(c("+", "-") %in% names(color.palette))) {
-        pal <- color.palette
+        if (is.list(color.palette)) {
+          pal <- unlist(color.palette, use.names = TRUE)
+        } else {
+          pal <-  color.palette
+        }
       } else {
         pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
         #warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")

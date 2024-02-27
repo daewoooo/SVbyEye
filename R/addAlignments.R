@@ -98,6 +98,8 @@ addAlignments <- function(ggplot.obj = NULL, paf.table = NULL, color.by = NULL, 
   } else {
     coords <- paf2coords(paf.table = paf, sync.x.coordinates = sync.x.coordinates,  q.range = q.range, t.range = t.range)
   }
+  ## Make sure y-axis for the same seqnames is the same as in the submitted ggplot object
+  coords$y[coords$seq.name %in% gg.data$seq.name] <- gg.data$y[match(coords$seq.name, gg.data$seq.name)]
 
   ## Define linetype given the user input
   if (!is.null(linetype)) {
