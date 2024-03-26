@@ -157,15 +157,16 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     }
 
     ## Get y-axis labels and breaks
-    y.labels <- c(
-        unique(coords$seq.name[coords$seq.id == "query"]),
-        unique(coords$seq.name[coords$seq.id == "target"])
+    y.labels.query <- c(
+        unique(coords$seq.name[coords$seq.id == "query"])
     )
-    # y.breaks <- c(
-    #   max(unique(coords$y[coords$seq.id == "query"])),
-    #   max(unique(coords$y[coords$seq.id == "target"]))
-    # )
-    y.breaks <- coords$y[match(y.labels, coords$seq.name)]
+    y.labels.target <- c(
+      unique(coords$seq.name[coords$seq.id == "target"])
+    )
+    y.breaks.query <- coords$y[coords$seq.id == 'query'][match(y.labels.query, coords$seq.name[coords$seq.id == 'query'])]
+    y.breaks.target <- coords$y[coords$seq.id == 'target'][match(y.labels.target, coords$seq.name[coords$seq.id == 'target'])]
+    y.labels <- c(y.labels.query, y.labels.target)
+    y.breaks <- c(y.breaks.query, y.breaks.target)
 
     ## Set default direction color
     if (!is.null(color.palette)) {
@@ -250,7 +251,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
             ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels) +
             ggplot2::scale_x_continuous(
                 breaks = q.breaks, labels = scales::comma(q.labels),
-                sec.axis = ggplot2::sec_axis(trans = y ~ ., breaks = t.breaks, labels = scales::comma(t.labels)), expand = c(0, 0)
+                sec.axis = ggplot2::sec_axis(transform = y ~ ., breaks = t.breaks, labels = scales::comma(t.labels)), expand = c(0, 0)
             ) +
             # xlab('Genomic position (bp)') +
             ggplot2::xlab(paste0("Genomic position (", genomic.scale, ")")) +
