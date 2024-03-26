@@ -64,9 +64,9 @@ addAlignments <- function(ggplot.obj = NULL, paf.table = NULL, color.by = NULL, 
   ## Get query and target coordinate ranges
   t.range <- range(gg.data$seq.pos[gg.data$seq.id == "target"])
   q.range <- range(gg.data$seq.pos[gg.data$seq.id == "query"])
-  ## Adjust target ranges given the size difference with respect to query ranges
-  range.offset <- diff(q.range) - diff(t.range)
-  t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
+  ## Adjust target ranges given the size difference with respect to query ranges [TESTING: caused removal of valid alignments !!!]
+  #range.offset <- diff(q.range) - diff(t.range)
+  #t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
 
   ## Make sure that submitted PAF alignments are within ggplot.obj coordinates
   if (coord.strict) {

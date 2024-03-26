@@ -29,6 +29,7 @@
 #' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @importFrom IRanges IRanges ranges
 #' @importFrom GenomicRanges start end sort makeGRangesFromDataFrame
+#' @importFrom GenomeInfoDb seqnames
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -146,10 +147,14 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
       annot.l <- list()
       for (i in seq_along(limits.l)) {
         lims <- limits.l[[i]]
+        lims.gr <- GenomicRanges::GRanges(seqnames = unique(lims$seq.name),
+                                          ranges = IRanges::IRanges(start = lims$gen.range[1], end = lims$gen.range[2]))
         seq.id <- unique(lims$seq.name)
-        if (seq.id %in% as.character(seqnames(annot.gr))) {
-          gr <- annot.gr[seqnames(annot.gr) == seq.id]
-          gr <- gr[start(gr) > min(lims$gen.range) & end(gr) < max(lims$gen.range)]
+        if (seq.id %in% as.character(GenomeInfoDb::seqnames(annot.gr))) {
+          gr <- annot.gr[GenomeInfoDb::seqnames(annot.gr) == seq.id]
+          #gr <- gr[start(gr) > min(lims$gen.range) & end(gr) < max(lims$gen.range)]
+          #gr <- gr[start(gr) >= min(lims$gen.range) & end(gr) <= max(lims$gen.range)]
+          gr <- subsetByOverlaps(gr, lims.gr) ## More permissive subsetting of annotation ranges!!!
           annot.l[[length(annot.l) + 1]] <- gr
         }
       }
@@ -159,8 +164,11 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
     ## Shift genomic positions in case multiple query or target sequences have been concatenated
     if ('pos.shift' %in% colnames(gg.data)) {
       pos.shifts <- gg.data %>% dplyr::group_by(.data$seq.id, .data$seq.name) %>% dplyr::summarize(pos.shift = unique(.data$pos.shift), .groups = 'drop')
-      start(annot.gr) <- start(annot.gr) + pos.shifts$pos.shift[match(as.character(seqnames(annot.gr)), pos.shifts$seq.name)]
-      end(annot.gr) <- end(annot.gr) + pos.shifts$pos.shift[match(as.character(seqnames(annot.gr)), pos.shifts$seq.name)]
+      #GenomicRanges::start(annot.gr) <- GenomicRanges::start(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+      #GenomicRanges::end(annot.gr) <- GenomicRanges::end(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+      new.start <- GenomicRanges::start(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+      new.end <- GenomicRanges::end(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+      ranges(annot.gr) <- IRanges::IRanges(start = new.start, end = new.end)
     }
 
     ## Get query and target coordinate ranges
