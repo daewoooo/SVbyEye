@@ -2,6 +2,7 @@
 #'
 #' @param gr A \code{\link{GRanges-class}} object containing single or multiple ranges in query or target sequence coordinates.
 #' @param direction One of the possible, lift ranges from query to target 'query2target' or vice versa 'target2query'.
+#' @param report.cigar.str Set to `TRUE` if CIGAR string should be reported as well (Slow if >1000 regions).
 #' @inheritParams breakPaf
 #' @importFrom GenomicRanges GRanges findOverlaps mcols shift strand start width
 #' @importFrom GenomicAlignments GAlignments mapFromAlignments mapToAlignments cigarNarrow
@@ -21,7 +22,7 @@
 #' ## Lift target range to query coordinates
 #' liftRangesToAlignment(paf.table = paf.table, gr = roi.gr, direction = "target2query")
 #'
-liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2target") {
+liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2target", report.cigar.str = FALSE) {
     ptm <- startTimedMessage(paste0("[liftRangesToAlignment] Lifting coordinates: ", direction))
 
     ## Check user input ##
@@ -102,23 +103,25 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
           gr.lifted$idx <- gr.lift$idx[gr.lifted$xHits]
 
           ## Cut CIGAR string ##
-          suppressWarnings( aln.local.gr <- GenomicRanges::shift(gr.lifted, shift = -(GenomicRanges::start(alignments)[gr.lifted$alignmentsHits] - 1)) )
-          GenomicRanges::start(aln.local.gr[GenomicRanges::start(aln.local.gr) == 0]) <- 1
-          ## Define start and end position for CIGAR extraction
-          starts <- GenomicRanges::start(aln.local.gr)
-          width <- GenomicRanges::width(aln.local.gr)
-          ## Make a cut
-          cigars <- alignments@cigar[gr.lifted$alignmentsHits]
-          gr.lifted$cg <- vapply(seq_along(starts), function(i) {
-            tryCatch(
-              {
-                GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], width = width[i])[1]
-              },
-              error = function(e) {
-                return("1=")
-              }
-            )
-          }, FUN.VALUE = character(1))
+          if (report.cigar.str) {
+            suppressWarnings( aln.local.gr <- GenomicRanges::shift(gr.lifted, shift = -(GenomicRanges::start(alignments)[gr.lifted$alignmentsHits] - 1)) )
+            GenomicRanges::start(aln.local.gr[GenomicRanges::start(aln.local.gr) == 0]) <- 1
+            ## Define start and end position for CIGAR extraction
+            starts <- GenomicRanges::start(aln.local.gr)
+            width <- GenomicRanges::width(aln.local.gr)
+            ## Make a cut
+            cigars <- alignments@cigar[gr.lifted$alignmentsHits]
+            gr.lifted$cg <- vapply(seq_along(starts), function(i) {
+              tryCatch(
+                {
+                  GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], width = width[i])[1]
+                },
+                error = function(e) {
+                  return("1=")
+                }
+              )
+            }, FUN.VALUE = character(1))
+          }
 
         } else {
           ## Map to alignment ##
@@ -164,23 +167,25 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
           gr.lifted$idx <- gr.lifted$xHits
 
           ## Cut CIGAR string ##
-          suppressWarnings( aln.local.gr <- GenomicRanges::shift(gr.lift[gr.lifted$xHits], shift = -(GenomicRanges::start(alignments)[gr.lifted$alignmentsHits] - 1)) )
-          GenomicRanges::start(aln.local.gr[GenomicRanges::start(aln.local.gr) == 0]) <- 1
-          ## Define start and end position for CIGAR extraction
-          starts <- GenomicRanges::start(aln.local.gr)
-          width <- GenomicRanges::width(aln.local.gr)
-          ## Make a cut
-          cigars <- alignments@cigar[gr.lifted$alignmentsHits]
-          gr.lifted$cg <- vapply(seq_along(starts), function(i) {
-            tryCatch(
-              {
-                GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], width = width[i])[1]
-              },
-              error = function(e) {
-                return("1=")
-              }
-            )
-          }, FUN.VALUE = character(1))
+          if (report.cigar.str) {
+            suppressWarnings( aln.local.gr <- GenomicRanges::shift(gr.lift[gr.lifted$xHits], shift = -(GenomicRanges::start(alignments)[gr.lifted$alignmentsHits] - 1)) )
+            GenomicRanges::start(aln.local.gr[GenomicRanges::start(aln.local.gr) == 0]) <- 1
+            ## Define start and end position for CIGAR extraction
+            starts <- GenomicRanges::start(aln.local.gr)
+            width <- GenomicRanges::width(aln.local.gr)
+            ## Make a cut
+            cigars <- alignments@cigar[gr.lifted$alignmentsHits]
+            gr.lifted$cg <- vapply(seq_along(starts), function(i) {
+              tryCatch(
+                {
+                  GenomicAlignments::cigarNarrow(cigar = cigars[i], start = starts[i], width = width[i])[1]
+                },
+                error = function(e) {
+                  return("1=")
+                }
+              )
+            }, FUN.VALUE = character(1))
+          }
 
         }
 
