@@ -4,7 +4,12 @@
 \alias{liftRangesToAlignment}
 \title{Function to lift coordinates to the alignment in PAF format.}
 \usage{
-liftRangesToAlignment(paf.table, gr = NULL, direction = "query2target")
+liftRangesToAlignment(
+  paf.table,
+  gr = NULL,
+  direction = "query2target",
+  report.cigar.str = FALSE
+)
 }
 \arguments{
 \item{paf.table}{A \code{data.frame} or \code{tibble} containing a single or multiple PAF record(s) with 12 mandatory columns
@@ -13,6 +18,8 @@ along with CIGAR string defined in 'cg' column.}
 \item{gr}{A \code{\link{GRanges-class}} object containing single or multiple ranges in query or target sequence coordinates.}
 
 \item{direction}{One of the possible, lift ranges from query to target 'query2target' or vice versa 'target2query'.}
+
+\item{report.cigar.str}{Set to `TRUE` if CIGAR string should be reported as well (Slow if >1000 regions).}
 }
 \value{
 A \code{\link{GRanges-class}} object with resized original set of ranges.

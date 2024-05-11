@@ -68,7 +68,6 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
           alignments <- GenomicAlignments::GAlignments(
             seqnames = paf.aln$t.name,
             pos = as.integer(paf.aln$t.start) + 1L,
-            #pos = pos,
             cigar = paf.aln$cg,
             strand = GenomicRanges::strand(paf.aln$strand),
             names = paste0("aln", unique(S4Vectors::subjectHits(hits)))
@@ -136,6 +135,9 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
             strand = GenomicRanges::strand(paf.aln$strand),
             names = paf.aln$q.name
           )
+          ## Adjust to alignment coordinates
+          GenomicRanges::start(gr.lift) <- pmax(GenomicRanges::start(gr.lift), min(GenomicRanges::start(alignments)))
+          GenomicRanges::end(gr.lift) <- pmin(GenomicRanges::end(gr.lift), max(GenomicRanges::end(alignments)))
           ## Lift ranges
           gr.lifted <- GenomicAlignments::mapToAlignments(x = gr.lift, alignments = alignments)
           names(gr.lifted) <- NULL

@@ -155,6 +155,8 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
           #gr <- gr[start(gr) > min(lims$gen.range) & end(gr) < max(lims$gen.range)]
           #gr <- gr[start(gr) >= min(lims$gen.range) & end(gr) <= max(lims$gen.range)]
           gr <- subsetByOverlaps(gr, lims.gr) ## More permissive subsetting of annotation ranges!!!
+          start(gr)[start(gr) < min(lims$gen.range)] <- min(lims$gen.range)
+          end(gr)[end(gr) > max(lims$gen.range)] <- max(lims$gen.range)
           annot.l[[length(annot.l) + 1]] <- gr
         }
       }

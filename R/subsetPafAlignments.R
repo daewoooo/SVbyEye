@@ -89,7 +89,7 @@ subsetPafAlignments <- function(paf.table, target.region = NULL) {
         ## Get overlaps between target ranges and alignments
         hits <- IRanges::findOverlaps(target.region.gr, alignments)
         ## Lift target positions to query coordinates
-        query.coords <- suppressMessages( liftRangesToAlignment(paf.table = paf.aln, gr = target.region.gr, direction = 'target2query') )
+        query.coords <- suppressMessages( liftRangesToAlignment(paf.table = paf.aln, gr = target.region.gr, direction = 'target2query', report.cigar.str = TRUE) )
         ## Set target range to local alignment coordinates
         suppressWarnings( target.local.gr <- GenomicRanges::shift(target.region.gr[S4Vectors::queryHits(hits)],
                                                                   shift = -(GenomicRanges::start(alignments)[S4Vectors::subjectHits(hits)] - 1)) )
@@ -146,7 +146,7 @@ subsetPafAlignments <- function(paf.table, target.region = NULL) {
           hits <- GenomicRanges::findOverlaps(target.region.gr, alignments)
           ## Lift target positions to query coordinates
           target.start <- GenomicRanges::resize(target.region.gr, width = 1, fix = "start")
-          query.start <- suppressMessages( liftRangesToAlignment(paf.table = paf.aln, gr = target.start, direction = 'target2query') )
+          query.start <- suppressMessages( liftRangesToAlignment(paf.table = paf.aln, gr = target.start, direction = 'target2query', report.cigar.str = TRUE) )
           ## Set target range to local alignment coordinates
           suppressWarnings( target.local.gr <- GenomicRanges::shift(target.start[S4Vectors::queryHits(hits)],
                                                                     shift = -(start(alignments)[S4Vectors::subjectHits(hits)] - 1)) )
@@ -198,7 +198,7 @@ subsetPafAlignments <- function(paf.table, target.region = NULL) {
           hits <- GenomicRanges::findOverlaps(target.region.gr, alignments)
           ## Lift target positions to query coordinates
           target.end <- GenomicRanges::resize(target.region.gr, width = 1, fix = "end")
-          query.end <- suppressMessages( liftRangesToAlignment(paf.table = paf.aln, gr = target.end, direction = 'target2query') )
+          query.end <- suppressMessages( liftRangesToAlignment(paf.table = paf.aln, gr = target.end, direction = 'target2query', report.cigar.str = TRUE) )
           ## Set target range to local alignment coordinates
           suppressWarnings( target.local.gr <- GenomicRanges::shift(target.end[S4Vectors::queryHits(hits)],
                                                                     shift = -(start(alignments)[S4Vectors::subjectHits(hits)] - 1)) )

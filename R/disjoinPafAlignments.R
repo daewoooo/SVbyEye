@@ -71,7 +71,7 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = 't
       inters.gr <- suppressWarnings( GenomicRanges::intersect(target.gr, todisj.gr, ignore.strand=TRUE) )
       target.gr <- suppressWarnings( sort(c(subtr.gr, inters.gr), ignore.strand=TRUE) )
       ## Lift target ranges to query coordinates
-      query.gr <- suppressMessages( liftRangesToAlignment(paf.table = paf, gr = target.gr, direction = 'target2query') )
+      query.gr <- suppressMessages( liftRangesToAlignment(paf.table = paf, gr = target.gr, direction = 'target2query', report.cigar.str = TRUE) )
       ## Expand target ranges to match mapped query ranges
       target.gr <- target.gr[query.gr$idx]
       target.gr$alignmentsHits <- query.gr$alignmentsHits
@@ -108,7 +108,7 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = 't
       inters.gr <- suppressWarnings( GenomicRanges::intersect(query.gr, todisj.gr, ignore.strand=TRUE) )
       query.gr <- suppressWarnings( sort(c(subtr.gr, inters.gr), ignore.strand=TRUE) )
       ## Lift query ranges to target coordinates
-      target.gr <- suppressMessages( liftRangesToAlignment(paf.table = paf, gr = query.gr, direction = 'query2target') )
+      target.gr <- suppressMessages( liftRangesToAlignment(paf.table = paf, gr = query.gr, direction = 'query2target', report.cigar.str = TRUE) )
       ## Expand query ranges to match mapped target ranges
       query.gr <- query.gr[target.gr$idx]
       GenomicRanges::strand(query.gr) <- GenomicRanges::strand(target.gr)
