@@ -5,13 +5,16 @@
 \title{Get sequence content from a single FASTA file.}
 \usage{
 fasta2nucleotideContent(
-  fasta.file,
+  fasta.seq = NULL,
+  fasta.file = NULL,
   binsize = NULL,
   sequence.pattern = NULL,
   nucleotide.content = NULL
 )
 }
 \arguments{
+\item{fasta.seq}{A \code{\link{DNAStringSet-class}} object containing a single FASTA sequence.}
+
 \item{fasta.file}{A path to a valid FASTA file to be processed.}
 
 \item{binsize}{A user defined number of base pairs to split the loaded FASTA sequence into}

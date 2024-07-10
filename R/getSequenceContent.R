@@ -64,13 +64,13 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
     return(paf.table)
 }
 
-
 #' Get sequence content from a single FASTA file.
 #'
 #' This function with takes a path to FASTA file containing a single sequence and report counts and frequencies of user defined
 #' `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content) across the
 #' whole sequence or in user defined bins.
 #'
+#' @param fasta.seq A \code{\link{DNAStringSet-class}} object containing a single FASTA sequence.
 #' @param fasta.file A path to a valid FASTA file to be processed.
 #' @param binsize A user defined number of base pairs to split the loaded FASTA sequence into
 #' @inheritParams getNucleotideContent
@@ -86,15 +86,20 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
 #' ## Report sequence content for a given FASTA file in 5000bp long bins
 #' fasta2nucleotideContent(fasta.file = asm.fasta, binsize = 5000, sequence.pattern = "AT")
 #'
-fasta2nucleotideContent <- function(fasta.file, binsize=NULL, sequence.pattern = NULL, nucleotide.content = NULL) {
+fasta2nucleotideContent <- function(fasta.seq=NULL, fasta.file=NULL, binsize=NULL, sequence.pattern = NULL, nucleotide.content = NULL) {
   ptm <- startTimedMessage("[fasta2nucleotideContent] Calculating FASTA sequence content")
 
   ## Check user input
-  if (file.exists(fasta.file)) {
+  if (!is.null(fasta.seq)) {
+    if (methods::is(fasta.seq, "DNAStringSet")) {
+      fa.seq <- fasta.seq
+      seq.len <- GenomeInfoDb::seqlengths(fa.seq)
+    }
+  } else if (file.exists(fasta.file)) {
     fa.seq <- Biostrings::readDNAStringSet(fasta.file)
     seq.len <- GenomeInfoDb::seqlengths(fa.seq)
   } else {
-    stop('Please submit a path to a valid FASTA file !!!')
+    stop('Please submit a valid "DNAStringSet" object with a single sequence or a path to a valid FASTA file !!!')
   }
 
   ## Bin FASTA sequence
