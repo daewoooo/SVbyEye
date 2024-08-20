@@ -37,5 +37,5 @@ See [here](https://htmlpreview.github.io/?https://github.com/daewoooo/SVbyEye/bl
 If you encounter errors of any kind or want to request a new package functionality, please report an [issue here](https://github.com/daewoooo/SVbyEye/issues/new).
 
 ## NOTE
-Currently the SVbyEye package is under active development and contains unpublished work. We are currently actively working on a manuscript presenting this tool. Stay tuned for upcoming citation by the end of 2023. Please contact me if there are any question as to how to cite this tools in your work. 
+Currently the SVbyEye package is under active development and contains unpublished work. We are currently actively working on a manuscript presenting this tool. Stay tuned for upcoming citation. Please contact me if there are any question as to how to cite this tools in your work. 
 
