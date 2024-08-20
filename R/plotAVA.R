@@ -60,7 +60,7 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
 
   ## Get desired sequence order ##
   ## Based on user input
-  seq.ids <- unique(paf$q.name)
+  seq.ids <- unique(c(paf$q.name, paf$t.name))
   if (is.character(seqnames.order)) {
     if (all(seq.ids %in% seqnames.order)) {
       seq.ord <- seqnames.order
