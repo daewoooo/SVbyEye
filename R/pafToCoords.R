@@ -44,7 +44,7 @@ paf2coords <- function(paf.table, offset.alignments = FALSE, sync.x.coordinates 
 
     ## Flip start-end if strand == '-'
     paf[paf$strand == "-", c("t.start", "t.end")] <- rev(paf[paf$strand == "-", c("t.start", "t.end")])
-    # paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
+    #paf[paf$strand == '-', c('q.start','q.end')] <- rev(paf[paf$strand == '-', c('q.start','q.end')])
 
     ## Add continuous scale to PAF to make sure multiple query and target sequences are position next to each other
     paf <- paf2continuousScale(paf.table = paf)
