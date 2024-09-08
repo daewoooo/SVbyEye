@@ -4,7 +4,7 @@
 #' @param direction One of the possible, lift ranges from query to target 'query2target' or vice versa 'target2query'.
 #' @param report.cigar.str Set to `TRUE` if CIGAR string should be reported as well (Slow if >1000 regions).
 #' @inheritParams breakPaf
-#' @importFrom GenomicRanges GRanges findOverlaps mcols shift strand start width
+#' @importFrom GenomicRanges GRanges findOverlaps mcols shift strand start width resize
 #' @importFrom GenomicAlignments GAlignments mapFromAlignments mapToAlignments cigarNarrow
 #' @importFrom S4Vectors queryHits subjectHits
 #' @importFrom methods is
@@ -59,6 +59,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
         ## Lift ranges to PAF alignment
         if (direction == "query2target") {
           ## Map from alignment ##
+          ########################
           gr.lift <- gr[S4Vectors::queryHits(hits)]
           GenomicRanges::mcols(gr.lift)$idx <- S4Vectors::queryHits(hits)
           names(gr.lift) <- paste0("aln", S4Vectors::subjectHits(hits))
@@ -124,20 +125,23 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
 
         } else {
           ## Map to alignment ##
+          ######################
           gr.lift <- gr
           ## Define PAF alignment object
           paf.aln <- paf[unique(S4Vectors::subjectHits(hits)),]
           #paf.aln <- paf
           alignments <- GenomicAlignments::GAlignments(
             seqnames = paf.aln$t.name,
-            pos = as.integer(paf.aln$t.start) + 1L,
+            #pos = as.integer(paf.aln$t.start) + 1L,
+            pos = as.integer(paf.aln$t.start),
             cigar = paf.aln$cg,
             strand = GenomicRanges::strand(paf.aln$strand),
             names = paf.aln$q.name
           )
           ## Adjust to alignment coordinates
-          GenomicRanges::start(gr.lift) <- pmax(GenomicRanges::start(gr.lift), min(GenomicRanges::start(alignments)))
-          GenomicRanges::end(gr.lift) <- pmin(GenomicRanges::end(gr.lift), max(GenomicRanges::end(alignments)))
+          #GenomicRanges::start(gr.lift) <- pmax(GenomicRanges::start(gr.lift), min(GenomicRanges::start(alignments)))
+          #GenomicRanges::end(gr.lift) <- pmin(GenomicRanges::end(gr.lift), max(GenomicRanges::end(alignments)))
+          GenomicRanges::end(gr.lift) <- GenomicRanges::end(gr.lift) - 1
           ## Lift ranges
           gr.lifted <- GenomicAlignments::mapToAlignments(x = gr.lift, alignments = alignments)
           names(gr.lifted) <- NULL
@@ -154,6 +158,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
             #bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end[aln.idx])
             bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end[gr.lifted$alignmentsHits])
             IRanges::ranges(gr.lifted[mask]) <- IRanges::reflect(x = IRanges::ranges(gr.lifted[mask]), bounds = bounds[mask])
+            gr.lifted <- GenomicRanges::resize(gr.lifted, width = GenomicRanges::width(gr.lifted) + 1, fix = 'start')
           }
           ## Adjust start position for plus alignments alignment
           if (any(as.character(GenomicRanges::strand(alignments)) == "+")) {
@@ -164,6 +169,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
             #GenomicRanges::end(gr.lifted[mask]) <- abs( GenomicRanges::end(gr.lifted[mask]) + paf.aln$q.start[gr.lifted$alignmentsHits[mask]] )
             #GenomicRanges::start(gr.lifted[mask]) <- abs( GenomicRanges::start(gr.lifted[mask]) + paf.aln$q.start[gr.lifted$alignmentsHits[mask]] )
             gr.lifted[mask] <- GenomicRanges::shift(gr.lifted[mask], shift = paf.aln$q.start[gr.lifted$alignmentsHits[mask]])
+            gr.lifted <- GenomicRanges::resize(gr.lifted, width = GenomicRanges::width(gr.lifted) + 1, fix = 'end')
           }
           ## Add index corresponding to original input ranges
           gr.lifted$idx <- gr.lifted$xHits
