@@ -58,22 +58,22 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
         stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
     }
 
-  ## Get desired sequence order ##
-  ## Based on user input
-  seq.ids <- unique(c(paf$q.name, paf$t.name))
-  if (is.character(seqnames.order)) {
-    if (all(seq.ids %in% seqnames.order)) {
-      seq.ord <- seqnames.order
+    ## Get desired sequence order ##
+    ## Based on user input
+    seq.ids <- unique(c(paf$q.name, paf$t.name))
+    if (is.character(seqnames.order)) {
+      if (all(seq.ids %in% seqnames.order)) {
+        seq.ord <- seqnames.order
+      } else {
+        #seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
+        message("Not all query and target IDs present in user defined 'seqnames.order', subsetting !!!")
+        ## Subset PAF to only those samples defined in seqnames.order
+        paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order,]
+        seq.ord <- seqnames.order
+      }
     } else {
-      #seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
-      message("Not all query and target IDs present in user defined 'seqnames.order', subsetting !!!")
-      ## Subset PAF to only those samples defined in seqnames.order
-      paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order,]
-      seq.ord <- seqnames.order
+      seq.ord <- NULL
     }
-  } else {
-    seq.ord <- NULL
-  }
 
     ## Break PAF at insertion/deletions defined in cigar string
     if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
@@ -153,21 +153,24 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     ## Keep subsequent comparisons only
     paf <- paf[abs(paf$y2 - paf$y1) == 1, ]
 
-    ## Flip query and target for alignments where query comes first
+    ## Flip query and target for alignments where query comes first in the defined order
     flipQT <- which(paf$y1 > paf$y2)
     # paf[flipQT,] <- transform(paf[flipQT,],
     #                           'q.name' = t.name, 'q.start' = t.start, 'q.end' = t.end,
     #                           't.name' = q.name, 't.start' = q.start, 't.end' = q.end,
     #                           'y1' = y2, 'y2' = y1)
     if (length(flipQT) > 0) {
-        paf.sub <- paf[flipQT, ]
-        paf[flipQT, ] <- transform(paf.sub,
+        paf.sub <- paf[flipQT,]
+        ## Flip query and target coordinates
+        paf[flipQT,] <- transform(
+            paf.sub,
             "q.name" = paf.sub$t.name, "q.start" = paf.sub$t.start, "q.end" = paf.sub$t.end,
             "t.name" = paf.sub$q.name, "t.start" = paf.sub$q.start, "t.end" = paf.sub$q.end,
-            "y1" = paf.sub$y2, "y2" = paf.sub$y1
-        )
+            "y1" = paf.sub$y2, "y2" = paf.sub$y1)
+        ## Switch insertion and deletion labels for flipped query and target alignments
+        paf$ID[flipQT] <- dplyr::recode(paf$ID[flipQT], 'INS' = 'DEL', 'DEL' = 'INS')
     }
-    paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], "___", paf$t.name[flipQT])
+    paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], "__", paf$t.name[flipQT])
 
     ## Translate paf alignments to plotting coordinates ##
     x <- c(rbind(paf$q.start, paf$t.start, paf$q.end, paf$t.end))
