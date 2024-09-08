@@ -16,7 +16,8 @@ plotGenome(
   chromosomes = NULL,
   chromosome.bar.width = grid::unit(2, "mm"),
   min.query.aligned.bp = NULL,
-  genomic.scale = "bp"
+  genomic.scale = "bp",
+  target.centromeres = NULL
 )
 }
 \arguments{
@@ -46,6 +47,8 @@ to color alignment directionality, `[default: color.palette <- c('-' = 'cornflow
 \item{min.query.aligned.bp}{Only contigs with this minimum number of aligned base pairs will be plotted.}
 
 \item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') `[default: 'bp']`.}
+
+\item{target.centromeres}{A \code{\link{GRanges-class}} object containing positions of centromeres in target chromosomes.}
 }
 \value{
 A \code{ggplot2} object.

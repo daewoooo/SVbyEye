@@ -3,17 +3,22 @@
 #' This function takes genome-wide alignments of de novo assembly to the reference genome PAF format
 #' and visualize the alignments with respect to all reference chromosomes in a single plot
 #'
-#' @param chromosomes User defined chromosomes (target sequence IDs) to be plotted. 
+#' @param chromosomes User defined chromosomes (target sequence IDs) to be plotted.
 #' @param chromosome.bar.width A width of chromosome/contig bars over each alignment `[Default : 2mm]`.
 #' @param min.query.aligned.bp Only contigs with this minimum number of aligned base pairs will be plotted.
+#' @param target.centromeres A \code{\link{GRanges-class}} object containing positions of centromeres in target chromosomes.
 #' @inheritParams breakPaf
 #' @inheritParams pafAlignmentToBins
 #' @inheritParams plotMiro
 #' @return A \code{ggplot2} object.
 #' @import ggplot2
 #' @importFrom grid unit
+#' @importFrom methods is
 #' @importFrom scales comma
+#' @importFrom randomcoloR randomColor
+#' @importFrom ggnewscale new_scale_fill new_scale_color
 #' @importFrom dplyr group_by filter reframe bind_rows
+#' @importFrom GenomeInfoDb keepSeqlevels
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -25,8 +30,8 @@
 #' ## Color by alignment directionality
 #' plotGenome(paf.table = paf.table, chromosome.bar.width = grid::unit(2, 'mm'),
 #'            min.query.aligned.bp = 5000000)
-#' 
-plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, perc.identity.breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9), chromosomes = NULL, chromosome.bar.width = grid::unit(2, "mm"), min.query.aligned.bp = NULL, genomic.scale = "bp") {
+#'
+plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", color.palette = NULL, perc.identity.breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9), chromosomes = NULL, chromosome.bar.width = grid::unit(2, "mm"), min.query.aligned.bp = NULL, genomic.scale = "bp", target.centromeres = NULL) {
   ## Check user input ##
   ## Make sure submitted paf.table has at least 12 mandatory fields
   if (ncol(paf.table) >= 12) {
@@ -38,17 +43,18 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
   } else {
     stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
   }
-  
+
   ## Subset to desired target sequences chromosomes
   targets <- unique(paf.table$t.name)
   if (!is.null(chromosomes)) {
     if (any(chromosomes %in% targets)) {
-      paf <- paf[paf$t.name %in% chromosomes,] 
+      paf <- paf[paf$t.name %in% chromosomes,]
     } else {
       warning("None of the sequence names defined in 'chromosomes' is present in submitted PAF file!!!")
+      chromosomes <- NULL
     }
   }
-  
+
   ## Keep only query sequences whose total alignment size is >= user defined threshold
   if (!is.null(min.query.aligned.bp)) {
     query.aln.summary <- paf %>% dplyr::group_by(.data$t.name, .data$q.name) %>% dplyr::reframe(total.bp = sum(.data$aln.len))
@@ -63,9 +69,9 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
       paf <- dplyr::bind_rows(paf.l)
     } else {
       stop("None of the query sequences meet the 'min.query.aligned.bp' threshold!!!")
-    }  
+    }
   }
-  
+
   ## Break PAF at insertion/deletions defined in cigar string
   if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
     paf.l <- breakPaf(paf.table = paf, min.deletion.size = min.deletion.size, min.insertion.size = min.insertion.size, collapse.mismatches = TRUE, report.sv = TRUE)
@@ -79,7 +85,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
       warning("Please specify 'min.deletion.size' and 'min.insertion.size' in order to make parameter 'highlight.sv' to work !!!")
     }
   }
-  
+
   ## Bin PAF alignments
   if (!is.null(binsize)) {
     if (binsize > 0) {
@@ -94,7 +100,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
   }
   ## Mark alignments ranges by 'M' (matches)
   paf$ID <- "M"
-  
+
   ## Add SVs to the alignment table
   if (!is.null(paf.svs)) {
     if (nrow(paf.svs) > 0) {
@@ -103,7 +109,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
       paf <- dplyr::bind_rows(paf, paf.svs)
     }
   }
-  
+
   ## Process by target sequence to get plotting coordinates
   paf.l <- split(paf, paf$t.name)
   max.group <- 0
@@ -126,7 +132,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
     coords.l[[i]] <- coords
   }
   coords <- dplyr::bind_rows(coords.l)
-  
+
   ## Order target.id
   if (requireNamespace("gtools", quietly = TRUE)) {
     coords$target.id <- factor(coords$target.id, levels = gtools::mixedsort(unique(coords$target.id)))
@@ -134,12 +140,12 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
     print("Install R package 'gtools' to have chromosome order alphanumerically!!!")
     coords$target.id <- factor(coords$target.id, levels = unique(coords$target.id))
   }
-  
+
   ## Get axis breaks and labels
   t.range <- range(coords$seq.pos[coords$seq.id == "target"])
   t.labels <- pretty(t.range)
   t.breaks <- t.labels
-  
+
   ## Convert axis labels to desired genomic scale
   if (genomic.scale == "kbp") {
     t.labels <- round(abs(t.labels) / 1000, digits = 3)
@@ -149,7 +155,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
     ## Make sure axis labels are always positive numbers
     t.labels <- abs(t.labels)
   }
-  
+
   ## Set default direction color
   if (!is.null(color.palette)) {
     if (all(c("+", "-") %in% names(color.palette))) {
@@ -165,7 +171,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
   } else {
     pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
   }
-  
+
   ## Plot alignments and color by a user defined variable
   if (color.by == "direction") {
     ## Make a plot
@@ -204,7 +210,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
       geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), alpha = 0.5, fill = "gray") +
       ggplot2::facet_grid(target.id ~ ., switch='y')
   }
-  
+
   ## Add indels
   if (!is.null(highlight.sv)) {
     if (nrow(coords[coords$ID != "M",]) > 0) {
@@ -224,7 +230,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
       message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
     }
   }
-  
+
   ## Add custom x and y scales
   suppressMessages(
     plt <- plt +
@@ -233,7 +239,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
       ggplot2::xlab(paste0("Genomic position (", genomic.scale, ")")) +
       ggplot2::ylab("")
   )
-  
+
   ## Add chromosome and contig bars ##
   coords.m <- coords[coords$ID == "M",]
   coords.m.l <- split(coords.m, coords.m$target.id)
@@ -241,14 +247,14 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
   for (i in seq_along(coords.m.l)) {
     sub.coords <- coords.m.l[[i]]
     ## Get query ranges
-    q.ranges <- sub.coords %>% dplyr::filter(seq.id == 'query') %>% 
+    q.ranges <- sub.coords %>% dplyr::filter(seq.id == 'query') %>%
       dplyr::group_by(seq.name) %>% dplyr::reframe(pos = range(.data$x))
     start <- q.ranges$pos[c(TRUE, FALSE)]
     end <- q.ranges$pos[c(FALSE, TRUE)]
     y <- 1
     q.ranges <- data.frame(start = start, end = end, y = y)
     ## Get target ranges
-    t.ranges <- sub.coords %>% dplyr::filter(seq.id == 'target') %>% 
+    t.ranges <- sub.coords %>% dplyr::filter(seq.id == 'target') %>%
       dplyr::group_by(seq.name) %>% dplyr::reframe(pos = range(.data$x))
     start <- t.ranges$pos[c(TRUE, FALSE)]
     end <- t.ranges$pos[c(FALSE, TRUE)]
@@ -276,7 +282,27 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
     geom_roundrect(data = plt.data[plt.data$y == 2 & (plt.data$width >= 100000 & plt.data$width < 1000000),], ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, fill = .data$target.id), rect_height = chromosome.bar.width, radius = chromosome.bar.width / 8) +
     geom_roundrect(data = plt.data[plt.data$y == 2 & plt.data$width < 100000,], ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, fill = .data$target.id), rect_height = chromosome.bar.width, radius = chromosome.bar.width * 0) +
     scale_fill_manual(values = target.pal, name='Target\nsequence')
-  
+
+  ## Add centromere positions
+  if (!is.null(target.centromeres)) {
+    if (methods::is(target.centromeres, 'GRanges')) {
+      if (!is.null(chromosomes)) {
+        cent.gr <- GenomeInfoDb::keepSeqlevels(target.centromeres, value = chromosomes, pruning.mode = 'coarse')
+      } else {
+        cent.gr <- target.centromeres
+      }
+      cent.gr <- range(cent.gr)
+    } else {
+      message("Parameter 'target.centromeres' has to be valid GRanges object!!!")
+    }
+    ## Add centromeres to the plot
+    cent.df <- as.data.frame(cent.gr)
+    cent.df$target.id <- cent.df$seqnames
+    plt <- plt + ggnewscale::new_scale_fill() +
+      geom_roundrect(data = cent.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = 2, fill = 'Centromere'), rect_height = chromosome.bar.width, radius = grid::unit(0, "mm"), inherit.aes = TRUE) +
+      scale_fill_manual(values = c('Centromere' = 'black'), name='Annotation')
+  }
+
   ## Set plot theme ##
   theme_genome <- ggplot2::theme(
     panel.grid.major = ggplot2::element_blank(),
@@ -290,7 +316,7 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
     strip.text.y.left = element_text(angle = 0)
   )
   plt <- plt + theme_genome
-  
+
   ## Return final plot
   return(plt)
 }
