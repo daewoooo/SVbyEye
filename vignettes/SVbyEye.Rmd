@@ -242,6 +242,40 @@ addAlignments(ggplot.obj = plt1, paf.table = paf.table[3,], fill.by = 'strand',
 addAlignments(ggplot.obj = plt1, paf.table = paf.table[4,], linetype = 'dashed')
 ```
 
+# Visualization of disjoint alignments
+
+On many occasions alignments over the repetitive regions are redundant at positions of segmental duplications. This results in overlapping alignments that often flank inverted regions. There is a function that allows to break PAF alignments at these overlaps and report them as individual alignemnts.
+
+```{r disjoinPAF, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Disjoin PAF at target coordinates
+disj.paf.table <- disjoinPafAlignments(paf.table = paf.table, coordinates = 'target')
+## Plot disjoined alignments
+plotMiro(paf.table = disj.paf.table, outline.alignments = TRUE)
+```
+
+Disjoined alignments can also be highlighted as shown earlier.
+
+```{r plotDisjoinPAF, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Plot disjoined alignments
+plt <- plotMiro(paf.table = disj.paf.table, outline.alignments = TRUE, add.alignment.arrows = FALSE)
+## Highlight disjoined alignments
+addAlignments(ggplot.obj = plt, paf.table = disj.paf.table[c(4:5),], linetype = 'dashed')
+```
+
+For convenience PAF alignments can also be disjoined at user defined region(s).
+
+```{r highlightDisjoinPAF, echo=TRUE, message=FALSE, fig.dim = c(10, 4), dpi=36}
+## Disjoin PAF at user defined coordinates
+disj.gr <- GenomicRanges::GRanges(seqnames = 'query.region',
+                                  ranges = IRanges::IRanges(start = 16300000, end = 16350000))
+disj.paf.table <- disjoinPafAlignments(paf.table = paf.table,
+                                       coordinates = 'query', disjoin.gr = disj.gr)
+## Plot disjoined alignments
+plt <- plotMiro(paf.table = disj.paf.table, outline.alignments = TRUE)
+## Highlight disjoined alignments
+addAlignments(ggplot.obj = plt, paf.table = disj.paf.table[4,], linetype = 'dashed')
+```
+
 ## Detection and visualization of insertions and deletions
 
 Another important feature of SVbyEye is its ability to break PAF alignments at the positions of insertions and deletions. This can by done by setting the minimum size of insertion and deletion to be reported and setting the way how those are marked within the plot, either outlined or filled. By default, deletions are colored by red and insertion by blue color. Deletions and insertions are defined as a sequence that is either missing or is extra within query with respect to the target.
@@ -358,7 +392,7 @@ plotAVA(paf.table = paf.table, color.by = "direction", min.deletion.size = 1000,
 
 # Visualization of self alignments
 
-There are cases when one wants to visualize regions that are homologous to each other we offer functions to visualize alignments of a given sequence to itself. Such self alignments are typical for segmental duplications that are paralogous sequences that have high identity.
+There are cases when one wants to visualize regions that are homologous to each other we offer functions to visualize alignments of a given sequence to itself. Such self alignments are typical for segmental duplications that are paralogous sequences with high sequence identity.
 
 ```{r self_aln, echo=TRUE, message=FALSE, fig.dim = c(10, 2), dpi=36}
 ## Get PAF to plot
@@ -430,11 +464,17 @@ dinuc.content <- fasta2nucleotideContent(fasta.file = fa.file, binsize = 5000, n
 addAnnotation(ggplot.obj = plt, annot.gr = dinuc.content, shape = 'rectangle', fill.by = 'AT_nuc.freq', coordinate.space = 'query', annotation.label = 'ATdinuc')
 ```
 
-
 # Narrowing alignment to a user defined target region
 
-# Create disjoint alignments
+There is a convenience function to narrow down PAF alignment into a user defined region by setting desired target coordinates defined as Genomic Ranges object or a set of coordinates in this format 'chromosome:start-end'. With this one can subset and cut PAF alignments at the exact target coordinates.
 
+```{r subsetPAF, echo=TRUE, message=FALSE}
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
+## Subset PAF
+subsetPafAlignments(paf.table = paf.table, target.region = "target.region:19050000-19200000")
+```
 
 \newpage
 
