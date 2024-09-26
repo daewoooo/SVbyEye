@@ -39,6 +39,9 @@ give the geom as \code{"point"}.
 \item{strength}{The proportion to move the control point along the y-axis
 towards the other end of the alignment polygon (Default : `0.5`).}
 }
+\value{
+Plotting coordinates
+}
 \description{
 `geom_miropeats()` draws miropeat style polygons between query to target genomic alignments.
 }

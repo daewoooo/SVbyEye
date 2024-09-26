@@ -24,6 +24,9 @@ geom_roundrect(
 
 \item{radius}{A `grid::unit()` object providing required curvature of rectangle edges. (Default : `1`mm).}
 }
+\value{
+Plotting coordinates
+}
 \description{
 `geom_roundrect()` draws ranges defined by `xmin` and `xmax` coordinates with rounded edges.
 }

@@ -15,6 +15,7 @@
 #' @importFrom GenomeInfoDb seqlengths seqnames seqlevels
 #' @importFrom GenomicRanges start end mcols
 #' @importFrom IRanges subsetByOverlaps
+#' @return A \code{\link{DNAStringSet-class}} object
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -51,15 +52,15 @@
 #' regions2FASTA(gr = sv.bps.gr, asm.fasta = query.fasta, expand = 10, index = 1)
 #'
 regions2FASTA <- function(gr, bsgenome = NULL, asm.fasta = NULL, index.field = NULL, expand = 0, fasta.save = NULL) {
-   ptm <- startTimedMessage("[regions2FASTA] Exporting GRanges object to FASTA")
+    ptm <- startTimedMessage("[regions2FASTA] Exporting GRanges object to FASTA")
 
-   ## Load BSgenome object
-   if (!methods::is(bsgenome, "BSgenome")) {
-       if (is.character(bsgenome)) {
-          warning("Parameter 'bsgenome' has to be a valid bsgenome class object !!!")
-       } else {
-          bsgenome <- NULL
-       }
+    ## Load BSgenome object
+    if (!methods::is(bsgenome, "BSgenome")) {
+        if (is.character(bsgenome)) {
+            warning("Parameter 'bsgenome' has to be a valid bsgenome class object !!!")
+        } else {
+            bsgenome <- NULL
+        }
     }
     ## Check if submitted fasta file is indexed
     if (!is.null(asm.fasta)) {

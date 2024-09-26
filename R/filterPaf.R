@@ -88,8 +88,8 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
         paf <- paf %>%
             dplyr::group_by(.data$seq.pair) %>%
             dplyr::mutate(align.n = dplyr::n())
-        paf <- paf[paf$align.n >= min.align.n,]
-        paf <- paf[,!colnames(paf) %in% c('seq.pair', 'align.n')]
+        paf <- paf[paf$align.n >= min.align.n, ]
+        paf <- paf[, !colnames(paf) %in% c("seq.pair", "align.n")]
     }
 
     ## Keep only specific sequence/region name
@@ -118,18 +118,18 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
 
     ## When processing self-alignments apply separate set of filters
     if (is.selfaln) {
-      ## Remove diagonals (self-alignments) with the same start and end position
-      paf <- paf[!(paf$q.start == paf$t.start & paf$q.end == paf$t.end),]
-      ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than the target start
-      paf <- paf[paf$q.start < paf$t.start,]
-      ## Filter by alignment distance [self-alignments only]
-      aln.dist <- pmin(paf$t.start, paf$t.end) - pmax(paf$q.start, paf$q.end)
-      if (min.selfaln.dist > 0) {
-        paf <- paf[aln.dist >= min.selfaln.dist,]
-      }
+        ## Remove diagonals (self-alignments) with the same start and end position
+        paf <- paf[!(paf$q.start == paf$t.start & paf$q.end == paf$t.end), ]
+        ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than the target start
+        paf <- paf[paf$q.start < paf$t.start, ]
+        ## Filter by alignment distance [self-alignments only]
+        aln.dist <- pmin(paf$t.start, paf$t.end) - pmax(paf$q.start, paf$q.end)
+        if (min.selfaln.dist > 0) {
+            paf <- paf[aln.dist >= min.selfaln.dist, ]
+        }
     } else {
-      ## Filter out self-alignments
-      paf <- paf[!(paf$q.name == paf$t.name), ]
+        ## Filter out self-alignments
+        paf <- paf[!(paf$q.name == paf$t.name), ]
     }
 
     stopTimedMessage(ptm)

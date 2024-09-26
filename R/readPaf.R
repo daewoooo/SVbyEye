@@ -9,6 +9,7 @@
 #' @importFrom stringr str_split
 #' @importFrom dplyr bind_cols
 #' @importFrom S4Vectors lapply
+#' @return A \code{tibble} of loaded PAF alignments
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -50,7 +51,7 @@ readPaf <- function(paf.file = NULL, include.paf.tags = TRUE, restrict.paf.tags 
         } else {
             fields <- stringr::str_split(paf.lines, "\t", 13)
         }
-        paf.fields <- S4Vectors::lapply(fields, "[", 1:12)
+        paf.fields <- S4Vectors::lapply(fields, "[", seq_len(12))
         field.names <- c("q.name", "q.len", "q.start", "q.end", "strand", "t.name", "t.len", "t.start", "t.end", "n.match", "aln.len", "mapq")
 
         for (i in seq_along(paf.fields)) {
@@ -80,6 +81,7 @@ readPaf <- function(paf.file = NULL, include.paf.tags = TRUE, restrict.paf.tags 
 #' @inheritParams readPaf
 #' @importFrom stringr str_split
 #' @importFrom dplyr bind_rows
+#' @return A \code{tibble} object
 #' @author David Porubsky
 #'
 processPafTags <- function(paf.tags, restrict.paf.tags = c("NM", "cg")) {

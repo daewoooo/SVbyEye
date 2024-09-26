@@ -45,7 +45,7 @@ Suggests:
   knitr,
   gtools,
   rmarkdown
-License: file LICENSE
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyLoad: yes
 VignetteBuilder: knitr

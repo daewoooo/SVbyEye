@@ -64,8 +64,10 @@ paf.file <- system.file("extdata", "PTR_test.paf", package = "SVbyEye")
 paf.table <- readPaf(paf.file = paf.file)
 ## Make a plot ##
 ## Color by alignment directionality
-plotGenome(paf.table = paf.table, chromosome.bar.width = grid::unit(2, 'mm'),
-           min.query.aligned.bp = 5000000)
+plotGenome(
+    paf.table = paf.table, chromosome.bar.width = grid::unit(2, "mm"),
+    min.query.aligned.bp = 5000000
+)
 
 }
 \author{

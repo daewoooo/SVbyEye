@@ -26,6 +26,9 @@ along with CIGAR string defined in 'cg' column.}
 \item{nucleotide.content}{A user defined nucleotides which total content will be counted in submitted `fasta.seq`.
 (e.g. to obtain 'GC' content set `nucleotide.content` to 'GC')}
 }
+\value{
+A \code{tibble} of PAF alignments with extra sequence content columns
+}
 \description{
 This function takes a PAF table and for each alignment (rows) will report counts and frequencies of user defined
 `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content).

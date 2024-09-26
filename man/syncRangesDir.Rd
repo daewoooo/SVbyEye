@@ -23,10 +23,13 @@ oriented ranges meet the user defined `majority.strand` orientation.
 }
 \examples{
 ## Define test genomic ranges to synchronize directionality ##
-test.gr <- GenomicRanges::GRanges(seqnames = 'test',
-ranges = IRanges::IRanges(start = c(1, 200, 300),
-                          end  = c(200, 300, 500)), strand = c('-', '+', '-')
-                          )
+test.gr <- GenomicRanges::GRanges(
+    seqnames = "test",
+    ranges = IRanges::IRanges(
+        start = c(1, 200, 300),
+        end = c(200, 300, 500)
+    ), strand = c("-", "+", "-")
+)
 syncRangesDir(ranges = test.gr, majority.strand = "+")
 
 }

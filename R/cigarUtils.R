@@ -57,14 +57,13 @@ parseCigarString <- function(cigar.str = NULL, coordinate.space = "reference") {
 #' cigar2ranges(paf.table = paf.table)
 #'
 cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.insertion.size = 50, min.deletion.size = 50, collapse.mismatches = TRUE) {
-
-  ## Check user input ##
-  ## Make sure PAF has at least 12 mandatory fields
-  if (ncol(paf.table) >= 12) {
-    paf <- paf.table
-  } else {
-    stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
-  }
+    ## Check user input ##
+    ## Make sure PAF has at least 12 mandatory fields
+    if (ncol(paf.table) >= 12) {
+        paf <- paf.table
+    } else {
+        stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
+    }
 
     ## Process alignments ##
     matches <- list()
@@ -72,16 +71,16 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
     insertions <- list()
     deletions <- list()
     for (i in seq_len(nrow(paf.table))) {
-        paf.aln <- paf.table[i,]
+        paf.aln <- paf.table[i, ]
         ## Parse CIGAR string ##
         cg.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = coordinate.space)
         ## Get sequence ID
         if (coordinate.space == "reference") {
-          seqname <- paf.aln$t.name
+            seqname <- paf.aln$t.name
         } else if (coordinate.space == "query") {
-          seqname <- paf.aln$q.name
+            seqname <- paf.aln$q.name
         } else {
-          stop("Parameter 'coordinate.space' can only be either 'reference' or 'query'!!!")
+            stop("Parameter 'coordinate.space' can only be either 'reference' or 'query'!!!")
         }
         ## Get cigar ranges and offset ranges based on alignment starting position
         if (length(cg.ranges$match) > 0) {
@@ -192,7 +191,7 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
 
     ## Add level to each separate alignment
     n.aln <- length(unique(matches.gr$aln.id))
-    matches.gr$level <- rep(rep(c(1:2), times = n.aln)[seq_len(n.aln)], times = rle(matches.gr$aln.id)$lengths)
+    matches.gr$level <- rep(rep(seq_len(2), times = n.aln)[seq_len(n.aln)], times = rle(matches.gr$aln.id)$lengths)
     insertions.gr$level <- matches.gr$level[match(insertions.gr$aln.id, matches.gr$aln.id)]
     deletions.gr$level <- matches.gr$level[match(deletions.gr$aln.id, matches.gr$aln.id)]
     mismatches.gr$level <- matches.gr$level[match(mismatches.gr$aln.id, matches.gr$aln.id)]

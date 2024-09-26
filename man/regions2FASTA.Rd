@@ -26,6 +26,9 @@ regions2FASTA(
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 }
+\value{
+A \code{\link{DNAStringSet-class}} object
+}
 \description{
 This function takes a \code{\link{GRanges-class}} object and extracts a genomic sequence
 from these regions either from an original range or a range expanded on each side by

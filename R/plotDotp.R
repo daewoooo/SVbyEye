@@ -114,7 +114,7 @@ simpledotplot <- function(coords.file = NULL, format = "nucmer", shape = "segmen
     }
     ## If there are more than one query sequence concatenate into a single string
     if (length(unique(coords.df$s1.id)) > 1) {
-      coords.df$s1.id <- paste(unique(coords.df$s1.id), collapse = ';')
+        coords.df$s1.id <- paste(unique(coords.df$s1.id), collapse = ";")
     }
 
     ## Data transformations ##

@@ -40,10 +40,10 @@
 #' ## Bin PAF alignments into user defined bin and color them by sequence identity (% of matched bases)
 #' plotAVA(paf.table = paf.table, binsize = 10000)
 #' ## Add annotation to all-versus-all alignments ##
-#' plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
-#' annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
+#' plt <- plotAVA(paf.table = paf.table, color.by = "direction")
+#' annot.file <- system.file("extdata", "test_annot_ava.RData", package = "SVbyEye")
 #' annot.gr <- get(load(annot.file))
-#' addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', y.label.id = 'ID')
+#' addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = "self", y.label.id = "ID")
 #'
 plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, min.insertion.size = NULL, highlight.sv = NULL, binsize = NULL, color.by = "direction", perc.identity.breaks = c(90, 95, 99, 99.5, 99.6, 99.7, 99.8, 99.9), color.palette = NULL, outline.alignments = FALSE) {
     ## Check user input
@@ -62,17 +62,17 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     ## Based on user input
     seq.ids <- unique(c(paf$q.name, paf$t.name))
     if (is.character(seqnames.order)) {
-      if (all(seq.ids %in% seqnames.order)) {
-        seq.ord <- seqnames.order
-      } else {
-        #seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
-        message("Not all query and target IDs present in user defined 'seqnames.order', subsetting !!!")
-        ## Subset PAF to only those samples defined in seqnames.order
-        paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order,]
-        seq.ord <- seqnames.order
-      }
+        if (all(seq.ids %in% seqnames.order)) {
+            seq.ord <- seqnames.order
+        } else {
+            # seq.ord <- c(seqnames.order, setdiff(seq.ids, seqnames.order))
+            message("Not all query and target IDs present in user defined 'seqnames.order', subsetting !!!")
+            ## Subset PAF to only those samples defined in seqnames.order
+            paf <- paf[paf$q.name %in% seqnames.order & paf$t.name %in% seqnames.order, ]
+            seq.ord <- seqnames.order
+        }
     } else {
-      seq.ord <- NULL
+        seq.ord <- NULL
     }
 
     ## Break PAF at insertion/deletions defined in cigar string
@@ -120,20 +120,20 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     ## Get unique alignment ID
     paf$seq.pair <- paste0(paf$q.name, "__", paf$t.name)
     if (is.null(seq.ord)) {
-      ## Order alignments based on the number of mismatches
-      # paf$NM <- S4Vectors::sapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('X'))[[1]]), USE.NAMES = FALSE)
-      paf$NM <- vapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("X"))[[1]]), USE.NAMES = FALSE, FUN.VALUE = numeric(1))
-      paf.ord <- paf %>%
-        dplyr::group_by(seq.pair) %>%
-        dplyr::summarise(n.nm = sum(.data$NM)) %>%
-        dplyr::arrange(.data$n.nm)
-      # paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(identity =  sum(n.match) / sum(aln.len)) %>% dplyr::arrange(identity)
-      paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, "__"))
-      ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
-      seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
+        ## Order alignments based on the number of mismatches
+        # paf$NM <- S4Vectors::sapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c('X'))[[1]]), USE.NAMES = FALSE)
+        paf$NM <- vapply(paf$cg, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("X"))[[1]]), USE.NAMES = FALSE, FUN.VALUE = numeric(1))
+        paf.ord <- paf %>%
+            dplyr::group_by(seq.pair) %>%
+            dplyr::summarise(n.nm = sum(.data$NM)) %>%
+            dplyr::arrange(.data$n.nm)
+        # paf.ord <- paf %>% dplyr::group_by(seq.pair) %>% dplyr::summarise(identity =  sum(n.match) / sum(aln.len)) %>% dplyr::arrange(identity)
+        paf.ord.pairs <- unlist(strsplit(paf.ord$seq.pair, "__"))
+        ## Assign level to seq.names ordered by number of matching bases in plus an minus orientation
+        seq.names <- paf.ord.pairs[!duplicated(paf.ord.pairs)]
     } else {
-      ## Assign user defined assembly order
-      seq.names <- seq.ord
+        ## Assign user defined assembly order
+        seq.names <- seq.ord
     }
 
     ## Order PAF
@@ -160,15 +160,16 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     #                           't.name' = q.name, 't.start' = q.start, 't.end' = q.end,
     #                           'y1' = y2, 'y2' = y1)
     if (length(flipQT) > 0) {
-        paf.sub <- paf[flipQT,]
+        paf.sub <- paf[flipQT, ]
         ## Flip query and target coordinates
-        paf[flipQT,] <- transform(
+        paf[flipQT, ] <- transform(
             paf.sub,
             "q.name" = paf.sub$t.name, "q.start" = paf.sub$t.start, "q.end" = paf.sub$t.end,
             "t.name" = paf.sub$q.name, "t.start" = paf.sub$q.start, "t.end" = paf.sub$q.end,
-            "y1" = paf.sub$y2, "y2" = paf.sub$y1)
+            "y1" = paf.sub$y2, "y2" = paf.sub$y1
+        )
         ## Switch insertion and deletion labels for flipped query and target alignments
-        paf$ID[flipQT] <- dplyr::recode(paf$ID[flipQT], 'INS' = 'DEL', 'DEL' = 'INS')
+        paf$ID[flipQT] <- dplyr::recode(paf$ID[flipQT], "INS" = "DEL", "DEL" = "INS")
     }
     paf$seq.pair[flipQT] <- paste0(paf$q.name[flipQT], "__", paf$t.name[flipQT])
 

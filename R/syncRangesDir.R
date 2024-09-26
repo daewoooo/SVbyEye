@@ -14,10 +14,13 @@
 #' @export
 #' @examples
 #' ## Define test genomic ranges to synchronize directionality ##
-#' test.gr <- GenomicRanges::GRanges(seqnames = 'test',
-#' ranges = IRanges::IRanges(start = c(1, 200, 300),
-#'                           end  = c(200, 300, 500)), strand = c('-', '+', '-')
-#'                           )
+#' test.gr <- GenomicRanges::GRanges(
+#'     seqnames = "test",
+#'     ranges = IRanges::IRanges(
+#'         start = c(1, 200, 300),
+#'         end = c(200, 300, 500)
+#'     ), strand = c("-", "+", "-")
+#' )
 #' syncRangesDir(ranges = test.gr, majority.strand = "+")
 #'
 syncRangesDir <- function(ranges, majority.strand = "+", strand.only = FALSE) {

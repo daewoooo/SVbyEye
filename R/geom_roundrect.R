@@ -23,6 +23,7 @@
 #' @param mapping,data,stat,position,na.rm,show.legend,inherit.aes,... As is standard for ggplot2.
 #' @param rect_height A `grid::unit()` object providing the height of the rectangle.  (Default : `3`mm).
 #' @param radius A `grid::unit()` object providing required curvature of rectangle edges. (Default : `1`mm).
+#' @return Plotting coordinates
 #' @author David Porubsky
 #' @export
 #' @examples

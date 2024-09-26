@@ -53,7 +53,7 @@ narrowed down.}
 \item{genomic.scale}{Report genomic coordinates in base pairs ('bp') kilobase pairs ('kbp') or megabase pairs ('Mbp') `[default: 'bp']`.}
 }
 \value{
-A \code{ggplot2} object.
+A \code{ggplot2} object
 }
 \description{
 This function takes PAF output file from minimap2 alignments, and visualize the alignments

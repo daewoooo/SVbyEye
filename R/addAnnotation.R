@@ -86,17 +86,24 @@
 #'
 #' ## Add gene-like annotation
 #' test.gr <- GenomicRanges::GRanges(
-#'                seqnames = 'target.region',
-#'                ranges = IRanges::IRanges(start = c(19000000,19030000,19070000),
-#'                                          end = c(19010000,19050000,19090000)),
-#'                                          ID = 'gene1')
-#' addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
-#'               shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
-#'               fill.by = 'ID')
+#'     seqnames = "target.region",
+#'     ranges = IRanges::IRanges(
+#'         start = c(19000000, 19030000, 19070000),
+#'         end = c(19010000, 19050000, 19090000)
+#'     ),
+#'     ID = "gene1"
+#' )
+#' addAnnotation(
+#'     ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+#'     shape = "rectangle", annotation.group = "ID", offset.annotation = TRUE,
+#'     fill.by = "ID"
+#' )
 #' ## Add gene names
-#' addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
-#'               shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
-#'               fill.by = 'ID', label.by = 'ID')
+#' addAnnotation(
+#'     ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+#'     shape = "rectangle", annotation.group = "ID", offset.annotation = TRUE,
+#'     fill.by = "ID", label.by = "ID"
+#' )
 #'
 addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead", fill.by = NULL, label.by = NULL, color.palette = NULL, max.colors = 20, coordinate.space = "target", annotation.group = NULL, annotation.level = 0.05, offset.annotation = FALSE, annotation.label = NULL, y.label.id = NULL) {
     ## Check user input ##
@@ -104,73 +111,87 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
 
     ## Get plotted data
     gg.data <- ggplot.obj$data
-    if (coordinate.space != 'self') {
-      target.id <- unique(gg.data$seq.name[gg.data$seq.id == "target"])
-      query.id <- unique(gg.data$seq.name[gg.data$seq.id == "query"])
+    if (coordinate.space != "self") {
+        target.id <- unique(gg.data$seq.name[gg.data$seq.id == "target"])
+        query.id <- unique(gg.data$seq.name[gg.data$seq.id == "query"])
     }
 
     ## Get x-axis limits (expected to be always continuous)
     ## For x-axis range also consider user defined cartesian coordinates for the target region
-    if (coordinate.space == 'target') {
-      #xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
-      xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"],
-                      ggplot2::layer_scales(ggplot.obj)$x$limits))
+    if (coordinate.space == "target") {
+        # xlim <- range(c(gg.data$seq.pos[gg.data$seq.id == "target"], ggplot.obj$coordinates$limits$x))
+        xlim <- range(c(
+            gg.data$seq.pos[gg.data$seq.id == "target"],
+            ggplot2::layer_scales(ggplot.obj)$x$limits
+        ))
     } else {
-      #xlim <- ggplot.obj$coordinates$limits$x
-      #xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
-      xlim <- range( ggplot2::layer_scales(ggplot.obj)$x$range$range,
-                     ggplot2::layer_scales(ggplot.obj)$x$limits)
+        # xlim <- ggplot.obj$coordinates$limits$x
+        # xlim <- ggplot2::layer_scales(ggplot.obj)$x$range$range
+        xlim <- range(
+            ggplot2::layer_scales(ggplot.obj)$x$range$range,
+            ggplot2::layer_scales(ggplot.obj)$x$limits
+        )
     }
 
     ## Get y-axis limits
     if ("ScaleContinuous" %in% class(ggplot2::layer_scales(ggplot.obj)$y)) { ## To finish!!!
-      ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
-      ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
-      ybreaks <- ggplot2::layer_scales(ggplot.obj)$y$breaks
-      if (length(ylabels) == 0) {ylabels <- ''}
-      if (length(ybreaks) == 0) {ybreaks <- 0}
-      #ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
-      ylabels <- ylabels[order(ybreaks)]
-      ybreaks <- sort(ybreaks) ## [Testing]
-      names(ybreaks) <- ylabels
+        ylim <- ggplot2::layer_scales(ggplot.obj)$y$range$range
+        ylabels <- ggplot2::layer_scales(ggplot.obj)$y$labels
+        ybreaks <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+        if (length(ylabels) == 0) {
+            ylabels <- ""
+        }
+        if (length(ybreaks) == 0) {
+            ybreaks <- 0
+        }
+        # ylabels.ord <- ggplot2::layer_scales(ggplot.obj)$y$breaks
+        ylabels <- ylabels[order(ybreaks)]
+        ybreaks <- sort(ybreaks) ## [Testing]
+        names(ybreaks) <- ylabels
     } else {
-      stop("'addAnnotation' function works only for ggplot2 objects with continuous scale for both x and y-axis !!!")
+        stop("'addAnnotation' function works only for ggplot2 objects with continuous scale for both x and y-axis !!!")
     }
 
     ## Define the offset value to be the user defined fraction of the y-axis range [default: 0.05]
     offset <- diff(ylim) * annotation.level
 
     ## Subset annotation ranges to plot specific genomic positions
-    if ('pos.genomic' %in% colnames(gg.data)) {
-      limits <- gg.data %>% dplyr::group_by(.data$seq.id, .data$seq.name) %>% dplyr::reframe(gen.range = range(.data$pos.genomic))
-      limits.l <- split(limits, limits$seq.name)
-      annot.l <- list()
-      for (i in seq_along(limits.l)) {
-        lims <- limits.l[[i]]
-        lims.gr <- GenomicRanges::GRanges(seqnames = unique(lims$seq.name),
-                                          ranges = IRanges::IRanges(start = lims$gen.range[1], end = lims$gen.range[2]))
-        seq.id <- unique(lims$seq.name)
-        if (seq.id %in% as.character(GenomeInfoDb::seqnames(annot.gr))) {
-          gr <- annot.gr[GenomeInfoDb::seqnames(annot.gr) == seq.id]
-          #gr <- gr[start(gr) > min(lims$gen.range) & end(gr) < max(lims$gen.range)]
-          #gr <- gr[start(gr) >= min(lims$gen.range) & end(gr) <= max(lims$gen.range)]
-          gr <- subsetByOverlaps(gr, lims.gr) ## More permissive subsetting of annotation ranges!!!
-          start(gr)[start(gr) < min(lims$gen.range)] <- min(lims$gen.range)
-          end(gr)[end(gr) > max(lims$gen.range)] <- max(lims$gen.range)
-          annot.l[[length(annot.l) + 1]] <- gr
+    if ("pos.genomic" %in% colnames(gg.data)) {
+        limits <- gg.data %>%
+            dplyr::group_by(.data$seq.id, .data$seq.name) %>%
+            dplyr::reframe(gen.range = range(.data$pos.genomic))
+        limits.l <- split(limits, limits$seq.name)
+        annot.l <- list()
+        for (i in seq_along(limits.l)) {
+            lims <- limits.l[[i]]
+            lims.gr <- GenomicRanges::GRanges(
+                seqnames = unique(lims$seq.name),
+                ranges = IRanges::IRanges(start = lims$gen.range[1], end = lims$gen.range[2])
+            )
+            seq.id <- unique(lims$seq.name)
+            if (seq.id %in% as.character(GenomeInfoDb::seqnames(annot.gr))) {
+                gr <- annot.gr[GenomeInfoDb::seqnames(annot.gr) == seq.id]
+                # gr <- gr[start(gr) > min(lims$gen.range) & end(gr) < max(lims$gen.range)]
+                # gr <- gr[start(gr) >= min(lims$gen.range) & end(gr) <= max(lims$gen.range)]
+                gr <- subsetByOverlaps(gr, lims.gr) ## More permissive subsetting of annotation ranges!!!
+                start(gr)[start(gr) < min(lims$gen.range)] <- min(lims$gen.range)
+                end(gr)[end(gr) > max(lims$gen.range)] <- max(lims$gen.range)
+                annot.l[[length(annot.l) + 1]] <- gr
+            }
         }
-      }
-      annot.gr <- do.call(c, annot.l)
+        annot.gr <- do.call(c, annot.l)
     }
 
     ## Shift genomic positions in case multiple query or target sequences have been concatenated
-    if ('pos.shift' %in% colnames(gg.data)) {
-      pos.shifts <- gg.data %>% dplyr::group_by(.data$seq.id, .data$seq.name) %>% dplyr::summarize(pos.shift = unique(.data$pos.shift), .groups = 'drop')
-      #GenomicRanges::start(annot.gr) <- GenomicRanges::start(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
-      #GenomicRanges::end(annot.gr) <- GenomicRanges::end(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
-      new.start <- GenomicRanges::start(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
-      new.end <- GenomicRanges::end(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
-      ranges(annot.gr) <- IRanges::IRanges(start = new.start, end = new.end)
+    if ("pos.shift" %in% colnames(gg.data)) {
+        pos.shifts <- gg.data %>%
+            dplyr::group_by(.data$seq.id, .data$seq.name) %>%
+            dplyr::summarize(pos.shift = unique(.data$pos.shift), .groups = "drop")
+        # GenomicRanges::start(annot.gr) <- GenomicRanges::start(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+        # GenomicRanges::end(annot.gr) <- GenomicRanges::end(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+        new.start <- GenomicRanges::start(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+        new.end <- GenomicRanges::end(annot.gr) + pos.shifts$pos.shift[match(as.character(GenomeInfoDb::seqnames(annot.gr)), pos.shifts$seq.name)]
+        ranges(annot.gr) <- IRanges::IRanges(start = new.start, end = new.end)
     }
 
     ## Get query and target coordinate ranges
@@ -209,13 +230,13 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
         if (length(annot.gr) > 0) {
             ## Offset overlapping annotation ranges up&down based on start position ##
             if (offset.annotation) {
-                #annot.gr <- GenomicRanges::sort(annot.gr, ignore.strand = TRUE)
+                # annot.gr <- GenomicRanges::sort(annot.gr, ignore.strand = TRUE)
                 if (coordinate.space == "target") {
-                    #y.offset <- rep(y.offset + c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
-                    y.offset <- getAnnotationLevels(annot.gr = annot.gr, offset = y.offset, annotation.group = annotation.group, direction = 'positive')
+                    # y.offset <- rep(y.offset + c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
+                    y.offset <- getAnnotationLevels(annot.gr = annot.gr, offset = y.offset, annotation.group = annotation.group, direction = "positive")
                 } else if (coordinate.space == "query" | coordinate.space == "self") {
-                    #y.offset <- rep(y.offset - c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
-                    y.offset <- getAnnotationLevels(annot.gr = annot.gr, offset = y.offset, annotation.group = annotation.group, direction = 'negative')
+                    # y.offset <- rep(y.offset - c(0, offset), times = ceiling(length(annot.gr) / 2))[seq_along(annot.gr)]
+                    y.offset <- getAnnotationLevels(annot.gr = annot.gr, offset = y.offset, annotation.group = annotation.group, direction = "negative")
                 }
             }
 
@@ -227,8 +248,8 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
             ## Match y-axis labels if to user defined ID column via 'y.label.id' parameter
             if (!is.null(y.label.id)) {
                 if (y.label.id %in% colnames(annot.df)) {
-                        #annot.df$y.offset <- match(annot.df[, eval(y.label.id)], ylabels) + offset ## Revert to if broken
-                        annot.df$y.offset <- ybreaks[match(annot.df[, eval(y.label.id)], names(ybreaks))] + offset
+                    # annot.df$y.offset <- match(annot.df[, eval(y.label.id)], ylabels) + offset ## Revert to if broken
+                    annot.df$y.offset <- ybreaks[match(annot.df[, eval(y.label.id)], names(ybreaks))] + offset
                 } else {
                     warning("User defined 'y.label.id' is not a valid metadata column in 'annot.gr', skipping !!!")
                     annot.df$y.offset <- y.offset
@@ -245,7 +266,7 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                     if (is.numeric(annot.df[, eval(fill.by)])) {
                         pal <- wesanderson::wes_palette("Zissou1", 100, type = "continuous")
                         col.scale <- "gradient"
-                    ## Define discrete color scale
+                        ## Define discrete color scale
                     } else {
                         discrete.levels <- unique(annot.df[, eval(fill.by)])
                         n.uniq <- length(discrete.levels)
@@ -278,23 +299,23 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
 
             ## Connect annotation ranges based on group defined in 'annotation.group' ##
             if (!is.null(annotation.group)) {
-              if (annotation.group %in% colnames(annot.df)) {
-                link.df <- annot.df %>%
-                  dplyr::group_by(dplyr::across(dplyr::all_of(annotation.group))) %>%
-                  dplyr::summarise(
-                    seqnames = unique(seqnames),
-                    start = min(start),
-                    end = max(end),
-                    y.offset = unique(y.offset)
-                  )
+                if (annotation.group %in% colnames(annot.df)) {
+                    link.df <- annot.df %>%
+                        dplyr::group_by(dplyr::across(dplyr::all_of(annotation.group))) %>%
+                        dplyr::summarise(
+                            seqnames = unique(seqnames),
+                            start = min(start),
+                            end = max(end),
+                            y.offset = unique(y.offset)
+                        )
 
-                plt <- ggplot.obj +
-                  ggplot2::geom_segment(data = link.df, ggplot2::aes(x = start, xend = end, y = y.offset, yend = y.offset))
-              } else {
-                annotation.group <- NULL
-              }
+                    plt <- ggplot.obj +
+                        ggplot2::geom_segment(data = link.df, ggplot2::aes(x = start, xend = end, y = y.offset, yend = y.offset))
+                } else {
+                    annotation.group <- NULL
+                }
             } else {
-              plt <- ggplot.obj
+                plt <- ggplot.obj
             }
 
             ## Add annotation to the ggplot object ##
@@ -322,25 +343,26 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
 
             ## Add annotation label above each annotation range ##
             if (!is.null(label.by)) {
-              if (label.by %in% colnames(annot.df)) {
-                if (!is.null(annotation.group)) {
-                  label.df <- annot.df %>%
-                    dplyr::group_by(dplyr::across(dplyr::all_of(annotation.group))) %>%
-                    dplyr::summarise(
-                      seqnames = unique(seqnames),
-                      start = min(start),
-                      end = max(end),
-                      y.offset = unique(y.offset),
-                      label = unique(.data[[label.by]])) %>%
-                    dplyr::mutate(midpoint = start + ((end - start) / 2))
-                } else {
-                  label.df <- annot.df %>%
-                    dplyr::mutate(midpoint = start + ((end - start) / 2), label = .data[[label.by]])
+                if (label.by %in% colnames(annot.df)) {
+                    if (!is.null(annotation.group)) {
+                        label.df <- annot.df %>%
+                            dplyr::group_by(dplyr::across(dplyr::all_of(annotation.group))) %>%
+                            dplyr::summarise(
+                                seqnames = unique(seqnames),
+                                start = min(start),
+                                end = max(end),
+                                y.offset = unique(y.offset),
+                                label = unique(.data[[label.by]])
+                            ) %>%
+                            dplyr::mutate(midpoint = start + ((end - start) / 2))
+                    } else {
+                        label.df <- annot.df %>%
+                            dplyr::mutate(midpoint = start + ((end - start) / 2), label = .data[[label.by]])
+                    }
+                    ## Add label to the plot
+                    plt <- plt +
+                        ggplot2::geom_text(data = label.df, ggplot2::aes(x = .data[["midpoint"]], y = y.offset + 0.025, label = .data[["label"]]))
                 }
-                ## Add label to the plot
-                plt <- plt +
-                  ggplot2::geom_text(data = label.df, ggplot2::aes(x = .data[['midpoint']], y = y.offset + 0.025, label = .data[['label']]))
-              }
             }
 
             ## Add y-label to annotation track if defined
@@ -349,16 +371,18 @@ addAnnotation <- function(ggplot.obj = NULL, annot.gr = NULL, shape = "arrowhead
                     annot.yrange <- range(annot.df$y.offset)
                     annot.break <- annot.yrange[1] + (diff(annot.yrange) / 2)
                     if (coordinate.space == "target") {
-                      y.breaks <- c(ybreaks, annot.break)
-                      y.labels <- c(ylabels, annotation.label)
+                        y.breaks <- c(ybreaks, annot.break)
+                        y.labels <- c(ylabels, annotation.label)
                     } else {
-                      y.breaks <- c(annot.break, ybreaks)
-                      y.labels <- c(annotation.label, ylabels)
+                        y.breaks <- c(annot.break, ybreaks)
+                        y.labels <- c(annotation.label, ylabels)
                     }
                     suppressMessages(
                         plt <- plt + ggplot2::scale_y_continuous(breaks = y.breaks, labels = y.labels) +
-                          ggplot2::theme(axis.text.y = ggplot2::element_text(),
-                                         axis.ticks.y = ggplot2::element_line())
+                            ggplot2::theme(
+                                axis.text.y = ggplot2::element_text(),
+                                axis.ticks.y = ggplot2::element_line()
+                            )
                     )
                 }
             }

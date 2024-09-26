@@ -44,7 +44,7 @@ q2t <- function(x, q.range, t.range) {
 #'
 #' @param gr A \code{\link{GRanges-class}} object with one or more ranges to be mirrored/reflected given the sequence length.
 #' @param seqlength  A \code{numeric} value containing the sequence length from where the submitted ranges originate from.
-#' @importFrom GenomeInfoDb seqlengths
+#' @importFrom GenomeInfoDb seqlengths seqnames
 #' @importFrom GenomicRanges GRanges strand start end
 #' @importFrom IRanges IRanges
 #' @return A \code{\link{GRanges-class}} object with mirrored coordinates.
@@ -66,7 +66,7 @@ mirrorRanges <- function(gr, seqlength = NULL) {
     # starts <- gr.len - cumsum(width(gr))
     # ends <- starts + width(gr)
     new.gr <- GenomicRanges::GRanges(
-        seqnames = seqnames(gr),
+        seqnames = GenomeInfoDb::seqnames(gr),
         ranges = IRanges::IRanges(start = starts, end = ends),
         strand = GenomicRanges::strand(gr)
     )
@@ -125,33 +125,33 @@ getColorScheme <- function(data.table = NULL, value.field = NULL, breaks = NULL)
 
     ## Define continuous color scale ##
     if (is.numeric(data.table[, eval(value.field), drop = TRUE])) {
-      vals <- data.table %>% dplyr::pull(eval(value.field))
-      ## Define break ranges ##
-      if (!is.null(breaks)) {
-          levels <- c(
-              paste0("<", breaks[1]),
-              paste(breaks[-length(breaks)], breaks[-1], sep = ":"),
-              paste0(">", breaks[length(breaks)])
-          )
-          ## Get break intervals
-          ids <- findInterval(vals, vec = breaks) + 1
-          data.table$col.levels <- factor(levels[ids], levels = levels)
-          colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = "continuous")
-          colors <- stats::setNames(as.list(colors), levels)
-      } else {
-          ## If breaks are not defined split data into 5 chunks
-          data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
-          colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = "continuous")
-          colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
-      }
+        vals <- data.table %>% dplyr::pull(eval(value.field))
+        ## Define break ranges ##
+        if (!is.null(breaks)) {
+            levels <- c(
+                paste0("<", breaks[1]),
+                paste(breaks[-length(breaks)], breaks[-1], sep = ":"),
+                paste0(">", breaks[length(breaks)])
+            )
+            ## Get break intervals
+            ids <- findInterval(vals, vec = breaks) + 1
+            data.table$col.levels <- factor(levels[ids], levels = levels)
+            colors <- wesanderson::wes_palette(name = "Zissou1", n = length(levels), type = "continuous")
+            colors <- stats::setNames(as.list(colors), levels)
+        } else {
+            ## If breaks are not defined split data into 5 chunks
+            data.table$col.levels <- ggplot2::cut_number(vals, n = 5)
+            colors <- wesanderson::wes_palette(name = "Zissou1", n = 5, type = "continuous")
+            colors <- stats::setNames(as.list(colors), levels(data.table$col.levels))
+        }
     }
 
     ## Define discrete color scale ##
     if (is.character(data.table[, eval(value.field), drop = TRUE])) {
-      discrete.levels <- unique(data.table[, eval(value.field), drop = TRUE])
-      n.uniq <- length(discrete.levels)
-      colors <- randomcoloR::randomColor(count = n.uniq)
-      colors <- stats::setNames(as.list(colors), discrete.levels)
+        discrete.levels <- unique(data.table[, eval(value.field), drop = TRUE])
+        n.uniq <- length(discrete.levels)
+        colors <- randomcoloR::randomColor(count = n.uniq)
+        colors <- stats::setNames(as.list(colors), discrete.levels)
     }
     ## Return color scheme
     return(list(data = data.table, colors = colors))
@@ -235,42 +235,46 @@ collapsePaf <- function(paf.table, collapse.by = NULL) {
 #' @export
 #' @examples
 #' ## Define random set of ranges grouped by gene name
-#' test.gr1 <- GenomicRanges::GRanges(seqnames = 'target.region',
-#'                 ranges = IRanges::IRanges(start = c(19000000, 19030000, 19070000),
-#'                                           end = c(19010000, 19050000, 19090000)))
-#' test.gr1$ID <- 'gene1'
+#' test.gr1 <- GenomicRanges::GRanges(
+#'     seqnames = "target.region",
+#'     ranges = IRanges::IRanges(
+#'         start = c(19000000, 19030000, 19070000),
+#'         end = c(19010000, 19050000, 19090000)
+#'     )
+#' )
+#' test.gr1$ID <- "gene1"
 #' test.gr2 <- GenomicRanges::shift(test.gr1, shift = 10000)
-#' test.gr2$ID <- 'gene2'
+#' test.gr2$ID <- "gene2"
 #' test.gr3 <- GenomicRanges::shift(test.gr1, shift = 90000)
-#' test.gr3$ID <- 'gene3'
+#' test.gr3$ID <- "gene3"
 #' test.gr <- c(test.gr1, test.gr2, test.gr3)
 #' ## Obtain unique annotation levels grouped by ID
-#' getAnnotationLevels(annot.gr = test.gr, offset = 1, annotation.group = 'ID')
+#' getAnnotationLevels(annot.gr = test.gr, offset = 1, annotation.group = "ID")
 #'
-getAnnotationLevels <- function(annot.gr = NULL, offset = NULL, annotation.group = NULL, direction = 'positive') {
-  if (!is.null(annotation.group)) {
-    if (annotation.group %in% names(GenomicRanges::mcols(annot.gr))) {
-      group.seqnames <- unlist(GenomicRanges::mcols(annot.gr[,annotation.group]))
-      ranges.gr <- GenomicRanges::GRanges(seqnames =  group.seqnames, ranges = IRanges::ranges(annot.gr))
-      ranges.gr <- range(ranges.gr)
-      ranges.gr$levels <- GenomicRanges::disjointBins(IRanges::ranges(ranges.gr))
-      levels <- ranges.gr$levels[match(group.seqnames, as.character(GenomeInfoDb::seqnames(ranges.gr)))]
+getAnnotationLevels <- function(annot.gr = NULL, offset = NULL, annotation.group = NULL, direction = "positive") {
+    if (!is.null(annotation.group)) {
+        if (annotation.group %in% names(GenomicRanges::mcols(annot.gr))) {
+            group.seqnames <- unlist(GenomicRanges::mcols(annot.gr[, annotation.group]))
+            ranges.gr <- GenomicRanges::GRanges(seqnames = group.seqnames, ranges = IRanges::ranges(annot.gr))
+            ranges.gr <- range(ranges.gr)
+            ranges.gr$levels <- GenomicRanges::disjointBins(IRanges::ranges(ranges.gr))
+            levels <- ranges.gr$levels[match(group.seqnames, as.character(GenomeInfoDb::seqnames(ranges.gr)))]
+        }
+    } else {
+        levels <- GenomicRanges::disjointBins(annot.gr)
     }
-  } else {
-    levels <- GenomicRanges::disjointBins(annot.gr)
-  }
-  ## Define offsets
-  n.levels <- length(unique(levels))
-  if (direction == 'positive') {
-    annot.levels <- seq(from=offset, by = 0.05, length.out = n.levels)
-  } else if (direction == 'negative') {
-    annot.levels <- seq(from=offset, by = 0.05, length.out = n.levels)
-  } else {
-    warning("Parameter 'direction' can only take values 'positive' or 'negative', using default value !!!")
-    annot.levels <- seq(from=offset, by = 0.05, length.out = n.levels)
-  }
-  annot.levels <- annot.levels[levels]
-  return(annot.levels)
+    ## Define offsets
+    n.levels <- length(unique(levels))
+    if (direction == "positive") {
+        annot.levels <- seq(from = offset, by = 0.05, length.out = n.levels)
+    } else if (direction == "negative") {
+        annot.levels <- seq(from = offset, by = 0.05, length.out = n.levels)
+    } else {
+        warning("Parameter 'direction' can only take values 'positive' or 'negative', using default value !!!")
+        annot.levels <- seq(from = offset, by = 0.05, length.out = n.levels)
+    }
+    annot.levels <- annot.levels[levels]
+    return(annot.levels)
 }
 
 
@@ -290,60 +294,62 @@ getAnnotationLevels <- function(annot.gr = NULL, offset = NULL, annotation.group
 #' ## Read in PAF
 #' paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 #' ## Filter PAF
-#' paf.table <- paf.table[paf.table$t.name == 'HG03453_2',]
+#' paf.table <- paf.table[paf.table$t.name == "HG03453_2", ]
 #' ## Define shift in genomic coordiantes to get continuous scale
 #' paf2continuousScale(paf.table)
 #'
 paf2continuousScale <- function(paf.table) {
-  ## Make sure PAF has at least 12 mandatory fields
-  if (ncol(paf.table) >= 12) {
-    paf <- paf.table
-  } else {
-    stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
-  }
+    ## Make sure PAF has at least 12 mandatory fields
+    if (ncol(paf.table) >= 12) {
+        paf <- paf.table
+    } else {
+        stop("Submitted PAF alignments do not contain a minimum of 12 mandatory fields, see PAF file format definition !!!")
+    }
 
-  ## Check if there more than one unique query sequences
-  if (length(unique(paf$q.name)) > 1) {
-    ## If yes make sure query coordinates are continuous
-    q.limits <- paf %>%
-      dplyr::arrange(t.start) %>% ## Make sure query coordinates are sorted by target coordinates
-      dplyr::mutate(q.name = factor(q.name, levels = unique(q.name))) %>%
-      dplyr::group_by(q.name) %>% dplyr::reframe(range = range(c(q.start, q.end)))
-    q.gaps <- diff(q.limits$range) * -1
-    q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0] + 1)
-    q.shift <- cumsum(q.shift)
-    names(q.shift) <- unique(q.limits$q.name)
-    #paf$q.genomic.start <- paf$q.start
-    #paf$q.genomic.end <- paf$q.end
-    #paf$q.start <- paf$q.start + q.shift[paf$q.name]
-    #paf$q.end <- paf$q.end + q.shift[paf$q.name]
-    paf$q.shift <- q.shift[paf$q.name]
-  } else {
-    paf$q.shift <- 0
-    #paf$q.genomic.start <- paf$q.start
-    #paf$q.genomic.end <- paf$q.end
-  }
+    ## Check if there more than one unique query sequences
+    if (length(unique(paf$q.name)) > 1) {
+        ## If yes make sure query coordinates are continuous
+        q.limits <- paf %>%
+            dplyr::arrange(t.start) %>% ## Make sure query coordinates are sorted by target coordinates
+            dplyr::mutate(q.name = factor(q.name, levels = unique(q.name))) %>%
+            dplyr::group_by(q.name) %>%
+            dplyr::reframe(range = range(c(q.start, q.end)))
+        q.gaps <- diff(q.limits$range) * -1
+        q.shift <- c(0, q.gaps[seq(length(q.gaps)) %% 2 == 0] + 1)
+        q.shift <- cumsum(q.shift)
+        names(q.shift) <- unique(q.limits$q.name)
+        # paf$q.genomic.start <- paf$q.start
+        # paf$q.genomic.end <- paf$q.end
+        # paf$q.start <- paf$q.start + q.shift[paf$q.name]
+        # paf$q.end <- paf$q.end + q.shift[paf$q.name]
+        paf$q.shift <- q.shift[paf$q.name]
+    } else {
+        paf$q.shift <- 0
+        # paf$q.genomic.start <- paf$q.start
+        # paf$q.genomic.end <- paf$q.end
+    }
 
-  ## Check if there more than one unique target sequences
-  if (length(unique(paf$t.name)) > 1) {
-    ## If yes make sure target coordinates are continuous
-    t.limits <- paf %>%
-      dplyr::arrange(q.start) %>% ## Make sure query coordinates are sorted by query coordinates
-      dplyr::mutate(t.name = factor(t.name, levels = unique(t.name))) %>%
-      dplyr::group_by(t.name) %>% dplyr::reframe(range = range(c(t.start, t.end)))
-    t.gaps <- diff(t.limits$range) * -1
-    t.shift <- c(0, t.gaps[seq(length(t.gaps)) %% 2 == 0] + 1)
-    t.shift <- cumsum(t.shift)
-    names(t.shift) <- unique(t.limits$t.name)
-    #paf$t.genomic.start <- paf$t.start
-    #paf$t.genomic.end <- paf$t.end
-    #paf$t.start <- paf$t.start + t.shift[paf$t.name]
-    #paf$t.end <- paf$t.end + t.shift[paf$t.name]
-    paf$t.shift <- t.shift[paf$t.name]
-  } else {
-    paf$t.shift <- 0
-    #paf$t.genomic.start <- paf$t.start
-    #paf$t.genomic.end <- paf$t.end
-  }
-  return(paf)
+    ## Check if there more than one unique target sequences
+    if (length(unique(paf$t.name)) > 1) {
+        ## If yes make sure target coordinates are continuous
+        t.limits <- paf %>%
+            dplyr::arrange(q.start) %>% ## Make sure query coordinates are sorted by query coordinates
+            dplyr::mutate(t.name = factor(t.name, levels = unique(t.name))) %>%
+            dplyr::group_by(t.name) %>%
+            dplyr::reframe(range = range(c(t.start, t.end)))
+        t.gaps <- diff(t.limits$range) * -1
+        t.shift <- c(0, t.gaps[seq(length(t.gaps)) %% 2 == 0] + 1)
+        t.shift <- cumsum(t.shift)
+        names(t.shift) <- unique(t.limits$t.name)
+        # paf$t.genomic.start <- paf$t.start
+        # paf$t.genomic.end <- paf$t.end
+        # paf$t.start <- paf$t.start + t.shift[paf$t.name]
+        # paf$t.end <- paf$t.end + t.shift[paf$t.name]
+        paf$t.shift <- t.shift[paf$t.name]
+    } else {
+        paf$t.shift <- 0
+        # paf$t.genomic.start <- paf$t.start
+        # paf$t.genomic.end <- paf$t.end
+    }
+    return(paf)
 }

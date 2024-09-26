@@ -18,6 +18,7 @@
 #' @importFrom Biostrings writeXStringSet reverseComplement DNAStringSet
 #' @importFrom GenomeInfoDb seqnames
 #' @importFrom IRanges subsetByOverlaps
+#' @return A \code{\link{DNAStringSet-class}} object with exported sequence
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -29,7 +30,7 @@
 #' ## Define assembly FASTA to get the sequence from
 #' asm.fasta <- system.file("extdata", "test4_query.fasta", package = "SVbyEye")
 #' paf2FASTA(paf.table = paf.table, alignment.space = "query", asm.fasta = asm.fasta)
-#' \dontrun{
+#' \donttest{
 #' ## Get FASTA using target alignment coordinates ##
 #' ## Define BSgenome object to get the sequence from
 #' paf2FASTA(
@@ -37,7 +38,7 @@
 #'     bsgenome = BSgenome.Hsapiens.UCSC.hg38::BSgenome.Hsapiens.UCSC.hg38
 #' )
 #' }
-paf2FASTA <- function(paf.table, alignment.space = "query", order.by = 'query', bsgenome = NULL, asm.fasta = NULL, majority.strand = NULL, revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
+paf2FASTA <- function(paf.table, alignment.space = "query", order.by = "query", bsgenome = NULL, asm.fasta = NULL, majority.strand = NULL, revcomp = NULL, report.longest.aln = FALSE, report.query.name = NULL, concatenate.aln = TRUE, fasta.save = NULL, return = "fasta") {
     ptm <- startTimedMessage("[paf2FASTA] Exporting PAF alignments to FASTA file")
     ## Check user input ##
     ## Make sure submitted paf.table has at least 12 mandatory fields
@@ -65,10 +66,10 @@ paf2FASTA <- function(paf.table, alignment.space = "query", order.by = 'query', 
 
     if (!is.null(paf)) {
         ## Order alignments
-        if (order.by == 'target') {
-          paf <- paf[order(paf$t.start),]
-        } else if (order.by == 'query') {
-          paf <- paf[order(paf$q.start),]
+        if (order.by == "target") {
+            paf <- paf[order(paf$t.start), ]
+        } else if (order.by == "query") {
+            paf <- paf[order(paf$q.start), ]
         }
 
         ## Convert query or target coordinates to GRanges
@@ -102,27 +103,27 @@ paf2FASTA <- function(paf.table, alignment.space = "query", order.by = 'query', 
             qy.red <- base::range(gr, ignore.strand = TRUE)
             # tg.red <- range(gr$target.gr, ignore.strand=TRUE)
             if (!is.null(majority.strand)) {
-              if (majority.strand %in% c("+", "-")) {
-                  new.strand <- syncRangesDir(ranges = gr, majority.strand = majority.strand, strand.only = TRUE)
-                  if (all(new.strand != GenomicRanges::strand(gr))) {
-                      GenomicRanges::strand(gr) <- new.strand
-                      gr <- qy.red
-                      # gr$target.gr <- tg.red
-                      gr$revcomp <- TRUE
-                  } else {
-                      gr <- qy.red
-                      # gr$target.gr <- tg.red
-                      gr$revcomp <- FALSE
-                  }
-              } else {
-                  gr <- qy.red
-                  # gr$target.gr <- tg.red
-                  gr$revcomp <- FALSE
-                  warning("Parameter 'majority.strand' can only takes values '+' or '-'!!!")
-              }
+                if (majority.strand %in% c("+", "-")) {
+                    new.strand <- syncRangesDir(ranges = gr, majority.strand = majority.strand, strand.only = TRUE)
+                    if (all(new.strand != GenomicRanges::strand(gr))) {
+                        GenomicRanges::strand(gr) <- new.strand
+                        gr <- qy.red
+                        # gr$target.gr <- tg.red
+                        gr$revcomp <- TRUE
+                    } else {
+                        gr <- qy.red
+                        # gr$target.gr <- tg.red
+                        gr$revcomp <- FALSE
+                    }
+                } else {
+                    gr <- qy.red
+                    # gr$target.gr <- tg.red
+                    gr$revcomp <- FALSE
+                    warning("Parameter 'majority.strand' can only takes values '+' or '-'!!!")
+                }
             } else {
-              gr <- qy.red
-              gr$revcomp <- FALSE
+                gr <- qy.red
+                gr$revcomp <- FALSE
             }
             paf.grl[[i]] <- gr
         }

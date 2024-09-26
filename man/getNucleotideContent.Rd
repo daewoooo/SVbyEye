@@ -19,6 +19,9 @@ getNucleotideContent(
 \item{nucleotide.content}{A user defined nucleotides which total content will be counted in submitted `fasta.seq`.
 (e.g. to obtain 'GC' content set `nucleotide.content` to 'GC')}
 }
+\value{
+A \code{tibble} of required nucleotide/sequence content
+}
 \description{
 This function takes a single or set of FASTA sequences and for each sequence will report counts and frequencies of user defined
 `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content).

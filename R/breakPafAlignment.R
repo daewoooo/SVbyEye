@@ -9,7 +9,7 @@
 #' @import GenomicAlignments
 #' @importFrom GenomeInfoDb seqlengths seqlevels
 #' @importFrom dplyr tibble bind_rows
-#' @importFrom S4Vectors sapply queryHits
+#' @importFrom S4Vectors queryHits
 #' @return  A \code{list} of \code{tibble} objects storing matched ('M') alignments as well as structurally variable ('SV') bases if 'report.sv' is TRUE.
 #' @author David Porubsky
 #' @export
@@ -175,9 +175,9 @@ breakPafAlignment <- function(paf.aln = NULL, min.deletion.size = 50, min.insert
         cigars.region <- paf.aln$cg
     }
     ## Get alignment length from regional cigars
-    aln.len <- S4Vectors::sapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg)[[1]]), USE.NAMES = FALSE)
+    aln.len <- vapply(cigars.region, FUN = function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg)[[1]]), FUN.VALUE = numeric(1), USE.NAMES = FALSE)
     ## Get matched bases from regional cigars
-    n.match <- S4Vectors::sapply(cigars.region, function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("=", "M"))[[1]]), USE.NAMES = FALSE)
+    n.match <- vapply(cigars.region, FUN = function(cg) sum(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("=", "M"))[[1]]), FUN.VALUE = numeric(1), USE.NAMES = FALSE)
     ## Update paf alignment
     match.paf.aln <- dplyr::tibble(
         q.name = as.character(seqnames(query.gr)),
@@ -293,37 +293,39 @@ breakPafAlignment <- function(paf.aln = NULL, min.deletion.size = 50, min.insert
 breakPaf <- function(paf.table = NULL, min.deletion.size = 50, min.insertion.size = 50, collapse.mismatches = TRUE, report.sv = TRUE) {
     ptm <- startTimedMessage("[breakPaf] Breaking PAF alignments at indels")
     ## Check if PAF contains expected cg field containing CIGAR string
-    if (!'cg' %in% colnames(paf.table)) {
-      stop(paste0("\nExpected PAF field 'cg' containing CIGAR string is missing, ",
-                  "therefore alignments cannot be broken at insertion/deletions !!!"))
+    if (!"cg" %in% colnames(paf.table)) {
+        stop(paste0(
+            "\nExpected PAF field 'cg' containing CIGAR string is missing, ",
+            "therefore alignments cannot be broken at insertion/deletions !!!"
+        ))
     }
 
     ## Select CIGAR string with user defined min.deletion.size and min.insertion.size
     cigars <- paf.table$cg
 
     if (!is.null(min.insertion.size)) {
-      if (min.insertion.size > 0) {
-        insertion.filt <- S4Vectors::sapply(cigars, function(cg) any(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("I"))[[1]] >= min.insertion.size), USE.NAMES = FALSE)
-      } else {
-        insertion.filt <- rep(TRUE, length(cigars))
-      }
+        if (min.insertion.size > 0) {
+            insertion.filt <- vapply(cigars, FUN = function(cg) any(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("I"))[[1]] >= min.insertion.size), FUN.VALUE = logical(1), USE.NAMES = FALSE)
+        } else {
+            insertion.filt <- rep(TRUE, length(cigars))
+        }
     } else {
-      insertion.filt <- rep(TRUE, length(cigars))
+        insertion.filt <- rep(TRUE, length(cigars))
     }
 
     if (!is.null(min.deletion.size)) {
-      if (min.deletion.size > 0) {
-        deletion.filt <- S4Vectors::sapply(cigars, function(cg) any(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("D"))[[1]] >= min.deletion.size), USE.NAMES = FALSE)
-      } else {
-        deletion.filt <- rep(TRUE, length(cigars))
-      }
+        if (min.deletion.size > 0) {
+            deletion.filt <- vapply(cigars, FUN = function(cg) any(GenomicAlignments::explodeCigarOpLengths(cigar = cg, ops = c("D"))[[1]] >= min.deletion.size), FUN.VALUE = logical(1), USE.NAMES = FALSE)
+        } else {
+            deletion.filt <- rep(TRUE, length(cigars))
+        }
     } else {
-      deletion.filt <- rep(TRUE, length(cigars))
+        deletion.filt <- rep(TRUE, length(cigars))
     }
 
-    filt <- insertion.filt |  deletion.filt
-    to.add <-  paf.table[!filt,]
-    paf.table <- paf.table[filt,]
+    filt <- insertion.filt | deletion.filt
+    to.add <- paf.table[!filt, ]
+    paf.table <- paf.table[filt, ]
 
     ## Extract matching bases for each PAF record
     matches <- list()

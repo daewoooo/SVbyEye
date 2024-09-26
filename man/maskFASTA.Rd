@@ -23,6 +23,9 @@ maskFASTA(
 
 \item{fasta.save}{A path to a filename where to store final FASTA file.}
 }
+\value{
+A \code{\link{DNAStringSet-class}} object with masked regions
+}
 \description{
 Mask FASTA sequence at defined regions.
 }

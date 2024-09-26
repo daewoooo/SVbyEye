@@ -44,6 +44,9 @@ give the geom as \code{"point"}.
 
 \item{y.reverse}{Set to `TRUE` if the arc orientation should be flipped upside down.}
 }
+\value{
+Plotting coordinates
+}
 \description{
 `geom_wide_arc()` draws wide polygons between two sets of start and end coordinates.
 }

@@ -9,6 +9,7 @@
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges
 #' @importFrom dplyr bind_cols
+#' @return A \code{tibble} of PAF alignments with extra sequence content columns
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -78,6 +79,7 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
 #' @importFrom GenomeInfoDb seqlengths
 #' @importFrom GenomicRanges GRanges
 #' @importFrom IRanges IRanges ranges
+#' @return A \code{\link{GRanges-class}} object with reported nucleotide content metacolumns
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -86,44 +88,46 @@ paf2nucleotideContent <- function(paf.table = NULL, asm.fasta = NULL, alignment.
 #' ## Report sequence content for a given FASTA file in 5000bp long bins
 #' fasta2nucleotideContent(fasta.file = asm.fasta, binsize = 5000, sequence.pattern = "AT")
 #'
-fasta2nucleotideContent <- function(fasta.seq=NULL, fasta.file=NULL, binsize=NULL, sequence.pattern = NULL, nucleotide.content = NULL) {
-  ptm <- startTimedMessage("[fasta2nucleotideContent] Calculating FASTA sequence content")
+fasta2nucleotideContent <- function(fasta.seq = NULL, fasta.file = NULL, binsize = NULL, sequence.pattern = NULL, nucleotide.content = NULL) {
+    ptm <- startTimedMessage("[fasta2nucleotideContent] Calculating FASTA sequence content")
 
-  ## Check user input
-  if (!is.null(fasta.seq)) {
-    if (methods::is(fasta.seq, "DNAStringSet")) {
-      fa.seq <- fasta.seq
-      seq.len <- GenomeInfoDb::seqlengths(fa.seq)
-    }
-  } else if (file.exists(fasta.file)) {
-    fa.seq <- Biostrings::readDNAStringSet(fasta.file)
-    seq.len <- GenomeInfoDb::seqlengths(fa.seq)
-  } else {
-    stop('Please submit a valid "DNAStringSet" object with a single sequence or a path to a valid FASTA file !!!')
-  }
-
-  ## Bin FASTA sequence
-  if (!is.null(binsize)) {
-    if (binsize > 0) {
-      views.obj <- Biostrings::Views(unlist(fa.seq), start = seq(from=1, to=(seq.len - binsize), by=binsize), width = binsize)
-      views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::ranges(views.obj))
-      seq.views <- as(views.obj, 'DNAStringSet')
+    ## Check user input
+    if (!is.null(fasta.seq)) {
+        if (methods::is(fasta.seq, "DNAStringSet")) {
+            fa.seq <- fasta.seq
+            seq.len <- GenomeInfoDb::seqlengths(fa.seq)
+        }
+    } else if (file.exists(fasta.file)) {
+        fa.seq <- Biostrings::readDNAStringSet(fasta.file)
+        seq.len <- GenomeInfoDb::seqlengths(fa.seq)
     } else {
-      views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::IRanges(start = 1, end = seq.len))
-      seq.views <- fa.seq
+        stop('Please submit a valid "DNAStringSet" object with a single sequence or a path to a valid FASTA file !!!')
     }
-  } else {
-    views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::IRanges(start = 1, end = seq.len))
-    seq.views <- fa.seq
-  }
-  ## Get nucleotide or pattern count and frequency
-  seq.content <- suppressMessages( getNucleotideContent(fasta.seq = seq.views,
-                                                        sequence.pattern = sequence.pattern,
-                                                        nucleotide.content = nucleotide.content) )
-  mcols(views.gr) <- seq.content
-  ## Return calcualted sequence content
-  stopTimedMessage(ptm)
-  return(views.gr)
+
+    ## Bin FASTA sequence
+    if (!is.null(binsize)) {
+        if (binsize > 0) {
+            views.obj <- Biostrings::Views(unlist(fa.seq), start = seq(from = 1, to = (seq.len - binsize), by = binsize), width = binsize)
+            views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::ranges(views.obj))
+            seq.views <- as(views.obj, "DNAStringSet")
+        } else {
+            views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::IRanges(start = 1, end = seq.len))
+            seq.views <- fa.seq
+        }
+    } else {
+        views.gr <- GenomicRanges::GRanges(seqnames = names(fa.seq), ranges = IRanges::IRanges(start = 1, end = seq.len))
+        seq.views <- fa.seq
+    }
+    ## Get nucleotide or pattern count and frequency
+    seq.content <- suppressMessages(getNucleotideContent(
+        fasta.seq = seq.views,
+        sequence.pattern = sequence.pattern,
+        nucleotide.content = nucleotide.content
+    ))
+    mcols(views.gr) <- seq.content
+    ## Return calcualted sequence content
+    stopTimedMessage(ptm)
+    return(views.gr)
 }
 
 
@@ -140,6 +144,7 @@ fasta2nucleotideContent <- function(fasta.seq=NULL, fasta.file=NULL, binsize=NUL
 #' @importFrom Biostrings vcountPattern alphabetFrequency width
 #' @importFrom dplyr bind_cols
 #' @importFrom tibble tibble
+#' @return A \code{tibble} of required nucleotide/sequence content
 #' @author David Porubsky
 #' @export
 #' @examples
@@ -214,7 +219,7 @@ getNucleotideContent <- function(fasta.seq, sequence.pattern = NULL, nucleotide.
         ## Get counts of a specific nucleotides per FASTA sequence
         bases.counts <- rowSums(base.freq[, bases, drop = FALSE])
         ## Get frequency of a specific nucleotides per FASTA sequence
-        bases.freq <- bases.counts / rowSums(base.freq[, c('A', 'C', 'G', 'T'), drop = FALSE])
+        bases.freq <- bases.counts / rowSums(base.freq[, c("A", "C", "G", "T"), drop = FALSE])
 
         ## Report counts and frequencies
         nuc.content <- suppressMessages(dplyr::bind_cols(as.numeric(bases.counts), bases.freq))

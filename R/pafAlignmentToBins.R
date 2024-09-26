@@ -126,7 +126,7 @@ pafToBins <- function(paf.table = NULL, binsize = 10000) {
     ## Split each PAF record into user defined bins
     binned <- list()
     for (i in seq_len(nrow(paf.table))) {
-        paf.aln <- paf.table[i,]
+        paf.aln <- paf.table[i, ]
         paf.aln.binned <- pafAlignmentToBins(paf.aln = paf.aln, binsize = binsize)
         paf.aln.binned$bin.id <- i
         # paf.aln.binned$aln.id <- i

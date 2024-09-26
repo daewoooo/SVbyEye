@@ -16,7 +16,7 @@
 #' @inheritParams pafAlignmentToBins
 #' @inheritParams paf2coords
 #' @inheritParams subsetPafAlignments
-#' @return A \code{ggplot2} object.
+#' @return A \code{ggplot2} object
 #' @import ggplot2
 #' @importFrom grid unit
 #' @importFrom scales comma
@@ -137,7 +137,7 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
     t.range[2] <- t.range[2] + range.offset ## Make a start position as offset and change only end position
     ## Get x-axis labels
     q.labels <- pretty(q.range)
-    #t.labels <- pretty(t.range)
+    # t.labels <- pretty(t.range)
     t.labels <- pretty(range(coords$seq.pos[coords$seq.id == "target"]))
     ## Covert query to target coordinates
     q.breaks <- SVbyEye::q2t(x = q.labels, q.range = q.range, t.range = t.range)
@@ -161,33 +161,33 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         unique(coords$seq.name[coords$seq.id == "query"])
     )
     y.labels.target <- c(
-      unique(coords$seq.name[coords$seq.id == "target"])
+        unique(coords$seq.name[coords$seq.id == "target"])
     )
-    y.breaks.query <- coords$y[coords$seq.id == 'query'][match(y.labels.query, coords$seq.name[coords$seq.id == 'query'])]
-    y.breaks.target <- coords$y[coords$seq.id == 'target'][match(y.labels.target, coords$seq.name[coords$seq.id == 'target'])]
+    y.breaks.query <- coords$y[coords$seq.id == "query"][match(y.labels.query, coords$seq.name[coords$seq.id == "query"])]
+    y.breaks.target <- coords$y[coords$seq.id == "target"][match(y.labels.target, coords$seq.name[coords$seq.id == "target"])]
     y.labels <- c(y.labels.query, y.labels.target)
     y.breaks <- c(y.breaks.query, y.breaks.target)
 
     ## Set default direction color
     if (!is.null(color.palette)) {
-      if (all(c("+", "-") %in% names(color.palette))) {
-        if (is.list(color.palette)) {
-          pal <- unlist(color.palette, use.names = TRUE)
+        if (all(c("+", "-") %in% names(color.palette))) {
+            if (is.list(color.palette)) {
+                pal <- unlist(color.palette, use.names = TRUE)
+            } else {
+                pal <- color.palette
+            }
         } else {
-          pal <-  color.palette
+            pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
+            # warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
         }
-      } else {
-        pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
-        #warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
-      }
     } else {
-      pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
+        pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
     }
 
     ## Plot alignments and color by a user defined variable
     if (color.by == "direction") {
         ## Make a plot
-        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
+        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$direction), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection")
     } else if (color.by == "identity") {
@@ -198,31 +198,31 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
         coords <- coords.l$data
         colors <- coords.l$colors
         ## Make a plot
-        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
+        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = "Identity")
     } else if (color.by %in% colnames(paf)) {
-        col.levels <- unique(coords[,eval(color.by), drop = TRUE])
+        col.levels <- unique(coords[, eval(color.by), drop = TRUE])
         if (!all(col.levels %in% names(color.palette))) {
-          ## Define color random scheme
-          coords.l <- getColorScheme(data.table = coords, value.field = color.by)
-          colors <- coords.l$colors
+            ## Define color random scheme
+            coords.l <- getColorScheme(data.table = coords, value.field = color.by)
+            colors <- coords.l$colors
         } else {
-          colors <- color.palette
+            colors <- color.palette
         }
         ## Make a plot
-        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
+        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = eval(color.by))
     } else {
-        plt <- ggplot2::ggplot(coords[coords$ID == "M",]) +
+        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
             geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), alpha = 0.5, fill = "gray")
     }
 
     ## Add alignment outlines
     if (outline.alignments) {
         plt <- plt +
-            geom_miropeats(data = coords[coords$ID == "M",], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), fill = NA, color = "gray", linewidth = 0.25)
+            geom_miropeats(data = coords[coords$ID == "M", ], ggplot2::aes(x = .data$x, y = .data$y, group = .data$group), fill = NA, color = "gray", linewidth = 0.25)
     }
 
     ## Add indels
@@ -273,23 +273,23 @@ plotMiro <- function(paf.table, min.deletion.size = NULL, min.insertion.size = N
 
     ## Add arrows to mark start and end of each alignment ##
     if (add.alignment.arrows) {
-      ## Use an un-binned version of PAF alignments (group by bin ID if present)
-      if ("bin.id" %in% colnames(paf.copy)) {
-          paf.copy <- collapsePaf(paf.table = paf.copy, collapse.by = "bin.id")
-      }
-      ## Convert to plotting coordinates
-      coords.arrow <- paf2coords(paf.table = paf.copy, offset.alignments = offset.alignments)
-      start <- coords.arrow$x[c(TRUE, TRUE, FALSE, FALSE)]
-      end <- coords.arrow$x[c(FALSE, FALSE, TRUE, TRUE)]
-      y <- coords.arrow$y[c(TRUE, TRUE, FALSE, FALSE)]
-      group <- coords.arrow$group[c(TRUE, TRUE, FALSE, FALSE)]
-      plt.df <- data.frame(start = start, end = end, y = y, group = group)
-      plt.df$direction <- ifelse(plt.df$start < plt.df$end, "+", "-")
-      ## Add arrows to the plot
-      plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-          gggenes::geom_gene_arrow(data = plt.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, color = .data$direction, fill = .data$direction), arrowhead_height = grid::unit(3, "mm")) +
-          ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
-          ggplot2::scale_color_manual(values = pal, name = "Alignment\ndirection")
+        ## Use an un-binned version of PAF alignments (group by bin ID if present)
+        if ("bin.id" %in% colnames(paf.copy)) {
+            paf.copy <- collapsePaf(paf.table = paf.copy, collapse.by = "bin.id")
+        }
+        ## Convert to plotting coordinates
+        coords.arrow <- paf2coords(paf.table = paf.copy, offset.alignments = offset.alignments)
+        start <- coords.arrow$x[c(TRUE, TRUE, FALSE, FALSE)]
+        end <- coords.arrow$x[c(FALSE, FALSE, TRUE, TRUE)]
+        y <- coords.arrow$y[c(TRUE, TRUE, FALSE, FALSE)]
+        group <- coords.arrow$group[c(TRUE, TRUE, FALSE, FALSE)]
+        plt.df <- data.frame(start = start, end = end, y = y, group = group)
+        plt.df$direction <- ifelse(plt.df$start < plt.df$end, "+", "-")
+        ## Add arrows to the plot
+        plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+            gggenes::geom_gene_arrow(data = plt.df, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = .data$y, color = .data$direction, fill = .data$direction), arrowhead_height = grid::unit(3, "mm")) +
+            ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
+            ggplot2::scale_color_manual(values = pal, name = "Alignment\ndirection")
     }
 
     ## Set plot theme ##

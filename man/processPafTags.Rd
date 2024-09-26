@@ -11,6 +11,9 @@ processPafTags(paf.tags, restrict.paf.tags = c("NM", "cg"))
 
 \item{restrict.paf.tags}{Define a set of PAF tag ids (e.g. NM, cg) to be reported in the output.}
 }
+\value{
+A \code{tibble} object
+}
 \description{
 Process PAF specific alignment tags.
 }

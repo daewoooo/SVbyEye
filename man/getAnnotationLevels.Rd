@@ -31,17 +31,21 @@ a unique level such that each range or group of ranges (if `annotation.group` is
 }
 \examples{
 ## Define random set of ranges grouped by gene name
-test.gr1 <- GenomicRanges::GRanges(seqnames = 'target.region',
-                ranges = IRanges::IRanges(start = c(19000000, 19030000, 19070000),
-                                          end = c(19010000, 19050000, 19090000)))
-test.gr1$ID <- 'gene1'
+test.gr1 <- GenomicRanges::GRanges(
+    seqnames = "target.region",
+    ranges = IRanges::IRanges(
+        start = c(19000000, 19030000, 19070000),
+        end = c(19010000, 19050000, 19090000)
+    )
+)
+test.gr1$ID <- "gene1"
 test.gr2 <- GenomicRanges::shift(test.gr1, shift = 10000)
-test.gr2$ID <- 'gene2'
+test.gr2$ID <- "gene2"
 test.gr3 <- GenomicRanges::shift(test.gr1, shift = 90000)
-test.gr3$ID <- 'gene3'
+test.gr3$ID <- "gene3"
 test.gr <- c(test.gr1, test.gr2, test.gr3)
 ## Obtain unique annotation levels grouped by ID
-getAnnotationLevels(annot.gr = test.gr, offset = 1, annotation.group = 'ID')
+getAnnotationLevels(annot.gr = test.gr, offset = 1, annotation.group = "ID")
 
 }
 \author{

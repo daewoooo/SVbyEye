@@ -31,6 +31,7 @@
 #' @param y.reverse Set to `TRUE` if the arc orientation should be flipped upside down.
 #'
 #' @seealso [plotSelf()]
+#' @return Plotting coordinates
 #' @author David Porubsky
 #'
 #' @name geom_wide_arc
@@ -54,6 +55,7 @@ NULL
 #' @importFrom ggforce StatBezier
 #' @format NULL
 #' @usage NULL
+#' @return Plotting coordinates
 #' @export
 StatWideArc <- ggplot2::ggproto("StatWideArc", ggplot2::Stat,
     setup_data = function(data, params) {
@@ -63,10 +65,10 @@ StatWideArc <- ggplot2::ggproto("StatWideArc", ggplot2::Stat,
         data
     },
     compute_panel = function(data, scales, n = 100, max.width = NULL, y.offset = 0, y.reverse = FALSE) {
-        if (!'y' %in% colnames(data)) {
-          data$y <- 0
+        if (!"y" %in% colnames(data)) {
+            data$y <- 0
         }
-        #data <- data[order(data$group, data$y), ]
+        # data <- data[order(data$group, data$y), ]
         data <- data[order(data$group), ]
         coords1 <- data[c(TRUE, FALSE, FALSE, TRUE), ]
         coords2 <- data[c(FALSE, TRUE, TRUE, FALSE), ]
@@ -74,16 +76,16 @@ StatWideArc <- ggplot2::ggproto("StatWideArc", ggplot2::Stat,
         coords2 <- add.widearc.controls.points(coords2)
         ## Scale y height to user defined max.width
         if (!is.null(max.width)) {
-          if (max.width > 0) {
-            max.y <- max(c(coords1$y, coords2$y))
-            coords1$y <- q2t(coords1$y, q.range = c(0, max.y), t.range = c(0, max.width))
-            coords2$y <- q2t(coords2$y, q.range = c(0, max.y), t.range = c(0, max.width))
-          }
+            if (max.width > 0) {
+                max.y <- max(c(coords1$y, coords2$y))
+                coords1$y <- q2t(coords1$y, q.range = c(0, max.y), t.range = c(0, max.width))
+                coords2$y <- q2t(coords2$y, q.range = c(0, max.y), t.range = c(0, max.width))
+            }
         }
         ## Reverse arc upside down
         if (y.reverse) {
-          coords1$y <- coords1$y * -1
-          coords2$y <- coords2$y * -1
+            coords1$y <- coords1$y * -1
+            coords2$y <- coords2$y * -1
         }
         ## Add offset to y axis coordinates
         coords1$y <- coords1$y + y.offset
@@ -107,8 +109,10 @@ geom_wide_arc <- function(mapping = NULL, data = NULL, geom = "polygon",
     ggplot2::layer(
         data = data, mapping = mapping, stat = stat, geom = geom,
         position = position, show.legend = show.legend, inherit.aes = inherit.aes,
-        params = list(na.rm = na.rm, n = n, max.width = max.width,
-                      y.offset = y.offset, y.reverse = y.reverse, ...)
+        params = list(
+            na.rm = na.rm, n = n, max.width = max.width,
+            y.offset = y.offset, y.reverse = y.reverse, ...
+        )
     )
 }
 
@@ -125,4 +129,3 @@ add.widearc.controls.points <- function(data) {
     mid2$y <- y_height
     rbind(start, mid1, mid2, end)
 }
-
