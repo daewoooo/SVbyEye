@@ -213,6 +213,8 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
           if (ncol(GenomicRanges::mcols(gr)) > 0) {
               GenomicRanges::mcols(gr.lifted) <- c(GenomicRanges::mcols(gr.lifted), GenomicRanges::mcols(gr[gr.lifted$idx]))
           }
+        } else {
+          gr.lifted <- GenomicRanges::GRanges(seqnames = "Failed", ranges = IRanges::IRanges(start = 1, end = 0))
         }
 
         stopTimedMessage(ptm)

@@ -26,7 +26,7 @@ parseCigarString <- function(cigar.str = NULL, coordinate.space = "reference") {
         cigar.ranges <- GenomicAlignments::cigarRangesAlongReferenceSpace(cigar.str)[[1]]
         # start(cigar.ranges[cigar.id == 'I']) <- end(cigar.ranges[cigar.id == 'I'])
     } else if (coordinate.space == "query") {
-        cigar.ranges <- GenomicAlignments::cigarRangesAlongQuerySpace(cigar.str)[[1]]
+        cigar.ranges <- GenomicAlignments::cigarRangesAlongQuerySpace(cigar.str, after.soft.clipping = TRUE)[[1]]
     } else {
         stop("Parameter 'coordinate.space' can only take values 'reference' or 'query' !!!")
     }

@@ -40,6 +40,8 @@ breakPafAlignment <- function(paf.aln = NULL, min.deletion.size = 50, min.insert
     ## Parse CIGAR string ##
     t.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = "reference")
     q.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = "query")
+    ## Remove HARD and SOFT-clipped bases from CIGAR string
+    paf.aln$cg <- gsub(paf.aln$cg, pattern="\\d+H|\\d+S", replacement='')
     ## Create PAF alignment object
     alignment <- GenomicAlignments::GAlignments(seqnames = paf.aln$t.name, pos = 1L, cigar = paf.aln$cg, strand = GenomicRanges::strand(paf.aln$strand), names = "target")
     # alignment <- GenomicAlignments::GAlignments(seqnames = paf.aln$t.name, pos = 1L, cigar = paf.aln$cg, strand=strand(paf.aln$strand), names = 'query')
