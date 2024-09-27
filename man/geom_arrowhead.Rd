@@ -21,6 +21,9 @@ geom_arrowhead(
 
 \item{arrowhead_height}{A `grid::unit()` object providing the height of the arrowhead. (Default : `3`mm).}
 }
+\value{
+Plotting coordinates
+}
 \description{
 `geom_arrowhead()` draws ranges defined by `xmin` and `xmax` as triangular polygon.
 draws genomic ranges as arrowheads, allowing to draw for instance segmental

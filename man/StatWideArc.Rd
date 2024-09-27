@@ -4,6 +4,9 @@
 \name{StatWideArc}
 \alias{StatWideArc}
 \title{A ggproto class definition to extend the functionality of ggplot2.}
+\value{
+Plotting coordinates
+}
 \description{
 A ggproto class definition to extend the functionality of ggplot2.
 }

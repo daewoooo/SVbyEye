@@ -74,10 +74,10 @@ plotAVA(
 ## Bin PAF alignments into user defined bin and color them by sequence identity (\% of matched bases)
 plotAVA(paf.table = paf.table, binsize = 10000)
 ## Add annotation to all-versus-all alignments ##
-plt <- plotAVA(paf.table = paf.table, color.by = 'direction')
-annot.file <- system.file("extdata", "test_annot_ava.RData", package="SVbyEye")
+plt <- plotAVA(paf.table = paf.table, color.by = "direction")
+annot.file <- system.file("extdata", "test_annot_ava.RData", package = "SVbyEye")
 annot.gr <- get(load(annot.file))
-addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = 'self', y.label.id = 'ID')
+addAnnotation(ggplot.obj = plt, annot.gr = annot.gr, coordinate.space = "self", y.label.id = "ID")
 
 }
 \author{

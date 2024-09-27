@@ -27,7 +27,7 @@ paf.file <- system.file("extdata", "test_ava.paf", package = "SVbyEye")
 ## Read in PAF
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Subset multiple PAF alignments based on desired target region
-target.region <- 'HG01358_2:100000-200000'
+target.region <- "HG01358_2:100000-200000"
 subsetPaf(paf.table, target.region = target.region)
 
 }

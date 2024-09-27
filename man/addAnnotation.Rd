@@ -110,17 +110,24 @@ addAnnotation(
 
 ## Add gene-like annotation
 test.gr <- GenomicRanges::GRanges(
-               seqnames = 'target.region',
-               ranges = IRanges::IRanges(start = c(19000000,19030000,19070000),
-                                         end = c(19010000,19050000,19090000)),
-                                         ID = 'gene1')
-addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
-              shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
-              fill.by = 'ID')
+    seqnames = "target.region",
+    ranges = IRanges::IRanges(
+        start = c(19000000, 19030000, 19070000),
+        end = c(19010000, 19050000, 19090000)
+    ),
+    ID = "gene1"
+)
+addAnnotation(
+    ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+    shape = "rectangle", annotation.group = "ID", offset.annotation = TRUE,
+    fill.by = "ID"
+)
 ## Add gene names
-addAnnotation(ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
-              shape = 'rectangle', annotation.group = 'ID', offset.annotation = TRUE,
-              fill.by = 'ID', label.by = 'ID')
+addAnnotation(
+    ggplot.obj = plt, annot.gr = test.gr, coordinate.space = "target",
+    shape = "rectangle", annotation.group = "ID", offset.annotation = TRUE,
+    fill.by = "ID", label.by = "ID"
+)
 
 }
 \author{

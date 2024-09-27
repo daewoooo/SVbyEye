@@ -21,7 +21,7 @@
 #'
 flipPaf <- function(paf.table, majority.strand = NULL, force = FALSE, flip.seqnames = NULL) {
     ## Helper function
-    flipPafAln <- function(paf.table = NULL, coordinates = 'query') {
+    flipPafAln <- function(paf.table = NULL, coordinates = "query") {
         paf.flip <- paf.table
         ## Flip alignment orientation
         paf.flip$strand[paf.table$strand == "+"] <- "-"
@@ -29,21 +29,21 @@ flipPaf <- function(paf.table, majority.strand = NULL, force = FALSE, flip.seqna
         ## Keep info on original query coordinates [To test]
         # paf.flip$q.end <- paf.table$q.start
         # paf.flip$q.start <- paf.table$q.end
-        if (coordinates == 'query') {
-          ## Flip query coordinates
-          paf.flip$q.end <- paf.table$q.len - paf.table$q.start
-          paf.flip$q.start <- paf.table$q.len - paf.table$q.end
-          ## Add info if the PAF alignment was flipped
-          paf.flip$query.flip <- TRUE
-        } else if (coordinates == 'target') {
-          ## Flip target coordinates
-          paf.flip$t.end <- paf.table$q.len - paf.table$t.start
-          paf.flip$t.start <- paf.table$q.len - paf.table$t.end
-          ## Add info if the PAF alignment was flipped
-          paf.flip$target.flip <- TRUE
+        if (coordinates == "query") {
+            ## Flip query coordinates
+            paf.flip$q.end <- paf.table$q.len - paf.table$q.start
+            paf.flip$q.start <- paf.table$q.len - paf.table$q.end
+            ## Add info if the PAF alignment was flipped
+            paf.flip$query.flip <- TRUE
+        } else if (coordinates == "target") {
+            ## Flip target coordinates
+            paf.flip$t.end <- paf.table$q.len - paf.table$t.start
+            paf.flip$t.start <- paf.table$q.len - paf.table$t.end
+            ## Add info if the PAF alignment was flipped
+            paf.flip$target.flip <- TRUE
         } else {
-          warning("Parameter 'coordinates' can only take values 'query' or 'target' !!!")
-          paf.flip <- paf.table
+            warning("Parameter 'coordinates' can only take values 'query' or 'target' !!!")
+            paf.flip <- paf.table
         }
         ## Make sure q.start position is always smaller than q.end
         # q.start <- pmin(paf.flip$q.start, paf.flip$q.end)
@@ -83,28 +83,28 @@ flipPaf <- function(paf.table, majority.strand = NULL, force = FALSE, flip.seqna
 
     ## Flip specific sequence names either query or target
     if (!is.null(flip.seqnames)) {
-      ## Flip query specific sequences
-      if (any(flip.seqnames %in% paf$q.name)) {
-        sub.paf <- paf[paf$q.name %in% flip.seqnames,]
-        sub.paf.l <- split(sub.paf, sub.paf$seq.pair)
-        for (i in seq_along(sub.paf.l)) {
-          paf.ctg <- sub.paf.l[[i]]
-          sub.paf.l[[i]] <- flipPafAln(paf.table = paf.ctg, coordinates = 'query')
+        ## Flip query specific sequences
+        if (any(flip.seqnames %in% paf$q.name)) {
+            sub.paf <- paf[paf$q.name %in% flip.seqnames, ]
+            sub.paf.l <- split(sub.paf, sub.paf$seq.pair)
+            for (i in seq_along(sub.paf.l)) {
+                paf.ctg <- sub.paf.l[[i]]
+                sub.paf.l[[i]] <- flipPafAln(paf.table = paf.ctg, coordinates = "query")
+            }
+            sub.paf <- do.call(rbind, sub.paf.l)
+            paf[paf$q.name %in% flip.seqnames, ] <- sub.paf
         }
-        sub.paf <- do.call(rbind, sub.paf.l)
-        paf[paf$q.name %in% flip.seqnames,] <- sub.paf
-      }
-      ## Flip target specific sequences
-      if (any(flip.seqnames %in% paf$t.name)) {
-        sub.paf <- paf[paf$t.name %in% flip.seqnames,]
-        sub.paf.l <- split(sub.paf, sub.paf$seq.pair)
-        for (i in seq_along(sub.paf.l)) {
-          paf.ctg <- sub.paf.l[[i]]
-          sub.paf.l[[i]] <- flipPafAln(paf.table = paf.ctg, coordinates = 'target')
+        ## Flip target specific sequences
+        if (any(flip.seqnames %in% paf$t.name)) {
+            sub.paf <- paf[paf$t.name %in% flip.seqnames, ]
+            sub.paf.l <- split(sub.paf, sub.paf$seq.pair)
+            for (i in seq_along(sub.paf.l)) {
+                paf.ctg <- sub.paf.l[[i]]
+                sub.paf.l[[i]] <- flipPafAln(paf.table = paf.ctg, coordinates = "target")
+            }
+            sub.paf <- do.call(rbind, sub.paf.l)
+            paf[paf$t.name %in% flip.seqnames, ] <- sub.paf
         }
-        sub.paf <- do.call(rbind, sub.paf.l)
-        paf[paf$t.name %in% flip.seqnames,] <- sub.paf
-      }
     }
 
     ## Sync by majority strand directionality

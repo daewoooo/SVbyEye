@@ -25,6 +25,9 @@ fasta2nucleotideContent(
 \item{nucleotide.content}{A user defined nucleotides which total content will be counted in submitted `fasta.seq`.
 (e.g. to obtain 'GC' content set `nucleotide.content` to 'GC')}
 }
+\value{
+A \code{\link{GRanges-class}} object with reported nucleotide content metacolumns
+}
 \description{
 This function with takes a path to FASTA file containing a single sequence and report counts and frequencies of user defined
 `sequence.pattern` (such as exact DNA pattern, e.g. 'GA') or `nucleotide.content` (such as sequence GC content) across the

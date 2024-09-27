@@ -46,20 +46,22 @@ paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.
 ## Make a plot
 plt <- plotMiro(paf.table = paf.table)
 ## Create custom PAF alignments
-paf.annot <- tibble::tibble(q.name = 'target.region',
-                            q.len = 0,
-                            q.start = c(19000000, 19200000),
-                            q.end = c(19100000, 19220000),
-                            strand = c('+', '-'),
-                            t.name = 'target.region',
-                            t.len = 0,
-                            t.start = c(19200000, 19300000),
-                            t.end = c(19250000, 19330000),
-                            n.match = 0,
-                            aln.len = 0,
-                            mapq = 0)
+paf.annot <- tibble::tibble(
+    q.name = "target.region",
+    q.len = 0,
+    q.start = c(19000000, 19200000),
+    q.end = c(19100000, 19220000),
+    strand = c("+", "-"),
+    t.name = "target.region",
+    t.len = 0,
+    t.start = c(19200000, 19300000),
+    t.end = c(19250000, 19330000),
+    n.match = 0,
+    aln.len = 0,
+    mapq = 0
+)
 ## Add self-alignments to the plot
-addSelfAlignments(ggplot.obj = plt, paf.table = paf.annot, coordinate.space = 'target')
+addSelfAlignments(ggplot.obj = plt, paf.table = paf.annot, coordinate.space = "target")
 
 }
 \author{

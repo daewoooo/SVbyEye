@@ -9,6 +9,9 @@ nucmer2PAF(nucmer.coords = NULL)
 \arguments{
 \item{nucmer.coords}{A path to a nucmer coordinates file containing alignments to be loaded.}
 }
+\value{
+A \code{tibble} of PAF formatted table
+}
 \description{
 This function takes alignments produced by nucmer (parameters: --mum --coords) and loads
 reported coordinates file (suffix .coords) into a PAF formatted table (see PAF specification).
@@ -17,7 +20,7 @@ reported coordinates file (suffix .coords) into a PAF formatted table (see PAF s
 ## Get nucmer coordinates to read in ##
 nucmer.coords <- system.file("extdata", "HG00438_1_nucmer.coords", package = "SVbyEye")
 ## Read in nucmer coordinates
-nucmer2PAF(nucmer.coords=nucmer.coords)
+nucmer2PAF(nucmer.coords = nucmer.coords)
 
 }
 \author{

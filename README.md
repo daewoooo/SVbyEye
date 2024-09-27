@@ -36,6 +36,6 @@ See [here](https://htmlpreview.github.io/?https://github.com/daewoooo/SVbyEye/bl
 ## Report Errors
 If you encounter errors of any kind or want to request a new package functionality, please report an [issue here](https://github.com/daewoooo/SVbyEye/issues/new).
 
-## NOTE
-Currently the SVbyEye package is under active development and contains unpublished work. We are currently actively working on a manuscript presenting this tool. Stay tuned for upcoming citation by the end of 2023. Please contact me if there are any question as to how to cite this tools in your work. 
+## Citation
+Porubsky, David, Xavi Guitart, Dongahn Yoo, Philip C. Dishuck, William T. Harvey, and Evan E. Eichler. 2024. “SVbyEye: A Visual Tool to Characterize Structural Variation among Whole-Genome Assemblies.” bioRxiv. https://doi.org/10.1101/2024.09.11.612418.
 

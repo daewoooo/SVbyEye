@@ -31,6 +31,7 @@
 #' towards the other end of the alignment polygon (Default : `0.5`).
 #'
 #' @seealso [readPaf()], [paf2coords()]
+#' @return Plotting coordinates
 #' @author David Porubsky
 #'
 #' @name geom_miropeats
@@ -53,6 +54,7 @@ NULL
 #' @importFrom ggforce StatBezier
 #' @format NULL
 #' @usage NULL
+#' @return Plotting coordinates
 #' @export
 StatMiropeats <- ggplot2::ggproto("StatMiropeats", ggplot2::Stat,
     setup_data = function(data, params) {

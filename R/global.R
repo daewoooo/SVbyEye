@@ -9,5 +9,6 @@ NULL
 utils::globalVariables(c(
     "q.name", "q.len", "q.start", "q.end", "strand",
     "t.name", "t.len", "t.start", "t.end", "n.match",
-    "aln.len", "mapq", "aln.id", "bin.id"
+    "aln.len", "mapq", "aln.id", "bin.id", "seq.id",
+    "seq.name"
 ))

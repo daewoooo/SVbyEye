@@ -37,12 +37,16 @@ paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
 ## Read in PAF
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Disjoin PAF at target coordinates
-disj.paf.table <- disjoinPafAlignments(paf.table = paf.table, coordinates = 'target')
+disj.paf.table <- disjoinPafAlignments(paf.table = paf.table, coordinates = "target")
 ## Disjoin PAF at user defined coordinates
-disj.gr <- GenomicRanges::GRanges(seqnames = 'query.region',
-                                  ranges = IRanges::IRanges(start = 16300000, end = 16350000))
-disj.paf.table <- disjoinPafAlignments(paf.table = paf.table,
-                                       coordinates = 'query', disjoin.gr = disj.gr)
+disj.gr <- GenomicRanges::GRanges(
+    seqnames = "query.region",
+    ranges = IRanges::IRanges(start = 16300000, end = 16350000)
+)
+disj.paf.table <- disjoinPafAlignments(
+    paf.table = paf.table,
+    coordinates = "query", disjoin.gr = disj.gr
+)
 
 }
 \author{

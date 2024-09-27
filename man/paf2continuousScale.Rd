@@ -23,7 +23,7 @@ paf.file <- system.file("extdata", "test_ava.paf", package = "SVbyEye")
 ## Read in PAF
 paf.table <- readPaf(paf.file = paf.file, include.paf.tags = TRUE, restrict.paf.tags = "cg")
 ## Filter PAF
-paf.table <- paf.table[paf.table$t.name == 'HG03453_2',]
+paf.table <- paf.table[paf.table$t.name == "HG03453_2", ]
 ## Define shift in genomic coordiantes to get continuous scale
 paf2continuousScale(paf.table)
 

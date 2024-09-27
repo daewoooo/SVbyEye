@@ -78,20 +78,20 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
     }
     ## If desired visualization shape is 'arrow' binning is not allowed
     if (shape == "arrow" & !is.null(binsize)) {
-      binsize <- NULL
-      message("[plotSelf] Binning is not available for shape = 'arrow', setting binsize = NULL.")
+        binsize <- NULL
+        message("[plotSelf] Binning is not available for shape = 'arrow', setting binsize = NULL.")
     }
 
     ## Apply self-alignment specific set of filters ##
     ## Keep only self-alignments (query and target names have to be the same)
-    paf <- paf[paf$q.name == paf$t.name,]
+    paf <- paf[paf$q.name == paf$t.name, ]
     if (nrow(paf) == 0) {
         stop("No self-alignments present in submitted 'paf.table', self-alignments are expected to have the same value in 'q.name' and 't.name' field !!!")
     }
     ## Remove diagonals (self-alignments) with the same start and end position
-    paf <- paf[!(paf$q.start == paf$t.start & paf$q.end == paf$t.end),]
+    paf <- paf[!(paf$q.start == paf$t.start & paf$q.end == paf$t.end), ]
     ## Due to the minimap2 self-alignment redundancy keep only alignments where query start is smaller than the target start
-    paf <- paf[paf$q.start < paf$t.start,]
+    paf <- paf[paf$q.start < paf$t.start, ]
 
     ## Break PAF at insertion/deletions defined in cigar string
     if (!is.null(min.deletion.size) | !is.null(min.insertion.size)) {
@@ -152,8 +152,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         s2.end = paf$t.end,
         s1.width = (paf$q.end - paf$q.start) + 1,
         s2.width = (paf$t.end - paf$t.start) + 1,
-        seq.name = paste(unique(paf$q.name, paf$t.name), collapse = '_'),
-        seq.id = 'self',
+        seq.name = paste(unique(paf$q.name, paf$t.name), collapse = "_"),
+        seq.id = "self",
         dir = paf$strand,
         n.match = paf$n.match,
         aln.len = paf$aln.len,
@@ -163,7 +163,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
     )
     ## Add color.by column if defined
     if (color.by %in% colnames(paf)) {
-      coords[,color.by] <- paf[,color.by]
+        coords[, color.by] <- paf[, color.by]
     }
 
     ## Get max position (for x-axis plotting)
@@ -307,9 +307,9 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
             ggplot2::geom_polygon(data = poly.dir.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::geom_polygon(data = poly.rev.df, ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
-            #ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
+            # ggplot2::scale_y_continuous(limits = c(-1, y.limit), expand = c(0.1, 0.1)) +
             ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
-            #ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            # ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
             ggplot2::ylab("Self-alignments") +
             ggplot2::xlab("Contig position (bp)")
         ## Define alignment color scheme
@@ -352,7 +352,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         ## Get arc coordinates
         x <- c(rbind(coords$s1.start, coords$s2.start, coords$s1.end, coords$s2.end))
         group <- rep(seq_len(nrow(coords)), each = 4)
-        seq.id <- 'self'
+        seq.id <- "self"
         seq.name <- unique(coords$seq.name)
         col.levels <- rep(coords$col.levels, each = 4)
 
@@ -368,7 +368,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
         plt <- ggplot2::ggplot(plt.df) +
             geom_wide_arc(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
-            #ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            # ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
             ggplot2::ylab("Self-alignments") +
             ggplot2::xlab("Contig position (bp)")
         ## Define alignment color scheme
@@ -384,7 +384,7 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                 ## Define SV ranges
                 x <- c(rbind(paf.svs$q.start, paf.svs$t.start, paf.svs$q.end, paf.svs$t.end))
                 group <- rep(seq_len(nrow(paf.svs)), each = 4)
-                #seq.id <- c(rbind("s1", "s2", "s1", "s2"))
+                # seq.id <- c(rbind("s1", "s2", "s1", "s2"))
                 direction <- rep(paf.svs$strand, each = 4)
                 ID <- rep(paf.svs$ID, each = 4)
 
@@ -392,8 +392,8 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                     x = x,
                     y = 0,
                     group = group,
-                    #seq.id = seq.id,
-                    #seq.name = seq.name,
+                    # seq.id = seq.id,
+                    # seq.name = seq.name,
                     direction = direction,
                     ID = ID
                 )
@@ -412,70 +412,70 @@ plotSelf <- function(paf.table = NULL, min.deletion.size = NULL, min.insertion.s
                     warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
                 }
             } else {
-              message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+                message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
             }
         }
     } else if (shape == "arrow") {
-      ## Do not add alignment arrows if main shape is arrow
-      add.alignment.arrows <- FALSE
-      ## Make Arrow plot
-      arrow.df <- data.frame(
-        xmin = c(coords$s1.start, coords$s2.start),
-        xmax = c(coords$s1.end, coords$s2.end),
-        y = as.numeric(coords$aln.id),
-        col.levels = factor(c(rep("+", nrow(coords)), coords$dir), levels = c("+", "-")), # to make sure s1 is always forward
-        seq.id = 'self',
-        seq.name = unique(coords$seq.name)
-      )
-      arrow.links <- data.frame(
-        xmin = pmax(coords$s1.start, coords$s1.end),
-        xmax = pmin(coords$s2.start, coords$s2.end),
-        y = as.numeric(coords$aln.id)
-      )
+        ## Do not add alignment arrows if main shape is arrow
+        add.alignment.arrows <- FALSE
+        ## Make Arrow plot
+        arrow.df <- data.frame(
+            xmin = c(coords$s1.start, coords$s2.start),
+            xmax = c(coords$s1.end, coords$s2.end),
+            y = as.numeric(coords$aln.id),
+            col.levels = factor(c(rep("+", nrow(coords)), coords$dir), levels = c("+", "-")), # to make sure s1 is always forward
+            seq.id = "self",
+            seq.name = unique(coords$seq.name)
+        )
+        arrow.links <- data.frame(
+            xmin = pmax(coords$s1.start, coords$s1.end),
+            xmax = pmin(coords$s2.start, coords$s2.end),
+            y = as.numeric(coords$aln.id)
+        )
 
-      arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, 0)
-      ## Make sure start is always smaller than end of the alignment
-      arrow.df[, c("xmin", "xmax")] <- t(apply(arrow.df[, c("xmin", "xmax")], 1, sort))
-      ## Plot arrows
-      plt <- ggplot2::ggplot() +
-        ggplot2::geom_segment(data = arrow.links, aes(x = .data$xmin, xend = .data$xmax, y = .data$y, yend = .data$y), linetype = 'solid') +
-        gggenes::geom_gene_arrow(data = arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = .data$y, forward = .data$dir, fill = .data$col.levels), arrowhead_height = grid::unit(3, "mm")) +
-        ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
-        ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
-        #ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
-        ggplot2::scale_y_continuous(expand = c(grid::unit(0.1, "mm"), grid::unit(0.1, "mm"))) +
-        #ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
-        ggplot2::ylab("Self-alignments") +
-        ggplot2::xlab("Contig position (bp)")
+        arrow.df$dir <- ifelse(arrow.df$col.levels == "+", 1, 0)
+        ## Make sure start is always smaller than end of the alignment
+        arrow.df[, c("xmin", "xmax")] <- t(apply(arrow.df[, c("xmin", "xmax")], 1, sort))
+        ## Plot arrows
+        plt <- ggplot2::ggplot() +
+            ggplot2::geom_segment(data = arrow.links, aes(x = .data$xmin, xend = .data$xmax, y = .data$y, yend = .data$y), linetype = "solid") +
+            gggenes::geom_gene_arrow(data = arrow.df, ggplot2::aes(xmin = .data$xmin, xmax = .data$xmax, y = .data$y, forward = .data$dir, fill = .data$col.levels), arrowhead_height = grid::unit(3, "mm")) +
+            ggplot2::scale_fill_manual(values = pal, name = "Alignment\ndirection") +
+            ggplot2::scale_x_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, max.pos)) +
+            # ggplot2::scale_y_continuous(expand = c(0.1, 0.1)) +
+            ggplot2::scale_y_continuous(expand = c(grid::unit(0.1, "mm"), grid::unit(0.1, "mm"))) +
+            # ggplot2::coord_cartesian(xlim = c(0, max.pos)) +
+            ggplot2::ylab("Self-alignments") +
+            ggplot2::xlab("Contig position (bp)")
 
-      ## Add indels
-      if (!is.null(highlight.sv)) {
-        if (nrow(paf.svs) > 0) {
-          ## Define SV ranges
-          ## Insertions belong to query coordinates and deletions to target coordinates
-          ins <- paf.svs[paf.svs$ID == "INS", c("q.name", "q.start", "q.end", "aln.id", "ID")]
-          colnames(ins) <- c("seqnames", "start", "end", "aln.id", "ID")
-          del <- paf.svs[paf.svs$ID == "DEL", c("t.name", "t.start", "t.end", "aln.id", "ID")]
-          colnames(del) <- c("seqnames", "start", "end", "aln.id", "ID")
-          coords.svs <- dplyr::bind_rows(ins, del)
+        ## Add indels
+        if (!is.null(highlight.sv)) {
+            if (nrow(paf.svs) > 0) {
+                ## Define SV ranges
+                ## Insertions belong to query coordinates and deletions to target coordinates
+                ins <- paf.svs[paf.svs$ID == "INS", c("q.name", "q.start", "q.end", "aln.id", "ID")]
+                colnames(ins) <- c("seqnames", "start", "end", "aln.id", "ID")
+                del <- paf.svs[paf.svs$ID == "DEL", c("t.name", "t.start", "t.end", "aln.id", "ID")]
+                colnames(del) <- c("seqnames", "start", "end", "aln.id", "ID")
+                coords.svs <- dplyr::bind_rows(ins, del)
 
-          ## Add SVs to the plot
-          if (highlight.sv == "outline") {
-            plt <- plt + ggnewscale::new_scale_color() +
-              geom_roundrect(data = coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = aln.id, color = .data$ID), fill = NA, inherit.aes = FALSE,  radius = grid::unit(0, "mm")) +
-              ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
-          } else if (highlight.sv == "fill") {
-            plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
-              geom_roundrect(data = coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = aln.id, fill = .data$ID, color = .data$ID), size = 0.2, inherit.aes = FALSE, radius = grid::unit(0, "mm")) +
-              ggplot2::scale_fill_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class") +
-              ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
-          } else {
-            warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
-          }
-        } else {
-          message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+                ## Add SVs to the plot
+                if (highlight.sv == "outline") {
+                    plt <- plt + ggnewscale::new_scale_color() +
+                        geom_roundrect(data = coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = aln.id, color = .data$ID), fill = NA, inherit.aes = FALSE, radius = grid::unit(0, "mm")) +
+                        ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                } else if (highlight.sv == "fill") {
+                    plt <- plt + ggnewscale::new_scale_fill() + ggnewscale::new_scale_color() +
+                        geom_roundrect(data = coords.svs, ggplot2::aes(xmin = .data$start, xmax = .data$end, y = aln.id, fill = .data$ID, color = .data$ID), size = 0.2, inherit.aes = FALSE, radius = grid::unit(0, "mm")) +
+                        ggplot2::scale_fill_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class") +
+                        ggplot2::scale_color_manual(values = c("DEL" = "firebrick3", "INS" = "dodgerblue3"), name = "SV class")
+                } else {
+                    warning("Parameter 'highlight.sv' can only take values 'outline' or 'fill', see function documentation!!!")
+                }
+            } else {
+                message("There are no SVs to highlight. Try to decrease 'min.deletion.size' and 'min.insertion.size' values!!!")
+            }
         }
-      }
     } else {
         warning("Paremeter shape can only take values 'segment', 'arc' or 'arrow' !!!")
         plt <- ggplot() +
