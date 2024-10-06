@@ -46,6 +46,7 @@ parseCigarString <- function(cigar.str = NULL, coordinate.space = "reference") {
 #' @inheritParams breakPaf
 #' @inheritParams parseCigarString
 #' @importFrom GenomicRanges GRanges width shift reduce strand
+#' @importFrom IRanges ranges reflect
 #' @return A \code{\link{GRanges}} object.
 #' @author David Porubsky
 #' @export
@@ -151,10 +152,19 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
             del.gr <- GenomicRanges::shift(del.gr, shift = paf.aln$t.start)
             ins.gr <- GenomicRanges::shift(ins.gr, shift = paf.aln$t.start)
         } else {
-            match.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$q.start)
-            mismatch.gr <- GenomicRanges::shift(mismatch.gr, shift = paf.aln$q.start)
-            del.gr <- GenomicRanges::shift(del.gr, shift = paf.aln$q.start)
-            ins.gr <- GenomicRanges::shift(ins.gr, shift = paf.aln$q.start)
+            ## Flip query coordinates in case of reverse alignment
+            if (paf.aln$strand == '-') {
+                bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end)
+                IRanges::ranges(match.gr) <- IRanges::reflect(x = IRanges::ranges(match.gr), bounds = bounds)
+                IRanges::ranges(mismatch.gr) <- IRanges::reflect(x = IRanges::ranges(mismatch.gr), bounds = bounds)
+                IRanges::ranges(del.gr) <- IRanges::reflect(x = IRanges::ranges(del.gr), bounds = bounds)
+                IRanges::ranges(ins.gr) <- IRanges::reflect(x = IRanges::ranges(ins.gr), bounds = bounds)
+            } else {
+               match.gr <- GenomicRanges::shift(match.gr, shift = paf.aln$q.start)
+               mismatch.gr <- GenomicRanges::shift(mismatch.gr, shift = paf.aln$q.start)
+               del.gr <- GenomicRanges::shift(del.gr, shift = paf.aln$q.start)
+               ins.gr <- GenomicRanges::shift(ins.gr, shift = paf.aln$q.start)
+            }
         }
 
         ## Prepare data for export
