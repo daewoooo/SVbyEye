@@ -131,7 +131,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
             # paf.aln <- paf
             alignments <- GenomicAlignments::GAlignments(
                 seqnames = paf.aln$t.name,
-                # pos = as.integer(paf.aln$t.start) + 1L,
+                #pos = as.integer(paf.aln$t.start) + 1L,
                 pos = as.integer(paf.aln$t.start),
                 cigar = paf.aln$cg,
                 strand = GenomicRanges::strand(paf.aln$strand),
@@ -155,7 +155,7 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
                 mask <- gr.lifted$alignmentsHits %in% aln.idx
                 ## Flip reverse alignments
                 # bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end[aln.idx])
-                bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end[gr.lifted$alignmentsHits])
+                bounds <- IRanges::IRanges(start = 1L, end = paf.aln$q.end[gr.lifted$alignmentsHits]) ## Change 0L -> 1L, Nov11_2024
                 IRanges::ranges(gr.lifted[mask]) <- IRanges::reflect(x = IRanges::ranges(gr.lifted[mask]), bounds = bounds[mask])
                 gr.lifted <- GenomicRanges::resize(gr.lifted, width = GenomicRanges::width(gr.lifted) + 1, fix = "start")
             }

@@ -14,8 +14,8 @@ lift1 <- liftRangesToAlignment(paf.table = paf.table1, gr = roi.gr, direction = 
 lift2 <- liftRangesToAlignment(paf.table = paf.table2, gr = roi.gr, direction = "target2query")
 ## Make checks
 ## Expected mapping position based on minimap: 1015588-1066973
-expect_that(start(lift1), equals(1015588))
-expect_that(end(lift1), equals(1066972))
+expect_that(start(lift1), equals(1015589))
+expect_that(end(lift1), equals(1066973))
 ## Expected mapping position based on minimap: 557941-609322
 expect_that(start(lift2), equals(557942))
 expect_that(end(lift2), equals(609322))
