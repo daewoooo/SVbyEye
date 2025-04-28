@@ -81,7 +81,7 @@ jobs:
 
       ## upload the Rcheck folder if the workflow fails
       - name: Upload output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: ${{ matrix.os }}-bioc-${{ matrix.bioc-version}}
