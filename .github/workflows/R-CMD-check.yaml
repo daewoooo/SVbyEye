@@ -46,7 +46,7 @@ jobs:
           git config --global user.email "ghau@example.com"
           git config --global user.name "GitHub Actions User"
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup R and Bioconductor
         uses: grimbough/bioc-actions/setup-bioc@v1
