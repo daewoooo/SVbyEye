@@ -112,7 +112,7 @@ filterPaf <- function(paf.table, min.mapq = 10, min.align.len = 1000, min.align.
     if (all(!is.na(paf$aln.len))) {
         paf$aln.len[is.na(paf$aln.len)] <- min.align.len
         if (min.align.len > 0 & is.numeric(paf$aln.len)) {
-            paf <- paf[paf$aln.len >= min.align.len, ]
+            paf <- paf[paf$aln.len >= min.align.len,]
         }
     }
 
