@@ -122,6 +122,13 @@ plotGenome <- function(paf.table, min.deletion.size = NULL, min.insertion.size =
     coords.l <- list()
     for (i in seq_along(paf.l)) {
         sub.paf <- paf.l[[i]]
+        ## Make sure to start from zero position
+        min.q.pos <- min(sub.paf$q.start)
+        sub.paf$q.start <- sub.paf$q.start - min.q.pos
+        sub.paf$q.end <- sub.paf$q.end - min.q.pos
+        min.t.pos <- min(sub.paf$t.start)
+        sub.paf$t.start <- sub.paf$t.start - min.t.pos
+        sub.paf$t.end <- sub.paf$t.end - min.t.pos
         ## Sync alignment orientation
         sub.paf <- suppressMessages(flipPaf(paf.table = sub.paf, majority.strand = "+"))
         ## Convert PAF alignments to plotting coordinates
