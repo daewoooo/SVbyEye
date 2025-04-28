@@ -32,11 +32,15 @@ readPaf <- function(paf.file = NULL, include.paf.tags = TRUE, restrict.paf.tags 
     if (file.exists(paf.file)) {
         con <- file(paf.file, "r")
         first.line <- readLines(con, n = 1)
-        n.fields <- length(stringr::str_split(first.line, "\t")[[1]])
-        if (n.fields < 12) {
-            stop("User defined 'paf.file' has less then 12 expected tab-delimeted fields!!!")
+        if (length(first.line) > 0) {
+          n.fields <- length(stringr::str_split(first.line, "\t")[[1]])
+          if (n.fields < 12) {
+              stop("User defined 'paf.file' has less then 12 expected tab-delimeted fields!!!")
+          }
+          close(con)
+        } else {
+          stop("User defined 'paf.file' seems to be empty!!!")
         }
-        close(con)
     } else {
         stop("User defined 'paf.file' doesn't exist!!!")
     }
