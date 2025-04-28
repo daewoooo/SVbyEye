@@ -14,7 +14,7 @@
 #' @import GenomicRanges
 #' @importFrom GenomicAlignments GAlignments cigarNarrow explodeCigarOpLengths
 #' @importFrom GenomeInfoDb seqnames
-#' @importFrom S4Vectors subjectHits queryHits
+#' @importFrom S4Vectors subjectHits queryHits %in%
 #' @importFrom IRanges IRanges
 #' @importFrom methods is
 #' @importFrom tibble tibble
@@ -65,6 +65,10 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = "t
             cov.gr <- cov.gr[cov.gr$score > 1]
             ## Filter by minimum overlapping regions
             todisj.gr <- cov.gr[GenomicRanges::width(cov.gr) >= min.overlap, 0]
+            ## Do not disjoin regions with exact same start and end position as target ranges
+            mask <- target.gr
+            GenomicRanges::strand(mask) <- '*'
+            todisj.gr <- todisj.gr[!todisj.gr %in% mask]
         }
 
         ## Get disjoined set of query and target ranges
@@ -102,6 +106,10 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = "t
             cov.gr <- cov.gr[cov.gr$score > 1]
             ## Filter by minimum overlapping regions
             todisj.gr <- cov.gr[GenomicRanges::width(cov.gr) >= min.overlap, 0]
+            ## Do not disjoin regions with exact same start and end position as query ranges
+            mask <- query.gr
+            GenomicRanges::strand(mask) <- '*'
+            todisj.gr <- todisj.gr[!todisj.gr %in% mask]
         }
 
         ## Get disjoined set of query and target ranges
