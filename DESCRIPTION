@@ -40,6 +40,8 @@ Imports:
   randomcoloR
 Suggests:
   BSgenome.Hsapiens.UCSC.hg38,
+  ggthemes,
+  RColorBrewer,
   BiocStyle,
   testthat,
   knitr,

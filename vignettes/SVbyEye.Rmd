@@ -570,6 +570,25 @@ plotSelf(
 )
 ```
 
+Of course more complex self-alignments can be visualized as well in order to gain an overview of all pairs of segmental duplications that can facilitate  rearrangements between them.
+
+```{r self_complex1, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Get PAF to plot
+paf.file <- system.file("extdata", "test5.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file)
+## Make a plot
+## Plot alignment as horizontal dotplots and color by alignment directionality
+plotSelf(paf.table = paf.table, color.by = "direction", shape = "segment")
+```
+
+
+```{r self_complex2, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Plot alignment as arcs and color by alignment directionality
+plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
+```
+
+
 # Visualization of whole-genome alignments
 
 Lastly, SVbyEye allows plottin an overview of a whole-genome assembly or selected chromosomes with respect to a reference using the ‘plotGenome’ function. With this function whole-genome alignments can be visualized to observe large structural rearrangements with respect to a single reference.
@@ -586,6 +605,84 @@ plotGenome(
     chromosome.bar.width = grid::unit(2, "mm"),
     min.query.aligned.bp = 5000000
 )
+```
+
+
+# Modifying SVbyEye plots 
+
+Conveniently, SVbyEye reports all plots as 'ggplot2' class objects that can be further modified using other ggplot2 specific functions and themes in order to change the overall appearance of the plot.
+
+## Usage of ggplot2 plotting functions and themes
+
+There are a number of ggplot2 functions and plotting themes from other packages that can be applied to SVbyEye plots. This of course has some limitations, meaning that not every ggplot2 function will work or generate a sensible output. 
+
+```{r geom_vline, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Get PAF to plot ##
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file)
+## Make a plot
+plt <- plotMiro(paf.table = paf.table, color.by = "direction")
+## Apply ggplot2 function 
+## Here adding dashed vertical lines to the plot
+## Be aware that x-axis is reported in target coordinates
+plt + ggplot2::geom_vline(xintercept = c(19082149, 19188924), linetype='dashed')
+```
+
+```{r geom_rect, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Adding extra rectangles to the plot
+plt + ggplot2::geom_rect(data = paf.table, 
+                         ggplot2::aes(xmin=t.start, xmax=t.end, ymin=2.1, ymax=2.2), 
+                         color='white') 
+```
+
+```{r theme_grey, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Apply a predefined theme from the ggthemes package
+plt + ggthemes::theme_gdocs()
+```
+
+```{r theme_custom, echo=TRUE, message=FALSE, fig.dim = c(10, 4), dpi=36}
+## Apply a user defined theme adjustments
+## Here adding black border around the plot with legend on the top
+plt + ggplot2::theme(panel.border = ggplot2::element_rect(colour = "black", 
+                                                          fill=NA, linewidth=1),
+                     legend.position = 'top')
+```
+
+## Adjusting default color schemes
+
+The SVbyEye has its own default color scheme to color alignments by their direction as well as their sequence identity. However, these default color schemes can be changed either by setting your own color for alignment direction as explained in section [Visualization of sequence-to-sequence alignments](#Visualization of sequence-to-sequence alignments). In case of changing the color scheme for sequence identity a user will have to define an own discrete variable with corresponding color scheme in order to change the default color scheme. The process of how to do this is explained below.
+
+```{r custom_color, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+library(RColorBrewer)
+## Get PAF to plot ##
+paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
+## Read in PAF
+paf.table <- readPaf(paf.file = paf.file)
+## Define a new column to be used to define colors
+paf.table$seq.label <- LETTERS[1:4]
+## Define color using a common plotting scheme
+colors <- setNames(RColorBrewer::brewer.pal(n = 4, name = 'Dark2'), 
+                   paf.table$seq.label)
+## Make a plot
+plotMiro(paf.table = paf.table, color.by = 'seq.label', 
+         color.palette = colors, add.alignment.arrows = FALSE)
+```
+
+```{r custom_gradient, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
+## Bin the alignments into user defined bins
+paf.table.binned <- pafToBins(paf.table = paf.table, binsize = 2000)
+## Define a new column to be used to define colors (must be discrete value)
+paf.table.binned$seq.identity  <- as.character(round(paf.table.binned$n.match / 
+                                                     paf.table.binned$aln.len, 
+                                                     digits = 2))
+## Define discrete color levels
+seq.idt <- sort(unique(paf.table.binned$seq.identity), decreasing = TRUE)
+## Define color using a common plotting scheme
+colors <- setNames(grDevices::hcl.colors(n = 6, palette = 'Viridis'), seq.idt)
+## Make a plot
+plotMiro(paf.table = paf.table.binned, color.by = 'seq.identity', 
+         color.palette = colors, add.alignment.arrows = FALSE)
 ```
 
 \newpage
