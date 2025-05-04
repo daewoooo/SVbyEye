@@ -16,13 +16,13 @@ bibliography: references.bib
 
 # Introduction
 
-Informative and efficient visualization of genomic structural variation (SV) is an important step to evaluate structurally complex regions of the genome and help us to begin drawing biological conclusions. With advances in long-read sequencing technologies, such as HiFi (high-fidelity) PacBio [@Wenger2019-tn] and ONT (Oxford Nanopore Technologies) [@Deamer2002-hq], we are now able to fully assemble even the most complex regions of the genome. Thus, efficient and informative visualization tools are needed to evaluate and directly observe structural differences between two or more genomes. We have developed SVbyEye exactly for this purpose such that we are able to directly observe complexity of a human (or other organism) genome in question with respect to a linear genome reference. SVbyEye is inspired by the previously developed tool Miropeats [@Parsons1995-nc] and brings its visuals to the popular scripting language R and visualization paradigm using ggplot2 [@ggplot2-book].
+Informative and efficient visualization of genomic structural variation (SV) is an important step to evaluate structurally complex regions of the genome and help us to begin drawing biological conclusions. With advances in long-read sequencing technologies, such as HiFi (high-fidelity) PacBio [@Wenger2019-tn] and ONT (Oxford Nanopore Technologies) [@Deamer2002-hq], we are now able to fully assemble even the most complex regions of the genome. Thus, efficient and informative visualization tools are needed to evaluate and directly observe structural differences between two or more genomes. We developed SVbyEye exactly for this purpose such that we are able to directly observe the complexity of a human (or other organism) genome in question with respect to a linear genome reference. SVbyEye is inspired by the previously developed tool Miropeats [@Parsons1995-nc] and brings its visuals to the popular scripting language R and visualization paradigm using ggplot2 [@ggplot2-book].
 
 \newpage
 
-# Generation of input alignments in PAF format
+# Generation of input 'PAF' alignments
 
-In order to create input alignments for SVbyEye visualization, we usually use minimap2 (version 2.24 or higher) [@Li2016-ha]; however, any sequence-to-sequence aligner that can export alignments in PAF format should be sufficient. We note, however, that we tested our tool only using minimap2 alignments.
+In order to create input alignments for SVbyEye visualization, we usually use minimap2 (version 2.24 or higher) [@Li2016-ha]; however, any sequence-to-sequence aligner that can export PAF (Pairwise mApping Format) alignments should be sufficient. We note, however, that we tested our tool only using minimap2 alignments.
 
 When running minimap2 alignments ensure that parameter -a is not set because it would export alignment in SAM format. Also make sure that parameter -c is set in order to export CIGAR strings as 'cg' tag in the output PAF. Lastly, consider setting the parameter '--eqx' in order to output CIGAR string with '=/X' operators to define sequence match/mismatch, respectively.
 
@@ -35,9 +35,9 @@ minimap2 -x asm20 -c --eqx --secondary=no {target.fasta} {query.fasta} > {output
 ## Generate all-versus-all minimap alignments
 minimap2 -x asm20 -c --eqx -D -P --dual=no {input.multi.fasta} {input.multi.fasta} > {output.ava.alignment}
 
-# Reading and filtering alignements in PAF format
+# Reading and filtering of PAF alignments
 
-The `r BiocStyle::Biocpkg("SVbyEye")` package expects sequence alignments in PAF format as input. Such alignments can be read using the `readPaf()` function. Subsequently, such alignments can be filtered using the `filterPaf()` function. Lastly, one can also orient PAF alignments based on the desired majority orientation (`majority.strand = '+' or '-'`) using the `flipPaf()` function. With this function, the user can flip all alignments in the PAF file to opposite orientation with parameter `force = TRUE`.
+The SVbyEye package expects, as input, sequence alignments in PAF. Such alignments can be read using the `readPaf()` function. Subsequently, such alignments can be filtered using the `filterPaf()` function. One can also orient PAF alignments based on the desired majority orientation (`majority.strand = '+' or '-'`) using the `flipPaf()` function. With this function, the user can flip all alignments in the PAF file to opposite orientation with parameter `force = TRUE`.
 
 First load the `r BiocStyle::Biocpkg("SVbyEye")` package.
 ```{r pckg_load, message=FALSE}
@@ -67,9 +67,9 @@ flipPaf(paf.table = paf.table, force = TRUE)
 
 # Visualization of sequence-to-sequence alignments
 
-The main function of this package is `plotMiro()` and it can be used for visualization of a single sequence aligned to the reference or more than two sequences aligned to each other. SVbyEye is visualizing such alignments in a horizontal layout with the target sequence being on at the top and the query at the bottom.
+The main function of this package is `plotMiro()` and it can be used for visualization of a single sequence aligned to the reference or more than two sequences aligned to each other. SVbyEye visualizes such alignments in a horizontal layout with the target sequence being on at the top and the query at the bottom.
 
-To create a simple Miropeats style plot, follow thevinstructions below.
+To create a simple Miropeats style plot, follow the instructions below.
 
 ```{r simple_miro, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36, dev='png'}
 ## Get PAF to plot
@@ -104,7 +104,7 @@ Next, users can decide to color alignments by their identity instead of directio
 plotMiro(paf.table = paf.table, color.by = "identity")
 ```
 
-We advise that coloring alignments by sequence identity is the most helpful in connection with binning the alignments into separate bins. This is useful when investigating regions of high and low sequence identity between the target and query sequences. We note that when the parameter 'binsize' is defined, the parameter 'color.by' is set to 'identity' by default.
+We advise that coloring alignments by sequence identity is the most helpful in connection with binning the alignments into separate bins. This is helpful when investigating regions of high and low sequence identity between the target and query sequences. We note that when the parameter 'binsize' is defined, the parameter 'color.by' is set to 'identity' by default.
 
 ```{r miro_bin, echo=TRUE, message=FALSE, fig.dim = c(10, 4), dpi=36, dev='png'}
 ## Plot binned alignments
@@ -113,10 +113,10 @@ plotMiro(paf.table = paf.table, binsize = 1000)
 
 Currently there are preset breaks of sequence identity (see `?plotMiro`) that can be changed by setting the parameter 'perc.identity.breaks'.
 
-## Adding annotations to the Miropeats style plot
+## Adding annotations to the plot
 
 Often certain regions need to marked between the query and target alignments such as gene position, position of segmental duplications (SDs), or other DNA functional elements. This can be done by adding extra layers of annotation ranges either on top of the target or query alignments.
-Annotation ranges are expected to be submitted to the `addAnnotation()` function as a GenomicRanges object and are visualized as either an arrowhead (can reflect range orientation) or rectangle.
+Annotation ranges are expected to be submitted to the `addAnnotation()` function as a 'GenomicRanges' object and are visualized as either an arrowhead (can reflect range orientation) or rectangle.
 
 ```{r add_annot, echo=TRUE, message=FALSE, fig.dim = c(10, 4), dpi=36, dev='png'}
 ## Make a plot
@@ -235,7 +235,7 @@ addAnnotation(
 
 ## Adding gene annotations
 
-Gene annotation, such as individual exons or split genomic alignments, can be visualized as a set of genomic ranges that are connected by a horizontal line. This is defined based on a shared identifier (ID) that marks genomic ranges that are supposed to be grouped by such horizontal lines.
+Gene annotation, such as individual exons, or split genomic alignments, can be visualized as a set of genomic ranges that are connected by a horizontal line. This is defined based on a shared identifier (ID) that marks genomic ranges that are supposed to be grouped by such horizontal lines.
 
 ```{r annot_gene, echo=TRUE, message=FALSE, fig.dim = c(10, 4), dpi=36, dev='png'}
 ## Create gene-like annotation
@@ -326,7 +326,7 @@ addAlignments(
 
 ## Detection and visualization of insertions and deletions
 
-Another important feature of SVbyEye is its ability to break PAF alignments at the positions of insertions and deletions. This can be done by setting the minimum size of the insertion and deletion to be reported and setting the way they are marked within the plot, either outlined or filled. By default, deletions are colored red and insertions are blue. Deletions and insertions are defined as sequences that are either missing or are inserted within a query sequence with respect to the target sequence.
+Another important feature of SVbyEye is its ability to break PAF alignments at the positions of insertions and deletions. This can be done by setting the minimum size (as low as 1 bp) of the insertion and deletion to be reported and setting the way they are marked within the plot, either outlined or filled. By default, deletions are colored red and insertions are blue. Deletions and insertions are defined as sequences that are either missing or are inserted within a query sequence with respect to the target sequence.
 
 ```{r getSVs, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36, dev='png'}
 ## Load the data to plot
@@ -354,7 +354,7 @@ alns$SVs
 
 ## Narrowing alignment to a user-defined target region
 
-There is a convenience function to narrow down a PAF alignment into a user-defined region by setting the desired target coordinates defined as a GenomicRanges object or a set of coordinates in this 'chromosome:start-end' format. With this, one can subset and cut PAF alignments at the exact target coordinates.
+There is a convenience function to narrow down a PAF alignment into a user-defined region by setting the desired target coordinates defined as a 'GenomicRanges' object or a set of coordinates in this 'chromosome:start-end' format. With this, one can subset and cut PAF alignments at the exact target coordinates.
 
 ```{r subsetPAF, echo=TRUE, message=FALSE}
 paf.file <- system.file("extdata", "test1.paf", package = "SVbyEye")
@@ -370,11 +370,11 @@ subsetPafAlignments(
 )
 ```
 
-This functionality can be directly used within the `plotMiro` function by setting the parameter 'target.region'.
+This functionality can be directly used within the `plotMiro()` function by setting the parameter 'target.region'.
 
 ## Summarizing sequence composition as annotation heatmaps
 
-Lastly, it is possibile to evaluate the sequence composition of either the query or target sequence. The `fasta2nucleotideContent()` function can calculate the frequency of a specific sequence pattern or an overall frequency of nucleotides within user-defined sequence bins. Subsequently, such nucleotide frequencies can be added to the plot as a heatmap.
+It is also possible to evaluate the sequence composition of either the query or target sequence. The `fasta2nucleotideContent()` function can calculate the frequency of a specific sequence pattern or an overall frequency of nucleotides within user-defined sequence bins. Subsequently, such nucleotide frequencies can be added to the plot as a heatmap.
 
 ```{r seq_heat, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36, dev='png'}
 ## Get PAF to plot
@@ -407,7 +407,7 @@ addAnnotation(
 
 # Visualization of all-versus-all sequence alignments
 
-The SVbyEye also allows visualization of alignments between more than two sequences. This can be done by aligning multiple sequences to each other using so-called all-versus-all (AVA) or stacked alignments. In this way, alignments are visualized in subsequent order with alignments of the first sequence being shown with respect to the second and then second sequence to the third, etc. Alternatively, if the order of sequence in such a progressive alignment is known, one can avoid AVA alignment and align each sequence to the next in a defined order and merge these into a single PAF file. This is useful to visualize alignments between multiple sequences of the same or different species.
+SVbyEye allows visualization of alignments between more than two sequences. This can be done by aligning multiple sequences to each other using so-called all-versus-all (AVA) or stacked alignments. In this way, alignments are visualized in subsequent order with alignments of the first sequence being shown with respect to the second and then second sequence to the third, etc. Alternatively, if the order of sequence in such a progressive alignment is known, one can avoid AVA alignment and align each sequence to the next in a defined order and merge these into a single PAF file. This is useful to visualize alignments between multiple sequences of the same or different species.
 
 ```{r simple_AVA, echo=TRUE, message=FALSE, fig.dim = c(8, 5), dpi=36, dev='png'}
 ## Get PAF to plot
@@ -421,7 +421,7 @@ paf.table <- readPaf(
 plotAVA(paf.table = paf.table, color.by = "direction")
 ```
 
-Many of the same parameter settings used for plotMiro apply to plotAVA as well. Briefly, users can color alignments based on their orientation or identity, define a desired color palette, and bin the alignments into user-defined bins.
+Many of the same parameter settings used for `plotMiro()` apply to the `plotAVA()` function as well. Briefly, users can color alignments based on their orientation or identity, define a desired color palette, and bin the alignments into user-defined bins.
 
 ```{r extra_AVA, echo=TRUE, message=FALSE, fig.dim = c(8, 5), dpi=36, dev='png'}
 ## Color by fraction of matched bases in each alignment
@@ -455,7 +455,7 @@ plotAVA(
 )
 ```
 
-Adding annotation to AVA alignments differs slightly from what we learned with the plotMiro function. Since there are more than two sequences, annotation levels are defined based on the sequence identifier they belong to.
+Adding annotation to AVA alignments differs slightly from what we learned with the `plotMiro()` function. Since there are more than two sequences, annotation levels are defined based on the sequence identifier they belong to.
 This means users have to define an extra column that contains sequence identifiers to which each genomic range belongs to.
 
 ```{r annot_AVA, echo=TRUE, message=FALSE, fig.dim = c(8, 5), dpi=36, dev='png'}
@@ -482,7 +482,7 @@ addAnnotation(
 )
 ```
 
-When plotting the annotation users can define a custom color palette that needs to be matched to the unique meta column in annotation ranges.
+When plotting the annotation, users can define a custom color palette that needs to be matched to the unique meta column in annotation ranges.
 
 ```{r annotDups_AVA, echo=TRUE, message=FALSE, fig.dim = c(8, 5), dpi=36, dev='png'}
 ## Add annotation to the same level as the sequence/sample alignments
@@ -499,7 +499,7 @@ addAnnotation(
 )
 ```
 
-Lastly, there is again a possibility to break PAF alignments at the insertions and deletions and highlight them as outlined or filled polygons.
+There is again an option to break PAF alignments at the insertions and deletions and highlight them as outlined or filled polygons.
 
 ```{r SVs_AVA, echo=TRUE, message=FALSE, fig.dim = c(8, 5), dpi=36, dev='png'}
 ## Break PAF alignments at insertions and deletions and highlight them by an outline
@@ -544,7 +544,7 @@ plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
 plotSelf(paf.table = paf.table, color.by = "direction", shape = "arrow")
 ```
 
-Again, some of the previous parameters apply to the self-alignments as well. For example, users can define the color palette and bin the alignments as well as break alignments at the insertions and deletions.
+Again, some of the previously mentioned parameters apply also to self-alignments. For example, users can define the color palette and bin the alignments as well as break alignments at the insertions and deletions.
 
 ```{r self_color, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36, dev='png'}
 ## Plot alignment as arcs and color by alignment directionality
@@ -570,7 +570,7 @@ plotSelf(
 )
 ```
 
-Of course more complex self-alignments can be visualized as well in order to gain an overview of all pairs of segmental duplications that can facilitate  rearrangements between them.
+Of course more complex self-alignments can be visualized as well in order to gain an overview of all pairs of SDs that can facilitate rearrangements between them.
 
 ```{r self_complex1, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
 ## Get PAF to plot
@@ -591,7 +591,7 @@ plotSelf(paf.table = paf.table, color.by = "direction", shape = "arc")
 
 # Visualization of whole-genome alignments
 
-Lastly, SVbyEye allows plottin an overview of a whole-genome assembly or selected chromosomes with respect to a reference using the ‘plotGenome’ function. With this function whole-genome alignments can be visualized to observe large structural rearrangements with respect to a single reference.
+Lastly, SVbyEye allows plotting an overview of a whole-genome assembly or selected chromosomes with respect to a reference using the `plotGenome()` function. With this function whole-genome alignments can be visualized to observe large structural rearrangements with respect to a single reference.
 
 ```{r genome_plot, echo=TRUE, message=FALSE, fig.dim = c(10, 5), dpi=36, dev='png'}
 ## Get PAF to plot ##
@@ -644,14 +644,14 @@ plt + ggthemes::theme_gdocs()
 ```{r theme_custom, echo=TRUE, message=FALSE, fig.dim = c(10, 4), dpi=36}
 ## Apply a user defined theme adjustments
 ## Here adding black border around the plot with legend on the top
-plt + ggplot2::theme(panel.border = ggplot2::element_rect(colour = "black", 
+plt + ggplot2::theme(panel.border = ggplot2::element_rect(color = "black", 
                                                           fill=NA, linewidth=1),
                      legend.position = 'top')
 ```
 
 ## Adjusting default color schemes
 
-The SVbyEye has its own default color scheme to color alignments by their direction as well as their sequence identity. However, these default color schemes can be changed either by setting your own color for alignment direction as explained in section [Visualization of sequence-to-sequence alignments](#Visualization of sequence-to-sequence alignments). In case of changing the color scheme for sequence identity a user will have to define an own discrete variable with corresponding color scheme in order to change the default color scheme. The process of how to do this is explained below.
+SVbyEye has its own default color scheme to color alignments by their direction as well as their sequence identity. However, these default color schemes can be changed either by setting your own color for alignment direction as explained in the section [Visualization of sequence-to-sequence alignments](#Visualization of sequence-to-sequence alignments). In case of changing the color scheme for sequence identity, a user will have to define an own discrete variable along with corresponding color scheme in order to change the default. The process of how to do this is explained below.
 
 ```{r custom_color, echo=TRUE, message=FALSE, fig.dim = c(10, 3), dpi=36}
 library(RColorBrewer)
