@@ -138,8 +138,8 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
                 names = paf.aln$q.name
             )
             ## Adjust to alignment coordinates
-            # GenomicRanges::start(gr.lift) <- pmax(GenomicRanges::start(gr.lift), min(GenomicRanges::start(alignments)))
-            # GenomicRanges::end(gr.lift) <- pmin(GenomicRanges::end(gr.lift), max(GenomicRanges::end(alignments)))
+            #GenomicRanges::start(gr.lift) <- pmax(GenomicRanges::start(gr.lift), min(GenomicRanges::start(alignments)))
+            #GenomicRanges::end(gr.lift) <- pmin(GenomicRanges::end(gr.lift), max(GenomicRanges::end(alignments)))
             GenomicRanges::end(gr.lift) <- GenomicRanges::end(gr.lift) - 1
             ## Lift ranges
             gr.lifted <- GenomicAlignments::mapToAlignments(x = gr.lift, alignments = alignments)
@@ -154,10 +154,10 @@ liftRangesToAlignment <- function(paf.table, gr = NULL, direction = "query2targe
                 aln.idx <- which(as.character(GenomicRanges::strand(alignments)) == "-")
                 mask <- gr.lifted$alignmentsHits %in% aln.idx
                 ## Flip reverse alignments
-                # bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end[aln.idx])
+                #bounds <- IRanges::IRanges(start = 0L, end = paf.aln$q.end[aln.idx])
                 bounds <- IRanges::IRanges(start = 1L, end = paf.aln$q.end[gr.lifted$alignmentsHits]) ## Change 0L -> 1L, Nov11_2024
                 IRanges::ranges(gr.lifted[mask]) <- IRanges::reflect(x = IRanges::ranges(gr.lifted[mask]), bounds = bounds[mask])
-                gr.lifted <- GenomicRanges::resize(gr.lifted, width = GenomicRanges::width(gr.lifted) + 1, fix = "start")
+                gr.lifted[mask] <- GenomicRanges::resize(gr.lifted[mask], width = GenomicRanges::width(gr.lifted[mask]) + 1, fix = "start") ## Bug fix - adding mask subsetting
             }
             ## Adjust start position for plus alignments alignment
             if (any(as.character(GenomicRanges::strand(alignments)) == "+")) {

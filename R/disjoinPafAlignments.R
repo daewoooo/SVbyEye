@@ -61,10 +61,14 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = "t
             }
         } else {
             ## Get regions covered more than once
-            cov.gr <- as(GenomicRanges::coverage(target.gr), "GRanges")
-            cov.gr <- cov.gr[cov.gr$score > 1]
+            #cov.gr <- as(GenomicRanges::coverage(target.gr), "GRanges")
+            #cov.gr <- cov.gr[cov.gr$score > 1]
+            disj.gr <- GenomicRanges::disjoin(target.gr, ignore.strand=TRUE)
+            disj.gr$cov <- GenomicRanges::countOverlaps(disj.gr, target.gr)
+            disj.gr <- disj.gr[disj.gr$cov > 1]
             ## Filter by minimum overlapping regions
-            todisj.gr <- cov.gr[GenomicRanges::width(cov.gr) >= min.overlap, 0]
+            #todisj.gr <- cov.gr[GenomicRanges::width(cov.gr) >= min.overlap, 0]
+            todisj.gr <- disj.gr[GenomicRanges::width(disj.gr) >= min.overlap, 0]
             ## Do not disjoin regions with exact same start and end position as target ranges
             mask <- target.gr
             GenomicRanges::strand(mask) <- '*'
@@ -102,10 +106,14 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = "t
             }
         } else {
             ## Get regions covered more than once
-            cov.gr <- as(GenomicRanges::coverage(query.gr), "GRanges")
-            cov.gr <- cov.gr[cov.gr$score > 1]
+            #cov.gr <- as(GenomicRanges::coverage(query.gr), "GRanges")
+            #cov.gr <- cov.gr[cov.gr$score > 1]
+            disj.gr <- GenomicRanges::disjoin(query.gr, ignore.strand=TRUE)
+            disj.gr$cov <- GenomicRanges::countOverlaps(disj.gr, query.gr)
+            disj.gr <- disj.gr[disj.gr$cov > 1]
             ## Filter by minimum overlapping regions
-            todisj.gr <- cov.gr[GenomicRanges::width(cov.gr) >= min.overlap, 0]
+            #todisj.gr <- cov.gr[GenomicRanges::width(cov.gr) >= min.overlap, 0]
+            todisj.gr <- disj.gr[GenomicRanges::width(disj.gr) >= min.overlap, 0]
             ## Do not disjoin regions with exact same start and end position as query ranges
             mask <- query.gr
             GenomicRanges::strand(mask) <- '*'
@@ -114,9 +122,9 @@ disjoinPafAlignments <- function(paf.table, min.overlap = 1000, coordinates = "t
 
         ## Get disjoined set of query and target ranges
         if (length(todisj.gr) > 0) {
-            ## Remove regions to disjoin from target
+            ## Remove regions to disjoin from query
             subtr.gr <- suppressWarnings(unlist(GenomicRanges::subtract(query.gr, todisj.gr, ignore.strand = TRUE)))
-            ## Get intersection between regions to disjoin and target
+            ## Get intersection between regions to disjoin and query
             inters.gr <- suppressWarnings(GenomicRanges::intersect(query.gr, todisj.gr, ignore.strand = TRUE))
             query.gr <- suppressWarnings(sort(c(subtr.gr, inters.gr), ignore.strand = TRUE))
             ## Lift query ranges to target coordinates
