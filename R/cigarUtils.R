@@ -72,14 +72,16 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
     insertions <- list()
     deletions <- list()
     for (i in seq_len(nrow(paf.table))) {
-        paf.aln <- paf.table[i, ]
+        paf.aln <- paf.table[i,]
         ## Parse CIGAR string ##
         cg.ranges <- parseCigarString(cigar.str = paf.aln$cg, coordinate.space = coordinate.space)
         ## Get sequence ID
         if (coordinate.space == "reference") {
             seqname <- paf.aln$t.name
+            seqname2 <- paf.aln$q.name
         } else if (coordinate.space == "query") {
             seqname <- paf.aln$q.name
+            seqname2 <- paf.aln$t.name
         } else {
             stop("Parameter 'coordinate.space' can only be either 'reference' or 'query'!!!")
         }
@@ -171,21 +173,25 @@ cigar2ranges <- function(paf.table = NULL, coordinate.space = "reference", min.i
         if (length(match.gr) > 0) {
             GenomicRanges::strand(match.gr) <- paf.aln$strand
             match.gr$aln.id <- paste0("aln", i)
+            match.gr$seqname2 <- seqname2
             match.gr$cg <- "M"
         }
         if (length(mismatch.gr) > 0) {
             GenomicRanges::strand(mismatch.gr) <- paf.aln$strand
             mismatch.gr$aln.id <- paste0("aln", i)
+            mismatch.gr$seqname2 <- seqname2
             mismatch.gr$cg <- "X"
         }
         if (length(ins.gr) > 0) {
             GenomicRanges::strand(ins.gr) <- paf.aln$strand
             ins.gr$aln.id <- paste0("aln", i)
+            ins.gr$seqname2 <- seqname2
             ins.gr$cg <- "I"
         }
         if (length(del.gr) > 0) {
             GenomicRanges::strand(del.gr) <- paf.aln$strand
             del.gr$aln.id <- paste0("aln", i)
+            del.gr$seqname2 <- seqname2
             del.gr$cg <- "D"
         }
 
