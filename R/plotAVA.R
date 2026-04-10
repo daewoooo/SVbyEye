@@ -209,6 +209,13 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
         seq.pair = seq.pair,
         stringsAsFactors = FALSE
     )
+    ## If there is user defined column other than direction or identity add it to the coords table
+    if (!color.by %in% c("direction", "identity")) {
+      if (nchar(color.by) > 0 & color.by %in% colnames(paf)) {
+        new.col <- rep(paf[, eval(color.by), drop = TRUE], each = 4)
+        coords <- coords %>% tibble::add_column(!!color.by := new.col)
+      }
+    }
 
     ## Get x-axis labels
     y.labels <- unique(coords$seq.name)
@@ -242,10 +249,19 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
         plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
             geom_miropeats(ggplot2::aes(x, y, group = group, fill = .data$col.levels), alpha = 0.5) +
             ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = "Identity")
-    } else if (color.by == "mapq") {
-        plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
-            geom_miropeats(ggplot2::aes(x, y, group = group, fill = mapq), alpha = 0.5) +
-            ggplot2::scale_fill_gradient(low = "gray", high = "red")
+    } else if (color.by %in% colnames(paf)) {
+      col.levels <- unique(coords[, eval(color.by), drop = TRUE])
+      if (!all(col.levels %in% names(color.palette))) {
+        ## Define color random scheme
+        coords.l <- getColorScheme(data.table = coords, value.field = color.by)
+        colors <- coords.l$colors
+      } else {
+        colors <- color.palette
+      }
+      ## Make a plot
+      plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
+        geom_miropeats(ggplot2::aes(x = .data$x, y = .data$y, group = .data$group, fill = .data[[color.by]]), alpha = 0.5) +
+        ggplot2::scale_fill_manual(values = colors, drop = FALSE, name = eval(color.by))
     } else {
         plt <- ggplot2::ggplot(coords[coords$ID == "M", ]) +
             geom_miropeats(ggplot2::aes(x, y, group = group), alpha = 0.5, fill = "gray")
