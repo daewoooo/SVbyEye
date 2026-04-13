@@ -221,16 +221,20 @@ plotAVA <- function(paf.table, seqnames.order = NULL, min.deletion.size = NULL, 
     y.labels <- unique(coords$seq.name)
     y.breaks <- coords$y[match(y.labels, coords$seq.name)]
 
-    ## Define color palette
+    ## Set default direction color
     if (!is.null(color.palette)) {
-        if (all(c("+", "-") %in% names(color.palette))) {
-            pal <- color.palette
+      if (all(c("+", "-") %in% names(color.palette))) {
+        if (is.list(color.palette)) {
+          pal <- unlist(color.palette, use.names = TRUE)
         } else {
-            pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
-            warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
+          pal <- color.palette
         }
-    } else {
+      } else {
         pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
+        # warning("User defined 'color.palette' does not contain both '+' and '-' directions, using default values instead!!!")
+      }
+    } else {
+      pal <- c("-" = "cornflowerblue", "+" = "forestgreen")
     }
 
     ## Plot alignments and color by direction or identity
